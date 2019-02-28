@@ -1,0 +1,18 @@
+Package: MethylIT_utils
+Title: Methyl-IT utility
+Version: 0.3.1
+Encoding: UTF-8
+Author: Robersy Sanchez
+Authors@R: c(person("Robersy", "Sanchez", email = "rus547@psu.edu")
+Maintainer: Robersy Sanchez <rus547@psu.edu>
+Description: MethylIT_utils is an R package with functions to support MethylIT downstream analysis.
+Depends:
+  R (>= 3.4.0),
+License: file LICENSE
+biocViews:
+  Software, Epigenetics, MathematicalBiology, DNAMethylation, 
+  DifferentialMethylation, Sequencing, Alignment, Bayesian, 
+  DifferentialExpression
+LazyData: yes
+RoxygenNote: 6.1.0
+Suggests: testthat
