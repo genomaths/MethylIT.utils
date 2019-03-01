@@ -4,11 +4,35 @@
 \alias{gammaMixtCut}
 \title{Cutpoint estimation based on Mixtures of Gamma Distributions}
 \usage{
-gammaMixtCut(LR, post.cut = 0.5, find.cut = FALSE,
-  control.names = NULL, treatment.names = NULL, column = c(hdiv =
-  FALSE, TV = FALSE, wprob = FALSE, pos = FALSE), ...)
+gammaMixtCut(LR, post.cut = 0.5, div.col, tv.col = 7L, tv.cut = 0.25,
+  find.cut = FALSE, control.names = NULL, treatment.names = NULL,
+  column = c(hdiv = FALSE, TV = FALSE, wprob = FALSE, pos = FALSE), ...)
 }
 \arguments{
+\item{LR}{A "pDMP"or "InfDiv" object obtained with functions 
+\code{\link[MethylIT]{getPotentialDIMP}} or
+\code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
+objects, where each GRanges object from the list must have at least
+two columns: a column containing the total variation of methylation
+level (TV, difference of methylation levels) and a column containing a
+divergence of methylation levels (it could be TV or  Hellinger
+divergence).}
+
+\item{post.cut}{Posterior probability to dicide which DMPs belong to 
+treatment group. Default *post.cut* = 0.5.}
+
+\item{div.col}{Column number for divergence of methylation levels used in the
+estimation of the cutpoints. Default: 9L (hdiv column from an InfDiv
+object).}
+
+\item{tv.col}{Column number where the total variation is located in the
+metadata from each GRanges object.}
+
+\item{tv.cut}{A cutoff for the total variation distance to be applied to each
+site/range. Only sites/ranges *k* with \eqn{TVD_{k} > tv.cut} are 
+are used in the analysis. Its value must be a number 
+\eqn{0 < tv.cut < 1}. Default is \eqn{tv.cut = 0.25}.}
+
 \item{find.cut}{Logic. Wether to search for an optimal cutoff value to
 classify DMPs based on given specifications.}
 
@@ -43,18 +67,18 @@ Vector Machines classifier from R package e1071.}
 }
 \description{
 This functions estimates cutpoint value to classify DMPs into
-       two classes: 1) from treatment and 2) from control based Mixtures of
-       Gamma Distributions.
+    two classes: 1) from treatment and 2) from control based Mixtures of
+    Gamma Distributions.
 }
 \details{
 After the estimation of potential DMPs, the pool of DMPs from
-       control and treatment is assumed that follows mixtures of Gamma
-       distributions corresponding to two populations. A posterior
-       probability 2d-vector is estimated for each DMP. By default DMPs with
-       a posterior probability to belong to the treatment group greater than
-       *post.cut = 0.5* is classified a *DMP from treatment*. The post.cut
-       can be modified and *post.cut* can be vector as well. For all the
-       cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*, then a
-       search for the best cutpoint in the range of \eqn{0 < post.cut < 1}
-       is performed calling function  \code{\link{evaluateDIMPclass}}.
+    control and treatment is assumed that follows mixtures of Gamma
+    distributions corresponding to two populations. A posterior
+    probability 2d-vector is estimated for each DMP. By default DMPs with
+    a posterior probability to belong to the treatment group greater than
+    *post.cut = 0.5* is classified a *DMP from treatment*. The post.cut
+    can be modified and *post.cut* can be vector as well. For all the
+    cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*, then a
+    search for the best cutpoint in the range of \eqn{0 < post.cut < 1}
+    is performed calling function  \code{\link{evaluateDIMPclass}}.
 }

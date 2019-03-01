@@ -1,6 +1,6 @@
 Package: MethylIT_utils
-Title: Methyl-IT utility
-Version: 0.3.1
+Title: MethylIT utility
+Version: 0.1
 Encoding: UTF-8
 Author: Robersy Sanchez
 Authors@R: c(person("Robersy", "Sanchez", email = "rus547@psu.edu")
@@ -14,5 +14,20 @@ biocViews:
   DifferentialMethylation, Sequencing, Alignment, Bayesian, 
   DifferentialExpression
 LazyData: yes
+Imports:
+  BiocParallel,
+  GenomicRanges,
+  grDevices,
+  genefilter,
+  IRanges,
+  stats,
+  betareg,
+  utils,
+  mclust,
+  mixtools,
+  caret,
+  S4Vectors,
+  stats, 
+  MASS
 RoxygenNote: 6.1.0
 Suggests: testthat

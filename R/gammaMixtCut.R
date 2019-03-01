@@ -1,0 +1,85 @@
+#' @rdname gammaMixtCut
+#' @title Cutpoint estimation based on Mixtures of Gamma Distributions
+#' @description This functions estimates cutpoint value to classify DMPs into
+#'     two classes: 1) from treatment and 2) from control based Mixtures of
+#'     Gamma Distributions.
+#' @details After the estimation of potential DMPs, the pool of DMPs from
+#'     control and treatment is assumed that follows mixtures of Gamma
+#'     distributions corresponding to two populations. A posterior
+#'     probability 2d-vector is estimated for each DMP. By default DMPs with
+#'     a posterior probability to belong to the treatment group greater than
+#'     *post.cut = 0.5* is classified a *DMP from treatment*. The post.cut
+#'     can be modified and *post.cut* can be vector as well. For all the
+#'     cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*, then a
+#'     search for the best cutpoint in the range of \eqn{0 < post.cut < 1}
+#'     is performed calling function  \code{\link{evaluateDIMPclass}}.
+#' @param LR A "pDMP"or "InfDiv" object obtained with functions 
+#'     \code{\link[MethylIT]{getPotentialDIMP}} or
+#'     \code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
+#'     objects, where each GRanges object from the list must have at least
+#'     two columns: a column containing the total variation of methylation
+#'     level (TV, difference of methylation levels) and a column containing a
+#'     divergence of methylation levels (it could be TV or  Hellinger
+#'     divergence).
+#' @param post.cut Posterior probability to dicide which DMPs belong to 
+#'     treatment group. Default *post.cut* = 0.5.
+#' @param tv.col Column number where the total variation is located in the
+#'     metadata from each GRanges object.
+#' @param div.col Column number for divergence of methylation levels used in the
+#'     estimation of the cutpoints. Default: 9L (hdiv column from an InfDiv
+#'     object).
+#' @param tv.cut A cutoff for the total variation distance to be applied to each
+#'     site/range. Only sites/ranges *k* with \eqn{TVD_{k} > tv.cut} are 
+#'     are used in the analysis. Its value must be a number 
+#'     \eqn{0 < tv.cut < 1}. Default is \eqn{tv.cut = 0.25}.
+#' @param control.names Optional. Names/IDs of the control samples, which must
+#'     be include in thr variable LR (default, NULL).
+#' @param treatment.names Optional. Names/IDs of the treatment samples, which
+#'     must be include in the variable LR (default, NULL).
+#' @param column a logical vector for column names for the predictor variables
+#'     to be used: Hellinger divergence "hdiv", total variation "TV",
+#'     probability of potential DIMP "wprob", and the relative cytosine site
+#'     position "pos" in respect to the chromosome where it is located. The
+#'     relative position is estimated as (x - x.min)/(x.max - x), where x.min
+#'     and x.max are the maximum and minimum for the corresponding chromosome,
+#'     repectively. If "wprob = TRUE", then Logarithm base-10 of "wprob" will
+#'     be used as predictor in place of "wprob" ( see
+#'     \code{\link{evaluateDIMPclass}}).
+#' @param find.cut Logic. Wether to search for an optimal cutoff value to
+#'     classify DMPs based on given specifications.
+#' @param classifier Classification model to use. Option "logistic" applies a
+#'     logistic regression model; option "lda" applies a Linear Discriminant
+#'     Analysis (LDA); "qda" applies a Quadratic Discriminant Analysis (QDA),
+#'     "pca.logistic" applies logistic regression model using the Principal
+#'     Component (PCs) estimated with Principal Component Analysis (PCA) as
+#'     predictor variables. pca.lda" applies LDA using PCs as predictor
+#'     variables, and the option "pca.qda" applies a Quadratic Discriminant
+#'     Analysis (QDA) using PCs as predictor variables. 'SVM' applies Support
+#'     Vector Machines classifier from R package e1071.
+#' @param ... Additional arameters to pass to function
+#'     \code{\link{evaluateDIMPclass}}.
+#' @importFrom mclust Mclust
+#' @importFrom mixtools gammamixEM
+
+gammaMixtCut <- function(LR, post.cut = 0.5, div.col, tv.col=7L, 
+                       tv.cut=0.25, find.cut=FALSE, control.names=NULL,
+                       treatment.names=NULL,
+                       column=c(hdiv=FALSE, TV=FALSE, wprob=FALSE, pos=FALSE),
+                       ...) {
+  if (!inherits(LR, "pDMP") || !inherits(LR, "InfDiv"))
+       stop("* LR must an object from class 'pPDM' or 'InfDiv'")
+
+  x1 = unlist(as(LR, "GRangesList"))
+
+  # Obtain a prior classification model
+  fit <- Mclust(x1$hdiv, G=2, model="V", prior = priorControl())
+  alpha <- fit$parameters$mean^2/fit$parameters$variance$sigmasq
+  beta <- fit$parameters$variance$sigmasq/fit$parameters$mean
+  pro <- fit$parameters$pro
+
+  # Fit Gamma mixture
+  y1 <- gammamixEM(x1$hdiv, lambda = pro, alpha = alpha, beta = beta,
+                   verb = FALSE)
+}
+
+
