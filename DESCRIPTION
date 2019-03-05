@@ -3,7 +3,7 @@ Title: MethylIT utility
 Version: 0.1
 Encoding: UTF-8
 Author: Robersy Sanchez
-Authors@R: c(person("Robersy", "Sanchez", email = "rus547@psu.edu")
+Authors@R: person("Robersy", "Sanchez", email = "rus547@psu.edu")
 Maintainer: Robersy Sanchez <rus547@psu.edu>
 Description: MethylIT_utils is an R package with functions to support MethylIT downstream analysis.
 Depends:
