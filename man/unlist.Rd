@@ -2,7 +2,6 @@
 % Please edit documentation in R/unlist.R
 \name{unlist}
 \alias{unlist}
-\alias{unlist.pDMP}
 \title{Flatten Lists extended to 'pDMP' and 'InfDiv' classes}
 \usage{
 unlist(x, recursive = TRUE, use.names = TRUE)
@@ -11,9 +10,9 @@ unlist(x, recursive = TRUE, use.names = TRUE)
 \item{x}{Any list R object.}
 }
 \description{
-Given a 'pDMP' or 'InfDiv' objects, unlist simplifies it to
-    produce a GRanges object which contains all the GRanges components which
-    occur in 'pDMP' or 'InfDiv' object.
+Given a list 'x' of R objects from the same class and same
+    format, unlist simplifies it to produce a new R object which contains all
+    the initial components which in 'x' object.
 }
 \details{
 This is a method to extend unlist generic function to handle
@@ -21,7 +20,7 @@ This is a method to extend unlist generic function to handle
 }
 \examples{
 gr1 <-GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
-          strand = "+", score = 5L, GC = 0.45)
+              strand = "+", score = 5L, GC = 0.45)
 gr2 <-
   GRanges(seqnames = c("chr1", "chr1"),
           ranges = IRanges(c(7,13), width = 3),
@@ -31,7 +30,6 @@ gr3 <-
           ranges = IRanges(c(1, 4), c(3, 9)),
           strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
 grl <- list("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
-# unlist(grl) # It does not work
-class(grl) <-'InfDiv' # A trick
-unlist(grl) # It works
+base::unlist(grl) # The default unlist does not work
+unlist(grl)
 }
