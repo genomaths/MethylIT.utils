@@ -8,7 +8,7 @@
 unlist(x, recursive = TRUE, use.names = TRUE)
 }
 \arguments{
-\item{x}{AN object from the class 'pDMP'.}
+\item{x}{Any list R object.}
 }
 \description{
 Given a 'pDMP' or 'InfDiv' objects, unlist simplifies it to
@@ -17,7 +17,7 @@ Given a 'pDMP' or 'InfDiv' objects, unlist simplifies it to
 }
 \details{
 This is a method to extend unlist generic function to handle
-    the 'pDMP' classes of objects
+    any list of objects from the same class.
 }
 \examples{
 gr1 <-GRanges(seqnames = "chr2", ranges = IRanges(3, 6),

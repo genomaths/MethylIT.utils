@@ -5,9 +5,9 @@
 #' @description Given a 'pDMP' or 'InfDiv' objects, unlist simplifies it to
 #'     produce a GRanges object which contains all the GRanges components which
 #'     occur in 'pDMP' or 'InfDiv' object.
-#' @param x AN object from the class 'pDMP'.
+#' @param x Any list R object.
 #' @details This is a method to extend unlist generic function to handle
-#'     the 'pDMP' classes of objects
+#'     any list of objects from the same class.
 #' @export
 #' @examples
 #' gr1 <-GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
@@ -30,10 +30,12 @@ unlist <- function(x, ...) UseMethod("unlist", x)
 
 #' @export
 unlist.default <- function(x, recursive = TRUE, use.names = TRUE) {
+   n <- length(x)
    x <- base::unlist(x, recursive = recursive, use.names = use.names)
 
-   if (length(x) > 1) {
-     x <- suppressWarnings(do.call("c", unname(x)))
+   if (length(x) == n) {
+     x0 <- try(suppressWarnings(do.call("c", unname(x))), silent = TRUE)
+     if (!inherits(x0, "try-error")) x <- x0
    }
    return(x)
 }
