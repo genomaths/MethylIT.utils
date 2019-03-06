@@ -1,15 +1,15 @@
-#' @rdname unlistX
+#' @rdname unlist
 #' @aliases unlist.pDMP
 #' @aliases unlist.InfDiv
-#' @title Flatten Lists extended to 'pDMP' and 'InfDiv' objects
-#' @description Given a 'pDMP' or 'InfDiv' objects, unlist simplifies it to 
+#' @title Flatten Lists extended to 'pDMP' and 'InfDiv' classes
+#' @description Given a 'pDMP' or 'InfDiv' objects, unlist simplifies it to
 #'     produce a GRanges object which contains all the GRanges components which
-#'     occur in 'pDMP' or 'InfDiv' object. 
+#'     occur in 'pDMP' or 'InfDiv' object.
 #' @param x AN object from the class 'pDMP'.
-#' @details This is a method to extend unlist generic function to handle 
+#' @details This is a method to extend unlist generic function to handle
 #'     the 'pDMP' classes of objects
 #' @export
-#' @examples 
+#' @examples
 #' gr1 <-GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
 #'           strand = "+", score = 5L, GC = 0.45)
 #' gr2 <-
@@ -25,10 +25,29 @@
 #' class(grl) <-'InfDiv' # A trick
 #' unlist(grl) # It works
 
-unlist <- function(x) UseMethod("unlist", x)
+setGeneric("unlist", signature = "x")
+unlist <- function(x, ...) UseMethod("unlist", x)
 
+#' @export
+unlist.default <- function(x, recursive = TRUE, use.names = TRUE) {
+   if (!inherits(x, "InfDiv") && !inherits(x, "pDMP")) {
+       return(base::unlist(x, recursive = recursive, use.names = use.names))
+   }
+
+   if (inherits(x, "InfDiv")) {
+       return(unlist.InfDiv(x))
+   }
+
+   if (inherits(x, "pDMP")) {
+       return(unlist.pDMP(x))
+   }
+}
+
+
+#' @rdname unlist
 #' @name unlist.pDMP
-#' @rdname unlistX
+#' @aliases unlist.pDMP
+#' @aliases unlist
 #' @export
 unlist.pDMP <- function(x) {
    if (!all(sapply(x, is, "GRanges")))
@@ -37,8 +56,10 @@ unlist.pDMP <- function(x) {
    return(x)
 }
 
+#' @rdname unlist
 #' @name unlist.InfDiv
-#' @rdname unlistX
+#' @aliases unlist.InfDiv
+#' @aliases unlist
 #' @export
 unlist.InfDiv <- function(x) {
   if (!all(sapply(x, is, "GRanges")))
@@ -46,5 +67,4 @@ unlist.InfDiv <- function(x) {
   x <- suppressWarnings(do.call("c", unname(x)))
   return(x)
 }
-
 
