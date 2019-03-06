@@ -3,14 +3,9 @@
 \name{unlist}
 \alias{unlist}
 \alias{unlist.pDMP}
-\alias{unlist.InfDiv}
 \title{Flatten Lists extended to 'pDMP' and 'InfDiv' classes}
 \usage{
 unlist(x, recursive = TRUE, use.names = TRUE)
-
-\method{unlist}{pDMP}(x)
-
-\method{unlist}{InfDiv}(x)
 }
 \arguments{
 \item{x}{AN object from the class 'pDMP'.}

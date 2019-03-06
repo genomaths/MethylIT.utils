@@ -30,41 +30,10 @@ unlist <- function(x, ...) UseMethod("unlist", x)
 
 #' @export
 unlist.default <- function(x, recursive = TRUE, use.names = TRUE) {
-   if (!inherits(x, "InfDiv") && !inherits(x, "pDMP")) {
-       return(base::unlist(x, recursive = recursive, use.names = use.names))
+   x <- base::unlist(x, recursive = recursive, use.names = use.names)
+
+   if (length(x) > 1) {
+     x <- suppressWarnings(do.call("c", unname(x)))
    }
-
-   if (inherits(x, "InfDiv")) {
-       return(unlist.InfDiv(x))
-   }
-
-   if (inherits(x, "pDMP")) {
-       return(unlist.pDMP(x))
-   }
-}
-
-
-#' @rdname unlist
-#' @name unlist.pDMP
-#' @aliases unlist.pDMP
-#' @aliases unlist
-#' @export
-unlist.pDMP <- function(x) {
-   if (!all(sapply(x, is, "GRanges")))
-       stop("all elements in 'x' must be GRanges objects")
-   x <- suppressWarnings(do.call("c", unname(x)))
    return(x)
 }
-
-#' @rdname unlist
-#' @name unlist.InfDiv
-#' @aliases unlist.InfDiv
-#' @aliases unlist
-#' @export
-unlist.InfDiv <- function(x) {
-  if (!all(sapply(x, is, "GRanges")))
-    stop("all elements in 'x' must be GRanges objects")
-  x <- suppressWarnings(do.call("c", unname(x)))
-  return(x)
-}
-
