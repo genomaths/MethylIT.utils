@@ -74,15 +74,11 @@
 #'     testing.
 #' @param num.boot Number of bootstrap validations to perform in the evaluation
 #'     of the logistic regression: group versus divergence (at DIMPs).
-#' @param mc.cores The number of cores to use, i.e. at most how many child
-#'     processes will be run simultaneously (see bpapply function from
-#'     BiocParallel).
-#' @param tasks integer(1). The number of tasks per job. value must be a scalar
-#'     integer >= 0L. In this documentation a job is defined as a single call
-#'     to a function, such as bplapply, bpmapply etc. A task is the division of
-#'     the X argument into chunks. When tasks == 0 (default), X is divided as
-#'     evenly as possible over the number of workers (see MulticoreParam from
-#'     BiocParallel package).
+#' @param num.cores,tasks Paramaters for parallele computation using package
+#'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
+#'     use, i.e. at most how many child processes will be run simultaneously
+#'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
+#'     (only for Linux OS).
 #' @param cachesize To be use in SVM. Cache memory in MB (default 40).
 #' @param tolerance Only used for SVM classifier, tolerance of termination
 #'     criterion (default: 0.001)
@@ -189,7 +185,7 @@ evaluateDIMPclass <- function(LR, control.names, treatment.names,
                                pval.col=NULL,
                                n.pc=1, center=FALSE, scale=FALSE,
                                interaction=NULL, output="conf.mat",
-                               prop=0.6, num.boot=100, mc.cores=1L,
+                               prop=0.6, num.boot=100, num.cores=1L,
                                tasks=0L, cachesize=250007,
                                tolerance=0.0001,
                                svm.kernel=c("linear", "polynomial",
@@ -287,9 +283,9 @@ evaluateDIMPclass <- function(LR, control.names, treatment.names,
    sn <- names(LR)
    idx.ct <- match(control.names, sn)
    idx.tt <- match(treatment.names, sn)
-   CT <- GRangesList(LR[idx.ct])
+   CT <- LR[idx.ct]
    CT <- unlist(CT)
-   TT <- GRangesList(LR[idx.tt])
+   TT <- LR[idx.tt]
    TT <- unlist(TT)
 
   ## ======== computation =========== ##
@@ -363,8 +359,8 @@ evaluateDIMPclass <- function(LR, control.names, treatment.names,
 
    if (output != "conf.mat") {
        if (.Platform$OS.type == "unix") {
-           bpparam <- MulticoreParam(workers=mc.cores, tasks=tasks)
-       } else bpparam <- SnowParam(workers=mc.cores)
+           bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
+       } else bpparam <- SnowParam(workers=num.cores)
        boots <- bplapply(1:num.boot, function(k){
                x <- conf.mat(k)$Performance
                return(c(x$overall, x$byClass))}, BPPARAM=bpparam)
