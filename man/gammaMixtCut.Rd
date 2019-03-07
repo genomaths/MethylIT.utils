@@ -5,12 +5,12 @@
 \title{Cutpoint estimation based on Mixtures of Gamma Distributions}
 \usage{
 gammaMixtCut(LR, post.cut = 0.5, div.col = NULL, tv.col = NULL,
-  tv.cut = NULL, find.cut = FALSE, control.names = NULL,
+  tv.cut = 0.25, find.cut = FALSE, control.names = NULL,
   treatment.names = NULL, column = c(hdiv = FALSE, TV = FALSE, wprob =
   FALSE, pos = FALSE), classifier = c("logistic", "pca.logistic", "lda",
   "svm", "qda", "pca.lda", "pca.qda"), prop = 0.6, clas.perf = FALSE,
   cut.interval = c(0.5, 0.8), cut.incr = 0.01, stat = 1,
-  maximize = TRUE, mc.cores = 1L, tasks = 0L,
+  maximize = TRUE, num.cores = 1L, tasks = 0L,
   tol = .Machine$double.eps^0.5, maxiter = 1000, ...)
 }
 \arguments{
@@ -92,14 +92,14 @@ testing when *find.cut* = TRUE. The mapping for statistic names are:
 \item{maximize}{Whether to maximize the performance indicator given in
 parameter 'stat'. Default: TRUE.}
 
-\item{...}{Additional arameters to pass to functions
-\code{\link{evaluateDIMPclass}} and \code{\link[mixtools]{gammamixEM}}.}
-
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
 use, i.e. at most how many child processes will be run simultaneously
 (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
 (only for Linux OS).}
+
+\item{...}{Additional arameters to pass to functions
+\code{\link{evaluateDIMPclass}} and \code{\link[mixtools]{gammamixEM}}.}
 }
 \description{
 This functions estimates cutpoint value to classify DMPs into

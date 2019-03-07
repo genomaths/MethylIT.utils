@@ -87,17 +87,19 @@
 #' @importFrom stats uniroot
 
 gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL, 
-                       tv.cut=NULL, find.cut=FALSE, 
+                       tv.cut=0.25, find.cut=FALSE, 
                        control.names=NULL, treatment.names=NULL,
                        column=c(hdiv=FALSE, TV=FALSE, wprob=FALSE, pos=FALSE),
                        classifier=c("logistic", "pca.logistic", "lda",
                                     "svm", "qda","pca.lda", "pca.qda"),
                        prop=0.6, clas.perf = FALSE, cut.interval = c(0.5, 0.8),
-                       cut.incr = 0.01, stat = 1, maximize = TRUE, mc.cores=1L, 
+                       cut.incr = 0.01, stat = 1, maximize = TRUE, num.cores=1L, 
                        tasks=0L, tol = .Machine$double.eps^0.5,
                        maxiter = 1000, ...) {
   if (!inherits(LR, "pDMP") && !inherits(LR, "InfDiv"))
        stop("* LR must an object from class 'pPDM' or 'InfDiv'")
+  if ((find.cut || clas.perf) && is.null(div.col))    
+       stop("If findcut or clas.perf is TRUE, a div.col value must be provided")
   
   divs = unlist(LR)
   # To remove divs == 0. The methylation signal only is given for divs > 0
@@ -134,8 +136,10 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
       dgamma(x, shape = par1[1], scale = par1[2]) - 
       dgamma(x, shape = par2[1], scale = par2[2])
    }
-   zero <- uniroot(zerofun, interval = c(lower, upper), 
-                  tol = .Machine$double.eps^0.5, maxiter = 1000)
+   zero <- unlist(uniroot(zerofun, interval = c(lower, upper), 
+                  tol = .Machine$double.eps^0.5, maxiter = 1000))
+   
+   names(zero) <- c("cutpoint", "error", "iter", "init.it", "estim.prec")
   # -------------------------------------------------------------------- #
   
    if (find.cut) {
@@ -150,7 +154,7 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                                        control.names = control.names,
                                        treatment.names = treatment.names,
                                        classifier=classifier, prop=prop, 
-                                       output = "conf.mat", mc.cores=mc.cores,
+                                       output = "conf.mat", num.cores=num.cores,
                                        tasks=tasks, verbose = FALSE, ...)
            if (stat == 0) {
                res <- conf.mat$Performance$overall[1]
@@ -168,7 +172,7 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                }
            }
        }
-       conf.mat<- c(cutpoint = cuts[k], conf.mat)
+       conf.mat <- c(Cutpoint=cutFun(cuts[k]), PostProbCut = cuts[k], conf.mat)
    }
    # -------------------------------------------------------------------- #
    
@@ -179,14 +183,48 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                                    control.names = control.names,
                                    treatment.names = treatment.names,
                                    classifier=classifier, prop=prop, 
-                                   output = "conf.mat", mc.cores=mc.cores,
+                                   output = "conf.mat", num.cores=num.cores,
                                    tasks=tasks, verbose = FALSE, ...)                   
    }
    # -------------------------------------------------------------------- #
-   
-   if (find.cut || clas.perf) {
-       return(list(gammMixtureCut=zero, conf.mat = conf.mat, gammMixture = y1))
-  } else  return(c(gammMixtureCut = zero, gammMixture = y1))
+   if (clas.perf) {
+       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammMixture = y1)
+       cat("\n")
+       cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
+       cat("\n")
+       cat("Cutpoint =", zero[1], "\n")
+       cat("\n")
+       cat("The accessible objects in the output list are: \n")
+       print(summary(res))
+   }
+   if (find.cut) {
+       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammMixture = y1)
+       cat("\n")
+       cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
+       cat("\n")
+       cat("Cutpoint =", zero[1], "\n")
+       cat("\n")
+       cat("Cutpoint search performed using model posterior probabilities \n")
+       cat("\n")
+       cat("Cutpoint =", cutFun(cuts[k]), "\n")
+       cat("PostProbCut =", cuts[k], "\n")
+       cat("\n")
+       cat("Cytosine sites with treatment PostProbCut >=", cuts[k], "have a \n")
+       cat("divergence value >=", cutFun(cuts[k]), "\n")
+       cat("\n")
+       cat("The accessible objects in the output list are: \n")
+       print(summary(res))
+   } else {
+       res <- c(gammaMixtureCut = zero, gammMixture = y1)
+       cat("\n")
+       cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
+       cat("\n")
+       cat("Cutpoint =", zero[1], "\n")
+       cat("\n")
+       cat("The accessible objects in the output list are: \n")
+       print(summary(res))
+   }
+   invisible(res)
 }
 
 
