@@ -56,30 +56,137 @@
 #'     variables, and the option "pca.qda" applies a Quadratic Discriminant
 #'     Analysis (QDA) using PCs as predictor variables. 'SVM' applies Support
 #'     Vector Machines classifier from R package e1071.
-#' @param ... Additional arameters to pass to function
-#'     \code{\link{evaluateDIMPclass}}.
+#' @param prop Proportion to split the dataset used in the logistic regression:
+#'     group versus divergence (at DIMPs) into two subsets, training and
+#'     testing.
+#' @param clas.perf Logic. Whether to return the classificaiton performance for 
+#'     the estimated cutpoint. Default, FALSE.
+#' @param cut.interval 0 < *cut.interval* < 0.1. If *find.cut*= TRUE, the 
+#'     interval of treatment group posterior probabilities where to search for a
+#'     cutpoint. Deafult *cut.interval* = c(0.5, 0.8).
+#' @param cut.incr 0 < *cut.incr* < 0.1. If *find.cut*= TRUE, the sucesive 
+#'     increamental values runing on the interval *cut.interval*. Deafult, 
+#'     *cut.incr* = 0.01.
+#' @param num.cores,tasks Paramaters for parallele computation using package
+#'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
+#'     use, i.e. at most how many child processes will be run simultaneously
+#'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
+#'     (only for Linux OS).
+#' @param stat An integer number indicating the statistic to be used in the
+#'     testing when *find.cut* = TRUE. The mapping for statistic names are:
+#'     0 = "Accuracy", 1 = "Sensitivity", 2 = "Specificity",
+#'     3 = "Pos Pred Value", 4 = "Neg Pred Value", 5 = "Precision",
+#'     6 = "Recall", 7 = "F1",  8 = "Prevalence", 9 = "Detection Rate",
+#'     10 = "Detection Prevalence", 11 = "Balanced Accuracy", 12 = FDR.
+#' @param maximize Whether to maximize the performance indicator given in
+#'     parameter 'stat'. Default: TRUE.
+#' @param ... Additional arameters to pass to functions
+#'     \code{\link{evaluateDIMPclass}} and \code{\link[mixtools]{gammamixEM}}.
 #' @importFrom mclust Mclust
 #' @importFrom mixtools gammamixEM
+#' @importFrom stats uniroot
 
-gammaMixtCut <- function(LR, post.cut = 0.5, div.col, tv.col=7L, 
-                       tv.cut=0.25, find.cut=FALSE, control.names=NULL,
-                       treatment.names=NULL,
+gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL, 
+                       tv.cut=NULL, find.cut=FALSE, 
+                       control.names=NULL, treatment.names=NULL,
                        column=c(hdiv=FALSE, TV=FALSE, wprob=FALSE, pos=FALSE),
-                       ...) {
-  if (!inherits(LR, "pDMP") || !inherits(LR, "InfDiv"))
+                       classifier=c("logistic", "pca.logistic", "lda",
+                                    "svm", "qda","pca.lda", "pca.qda"),
+                       prop=0.6, clas.perf = FALSE, cut.interval = c(0.5, 0.8),
+                       cut.incr = 0.01, stat = 1, maximize = TRUE, mc.cores=1L, 
+                       tasks=0L, tol = .Machine$double.eps^0.5,
+                       maxiter = 1000, ...) {
+  if (!inherits(LR, "pDMP") && !inherits(LR, "InfDiv"))
        stop("* LR must an object from class 'pPDM' or 'InfDiv'")
+  
+  divs = unlist(LR)
+  # To remove divs == 0. The methylation signal only is given for divs > 0
+  divs = divs[ abs(divs$hdiv) > 0 ]
 
-  x1 = unlist(as(LR, "GRangesList"))
-
-  # Obtain a prior classification model
-  fit <- Mclust(x1$hdiv, G=2, model="V", prior = priorControl())
+  # =============  Obtain a prior classification model ===========
+  fit <- Mclust(divs$hdiv, G=2, model="V", prior = priorControl())
   alpha <- fit$parameters$mean^2/fit$parameters$variance$sigmasq
   beta <- fit$parameters$variance$sigmasq/fit$parameters$mean
   pro <- fit$parameters$pro
 
-  # Fit Gamma mixture
-  y1 <- gammamixEM(x1$hdiv, lambda = pro, alpha = alpha, beta = beta,
+  # ================= Fit Gamma mixture ==========================
+  y1 <- gammamixEM(divs$hdiv, lambda = pro, alpha = alpha, beta = beta,
                    verb = FALSE)
+  
+  # Auxiliar function to find cutpoint/intersection point of the two gamma
+  # distributions
+  cutFun <- function(post.cut) {
+       idx <- which(y1$posterior[, 2] > post.cut)
+       TT <- divs[idx]
+       CT <- divs[-idx]
+       CT <- unlist(CT)
+       TT <- unlist(TT)
+       return(max(c(max(CT$hdiv),min(TT$hdiv))))
+   }
+   
+   # === Optimal cutpoint from the intersection of gamma distributios ===
+   idx <- y1$posterior[,1] > post.cut
+   par1 <- y1$gamma.pars[,1]
+   par2 <- y1$gamma.pars[,2]
+   lower <- max(min(y1$x[idx]), min(y1$x[-idx]))
+   upper <- min(max(y1$x[idx]), max(y1$x[-idx]))
+   zerofun <- function(x) {
+      dgamma(x, shape = par1[1], scale = par1[2]) - 
+      dgamma(x, shape = par2[1], scale = par2[2])
+   }
+   zero <- uniroot(zerofun, interval = c(lower, upper), 
+                  tol = .Machine$double.eps^0.5, maxiter = 1000)
+  # -------------------------------------------------------------------- #
+  
+   if (find.cut) {
+       cuts <- seq(cut.interval[1], cut.interval[2], cut.incr)
+       k = 1; opt <- FALSE
+       while (k < length(cuts) && !opt) {
+           dmps <- selectDIMP(LR, div.col = div.col,
+                               cutpoint = cutFun(cuts[k]),
+                               tv.col=tv.col, tv.cut=tv.cut)
+             
+           conf.mat <- evaluateDIMPclass(dmps, column = column,
+                                       control.names = control.names,
+                                       treatment.names = treatment.names,
+                                       classifier=classifier, prop=prop, 
+                                       output = "conf.mat", mc.cores=mc.cores,
+                                       tasks=tasks, verbose = FALSE, ...)
+           if (stat == 0) {
+               res <- conf.mat$Performance$overall[1]
+               if (res == 1) opt <- TRUE
+               k <- k + 1
+           } else {
+               if (is.element(stat, 1:11)) {
+                   res <- conf.mat$Performance$byClass[stat]
+                   if (res == 1) opt <- TRUE
+                       k <- k + 1
+               } else {
+                   res <- conf.mat$FDR
+                   if (res == 0) opt <- TRUE
+                   k <- k + 1
+               }
+           }
+       }
+       conf.mat<- c(cutpoint = cuts[k], conf.mat)
+   }
+   # -------------------------------------------------------------------- #
+   
+   if (clas.perf && !find.cut) {
+       dmps <- selectDIMP(LR, div.col = div.col, cutpoint = zero$root, 
+                       tv.col=tv.col, tv.cut=tv.cut)
+       conf.mat <- evaluateDIMPclass(dmps, column = column,
+                                   control.names = control.names,
+                                   treatment.names = treatment.names,
+                                   classifier=classifier, prop=prop, 
+                                   output = "conf.mat", mc.cores=mc.cores,
+                                   tasks=tasks, verbose = FALSE, ...)                   
+   }
+   # -------------------------------------------------------------------- #
+   
+   if (find.cut || clas.perf) {
+       return(list(gammMixtureCut=zero, conf.mat = conf.mat, gammMixture = y1))
+  } else  return(c(gammMixtureCut = zero, gammMixture = y1))
 }
 
 

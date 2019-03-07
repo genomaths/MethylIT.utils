@@ -4,9 +4,14 @@
 \alias{gammaMixtCut}
 \title{Cutpoint estimation based on Mixtures of Gamma Distributions}
 \usage{
-gammaMixtCut(LR, post.cut = 0.5, div.col, tv.col = 7L, tv.cut = 0.25,
-  find.cut = FALSE, control.names = NULL, treatment.names = NULL,
-  column = c(hdiv = FALSE, TV = FALSE, wprob = FALSE, pos = FALSE), ...)
+gammaMixtCut(LR, post.cut = 0.5, div.col = NULL, tv.col = NULL,
+  tv.cut = NULL, find.cut = FALSE, control.names = NULL,
+  treatment.names = NULL, column = c(hdiv = FALSE, TV = FALSE, wprob =
+  FALSE, pos = FALSE), classifier = c("logistic", "pca.logistic", "lda",
+  "svm", "qda", "pca.lda", "pca.qda"), prop = 0.6, clas.perf = FALSE,
+  cut.interval = c(0.5, 0.8), cut.incr = 0.01, stat = 1,
+  maximize = TRUE, mc.cores = 1L, tasks = 0L,
+  tol = .Machine$double.eps^0.5, maxiter = 1000, ...)
 }
 \arguments{
 \item{LR}{A "pDMP"or "InfDiv" object obtained with functions 
@@ -52,9 +57,6 @@ repectively. If "wprob = TRUE", then Logarithm base-10 of "wprob" will
 be used as predictor in place of "wprob" ( see
 \code{\link{evaluateDIMPclass}}).}
 
-\item{...}{Additional arameters to pass to function
-\code{\link{evaluateDIMPclass}}.}
-
 \item{classifier}{Classification model to use. Option "logistic" applies a
 logistic regression model; option "lda" applies a Linear Discriminant
 Analysis (LDA); "qda" applies a Quadratic Discriminant Analysis (QDA),
@@ -64,6 +66,40 @@ predictor variables. pca.lda" applies LDA using PCs as predictor
 variables, and the option "pca.qda" applies a Quadratic Discriminant
 Analysis (QDA) using PCs as predictor variables. 'SVM' applies Support
 Vector Machines classifier from R package e1071.}
+
+\item{prop}{Proportion to split the dataset used in the logistic regression:
+group versus divergence (at DIMPs) into two subsets, training and
+testing.}
+
+\item{clas.perf}{Logic. Whether to return the classificaiton performance for 
+the estimated cutpoint. Default, FALSE.}
+
+\item{cut.interval}{0 < *cut.interval* < 0.1. If *find.cut*= TRUE, the 
+interval of treatment group posterior probabilities where to search for a
+cutpoint. Deafult *cut.interval* = c(0.5, 0.8).}
+
+\item{cut.incr}{0 < *cut.incr* < 0.1. If *find.cut*= TRUE, the sucesive 
+increamental values runing on the interval *cut.interval*. Deafult, 
+*cut.incr* = 0.01.}
+
+\item{stat}{An integer number indicating the statistic to be used in the
+testing when *find.cut* = TRUE. The mapping for statistic names are:
+0 = "Accuracy", 1 = "Sensitivity", 2 = "Specificity",
+3 = "Pos Pred Value", 4 = "Neg Pred Value", 5 = "Precision",
+6 = "Recall", 7 = "F1",  8 = "Prevalence", 9 = "Detection Rate",
+10 = "Detection Prevalence", 11 = "Balanced Accuracy", 12 = FDR.}
+
+\item{maximize}{Whether to maximize the performance indicator given in
+parameter 'stat'. Default: TRUE.}
+
+\item{...}{Additional arameters to pass to functions
+\code{\link{evaluateDIMPclass}} and \code{\link[mixtools]{gammamixEM}}.}
+
+\item{num.cores, tasks}{Paramaters for parallele computation using package
+\code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
+use, i.e. at most how many child processes will be run simultaneously
+(see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
+(only for Linux OS).}
 }
 \description{
 This functions estimates cutpoint value to classify DMPs into
