@@ -9,7 +9,7 @@ evaluateDIMPclass(LR, control.names, treatment.names, column = c(hdiv =
   classifier = c("logistic", "pca.logistic", "lda", "svm", "qda",
   "pca.lda", "pca.qda"), pval.col = NULL, n.pc = 1, center = FALSE,
   scale = FALSE, interaction = NULL, output = "conf.mat",
-  prop = 0.6, num.boot = 100, mc.cores = 1L, tasks = 0L,
+  prop = 0.6, num.boot = 100, num.cores = 1L, tasks = 0L,
   cachesize = 250007, tolerance = 1e-04, svm.kernel = c("linear",
   "polynomial", "radial", "sigmoid"), seed = 1234, verbose = TRUE)
 }
@@ -76,16 +76,11 @@ testing.}
 \item{num.boot}{Number of bootstrap validations to perform in the evaluation
 of the logistic regression: group versus divergence (at DIMPs).}
 
-\item{mc.cores}{The number of cores to use, i.e. at most how many child
-processes will be run simultaneously (see bpapply function from
-BiocParallel).}
-
-\item{tasks}{integer(1). The number of tasks per job. value must be a scalar
-integer >= 0L. In this documentation a job is defined as a single call
-to a function, such as bplapply, bpmapply etc. A task is the division of
-the X argument into chunks. When tasks == 0 (default), X is divided as
-evenly as possible over the number of workers (see MulticoreParam from
-BiocParallel package).}
+\item{num.cores, tasks}{Paramaters for parallele computation using package
+\code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
+use, i.e. at most how many child processes will be run simultaneously
+(see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
+(only for Linux OS).}
 
 \item{cachesize}{To be use in SVM. Cache memory in MB (default 40).}
 
