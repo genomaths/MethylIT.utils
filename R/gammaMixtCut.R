@@ -157,19 +157,19 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                                        output = "conf.mat", num.cores=num.cores,
                                        tasks=tasks, verbose = FALSE, ...)
            if (stat == 0) {
-               res <- conf.mat$Performance$overall[1]
-               if (res == 1) opt <- TRUE
+               st <- conf.mat$Performance$overall[1]
+               if (st == 1) opt <- TRUE
                k <- k + 1
-           } else {
-               if (is.element(stat, 1:11)) {
-                   res <- conf.mat$Performance$byClass[stat]
-                   if (res == 1) opt <- TRUE
-                       k <- k + 1
-               } else {
-                   res <- conf.mat$FDR
-                   if (res == 0) opt <- TRUE
-                   k <- k + 1
-               }
+           } 
+           if (is.element(stat, 1:11)) {
+               st <- conf.mat$Performance$byClass[stat]
+               if (st == 1) opt <- TRUE
+               k <- k + 1
+           } 
+           if (stat == 12) {
+               st <- conf.mat$FDR
+               if (st == 0) opt <- TRUE
+               k <- k + 1
            }
        }
        conf.mat <- c(Cutpoint=cutFun(cuts[k]), PostProbCut = cuts[k], conf.mat)
@@ -199,6 +199,10 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
    }
    if (find.cut) {
        res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammMixture = y1)
+       STAT <- c("Accuracy", "Sensitivity", "Specificity", "Pos Pred Value",
+                 "Neg Pred Value","Precision", "Recall", "F1",  "Prevalence", 
+                 "Detection Rate", "Detection Prevalence", "Balanced Accuracy",
+                 "FDR")
        cat("\n")
        cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
        cat("\n")
@@ -206,6 +210,7 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
        cat("\n")
        cat("Cutpoint search performed using model posterior probabilities \n")
        cat("\n")
+       cat("Optimized statistic:", STAT[stat + 1], "=", st, "\n")
        cat("Cutpoint =", cutFun(cuts[k]), "\n")
        cat("PostProbCut =", cuts[k], "\n")
        cat("\n")
