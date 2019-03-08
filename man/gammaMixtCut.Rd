@@ -23,7 +23,7 @@ level (TV, difference of methylation levels) and a column containing a
 divergence of methylation levels (it could be TV or  Hellinger
 divergence).}
 
-\item{post.cut}{Posterior probability to dicide which DMPs belong to 
+\item{post.cut}{Posterior probability to dicide whether a DMPs belong to 
 treatment group. Default *post.cut* = 0.5.}
 
 \item{div.col}{Column number for divergence of methylation levels used in the
@@ -41,8 +41,10 @@ are used in the analysis. Its value must be a number
 \item{find.cut}{Logic. Wether to search for an optimal cutoff value to
 classify DMPs based on given specifications.}
 
-\item{control.names}{Optional. Names/IDs of the control samples, which must
-be include in thr variable LR (default, NULL).}
+\item{control.names, treatment.names}{Optional. Names/IDs of the control and
+treatment samples, which must be include in the variable LR 
+(default, NULL). However, these are required if any of the parameters
+*find.cut* or *clas.perf* are set TRUE.}
 
 \item{treatment.names}{Optional. Names/IDs of the treatment samples, which
 must be include in the variable LR (default, NULL).}
@@ -103,18 +105,18 @@ use, i.e. at most how many child processes will be run simultaneously
 }
 \description{
 This functions estimates cutpoint value to classify DMPs into
-    two classes: 1) from treatment and 2) from control based Mixtures of
+    two classes: 1) from treatment and 2) from control, based on Mixtures of
     Gamma Distributions.
 }
 \details{
 After the estimation of potential DMPs, the pool of DMPs from
     control and treatment is assumed that follows mixtures of Gamma
-    distributions corresponding to two populations. A posterior
-    probability 2d-vector is estimated for each DMP. By default DMPs with
-    a posterior probability to belong to the treatment group greater than
-    *post.cut = 0.5* is classified a *DMP from treatment*. The post.cut
-    can be modified and *post.cut* can be vector as well. For all the
-    cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*, then a
-    search for the best cutpoint in the range of \eqn{0 < post.cut < 1}
-    is performed calling function  \code{\link{evaluateDIMPclass}}.
+    distributions corresponding to two populations. A posterior probability
+    2d-vector is estimated for each DMP. By default DMPs with a posterior
+    probability to belong to the treatment group greater than *post.cut =
+    0.5* is classified as *DMP from treatment*. The post.cut can be modified.
+    For all the cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*,
+    then a search for the best cutpoint in a predifined inteval
+    (*cut.interval*) is performed calling function
+    \code{\link{evaluateDIMPclass}}.
 }

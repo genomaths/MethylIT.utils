@@ -1,18 +1,18 @@
 #' @rdname gammaMixtCut
 #' @title Cutpoint estimation based on Mixtures of Gamma Distributions
 #' @description This functions estimates cutpoint value to classify DMPs into
-#'     two classes: 1) from treatment and 2) from control based Mixtures of
+#'     two classes: 1) from treatment and 2) from control, based on Mixtures of
 #'     Gamma Distributions.
 #' @details After the estimation of potential DMPs, the pool of DMPs from
 #'     control and treatment is assumed that follows mixtures of Gamma
-#'     distributions corresponding to two populations. A posterior
-#'     probability 2d-vector is estimated for each DMP. By default DMPs with
-#'     a posterior probability to belong to the treatment group greater than
-#'     *post.cut = 0.5* is classified a *DMP from treatment*. The post.cut
-#'     can be modified and *post.cut* can be vector as well. For all the
-#'     cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*, then a
-#'     search for the best cutpoint in the range of \eqn{0 < post.cut < 1}
-#'     is performed calling function  \code{\link{evaluateDIMPclass}}.
+#'     distributions corresponding to two populations. A posterior probability
+#'     2d-vector is estimated for each DMP. By default DMPs with a posterior
+#'     probability to belong to the treatment group greater than *post.cut =
+#'     0.5* is classified as *DMP from treatment*. The post.cut can be modified.
+#'     For all the cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*,
+#'     then a search for the best cutpoint in a predifined inteval
+#'     (*cut.interval*) is performed calling function
+#'     \code{\link{evaluateDIMPclass}}.
 #' @param LR A "pDMP"or "InfDiv" object obtained with functions 
 #'     \code{\link[MethylIT]{getPotentialDIMP}} or
 #'     \code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
@@ -21,7 +21,7 @@
 #'     level (TV, difference of methylation levels) and a column containing a
 #'     divergence of methylation levels (it could be TV or  Hellinger
 #'     divergence).
-#' @param post.cut Posterior probability to dicide which DMPs belong to 
+#' @param post.cut Posterior probability to dicide whether a DMPs belong to 
 #'     treatment group. Default *post.cut* = 0.5.
 #' @param tv.col Column number where the total variation is located in the
 #'     metadata from each GRanges object.
@@ -32,8 +32,10 @@
 #'     site/range. Only sites/ranges *k* with \eqn{TVD_{k} > tv.cut} are 
 #'     are used in the analysis. Its value must be a number 
 #'     \eqn{0 < tv.cut < 1}. Default is \eqn{tv.cut = 0.25}.
-#' @param control.names Optional. Names/IDs of the control samples, which must
-#'     be include in thr variable LR (default, NULL).
+#' @param control.names,treatment.names Optional. Names/IDs of the control and
+#'     treatment samples, which must be include in the variable LR 
+#'     (default, NULL). However, these are required if any of the parameters
+#'     *find.cut* or *clas.perf* are set TRUE.
 #' @param treatment.names Optional. Names/IDs of the treatment samples, which
 #'     must be include in the variable LR (default, NULL).
 #' @param column a logical vector for column names for the predictor variables
@@ -177,7 +179,7 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
    # -------------------------------------------------------------------- #
    
    if (clas.perf && !find.cut) {
-       dmps <- selectDIMP(LR, div.col = div.col, cutpoint = zero$root, 
+       dmps <- selectDIMP(LR, div.col = div.col, cutpoint = zero[1], 
                        tv.col=tv.col, tv.cut=tv.cut)
        conf.mat <- evaluateDIMPclass(dmps, column = column,
                                    control.names = control.names,
@@ -187,8 +189,8 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                                    tasks=tasks, verbose = FALSE, ...)                   
    }
    # -------------------------------------------------------------------- #
-   if (clas.perf) {
-       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammMixture = y1)
+   if (clas.perf && !find.cut) {
+       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammaMixture = y1)
        cat("\n")
        cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
        cat("\n")
@@ -198,9 +200,9 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
        print(summary(res))
    }
    if (find.cut) {
-       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammMixture = y1)
+       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammaMixture = y1)
        STAT <- c("Accuracy", "Sensitivity", "Specificity", "Pos Pred Value",
-                 "Neg Pred Value","Precision", "Recall", "F1",  "Prevalence", 
+                 "Neg Pred Value","Precision", "Recall", "F1", "Prevalence", 
                  "Detection Rate", "Detection Prevalence", "Balanced Accuracy",
                  "FDR")
        cat("\n")
@@ -219,8 +221,9 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
        cat("\n")
        cat("The accessible objects in the output list are: \n")
        print(summary(res))
-   } else {
-       res <- c(gammaMixtureCut = zero, gammMixture = y1)
+   } 
+   if (!clas.perf && !find.cut) {
+       res <- list(gammaMixtureCut=zero, gammaMixture=y1)
        cat("\n")
        cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
        cat("\n")
