@@ -4,29 +4,27 @@
 \alias{predict.GammaMixt}
 \title{Predict function for the DMP's Mixtures of Gamma Distributions model}
 \usage{
-\method{predict}{GammaMixt}(gmd, LR, pred = "quant", q = 0.95,
-  div.col = NULL)
+\method{predict}{GammaMixt}(gmd, pred = "quant", q = 0.95,
+  div.col = NULL, interval = NULL)
 }
 \arguments{
 \item{gmd}{An object carrying the best nonlinear fit for a distribution model
 obtained with function \code{\link{nonlinearFitDist}} ('GammaMixt' 
 class).}
 
-\item{LR}{Data used to generate the model. A "pDMP"or "InfDiv" object 
-obtained with functions \code{\link[MethylIT]{getPotentialDIMP}} or
+\item{pred}{Type of prediction resquested: *density* ("dens"),*quantiles*
+("quant"), *random number* ("rnum"), *probabilities* ("prob"), or
+classification *posterior probability* ("postPrb").}
+
+\item{q}{numeric vector of quantiles, probabilities or an interger if 
+pred = "rnum", or A "pDMP"or "InfDiv" object obtained with functions
+\code{\link[MethylIT]{getPotentialDIMP}} or
 \code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
 objects, where each GRanges object from the list must have at least two
 columns: a column containing the total variation of methylation level
 (TV, difference of methylation levels) and a column containing a
 divergence of methylation levels (it could be TV or  Hellinger
 divergence).}
-
-\item{pred}{Type of prediction resquested: *density* ("dens"),*quantiles*
-("quant"), *random number* ("rnum"), *probabilities* ("prob"), or
-classification *posterior probability* ("postPrb").}
-
-\item{q}{numeric vector of quantiles, probabilities or an interger if
-pred = "rnum".}
 
 \item{dist.name}{name of the distribution to fit: Weibull2P (default:
 "Weibull2P"), Weibull three-parameters (Weibull3P), gamma with

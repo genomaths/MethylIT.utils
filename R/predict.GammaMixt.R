@@ -10,8 +10,9 @@
 #' @param gmd An object carrying the best nonlinear fit for a distribution model
 #'     obtained with function \code{\link{nonlinearFitDist}} ('GammaMixt' 
 #'     class).
-#' @param LR Data used to generate the model. A "pDMP"or "InfDiv" object 
-#'     obtained with functions \code{\link[MethylIT]{getPotentialDIMP}} or
+#' @param q numeric vector of quantiles, probabilities or an interger if 
+#'     pred = "rnum", or A "pDMP"or "InfDiv" object obtained with functions
+#'     \code{\link[MethylIT]{getPotentialDIMP}} or
 #'     \code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
 #'     objects, where each GRanges object from the list must have at least two
 #'     columns: a column containing the total variation of methylation level
@@ -21,8 +22,6 @@
 #' @param pred Type of prediction resquested: *density* ("dens"),*quantiles*
 #'     ("quant"), *random number* ("rnum"), *probabilities* ("prob"), or
 #'     classification *posterior probability* ("postPrb").
-#' @param q numeric vector of quantiles, probabilities or an interger if
-#'     pred = "rnum".
 #' @param dist.name name of the distribution to fit: Weibull2P (default:
 #'     "Weibull2P"), Weibull three-parameters (Weibull3P), gamma with
 #'     three-parameter (Gamma3P), gamma with two-parameter (Gamma2P),
@@ -38,11 +37,14 @@
 #' 
 predict.GammaMixt <- function(gmd, ...) UseMethod("predict", gmd)
 
-predict.GammaMixt <- function(gmd, LR, pred="quant", q=0.95, div.col=NULL) {
-   if (!inherits(LR, "pDMP") && !inherits(LR, "InfDiv"))
-       stop("* LR must an object from class 'pPDM' or 'InfDiv'")
+predict.GammaMixt <- function(gmd, pred="quant", q=0.95, div.col=NULL,
+                              interval = NULL) {
   
-   if (is.null(div.col)) stop("Please provide a divergence column")
+   if (!is.null(q) && (inherits(LR, "pDMP") || inherits(LR, "InfDiv"))) {
+       if (is.null(div.col)) stop("Please provide a divergence column")
+       q = unlist(q)
+       q = q[, div.col]; q <- q$hdiv
+   }
   
    # === Auxiliary functions ===
    dens <- function(x, pars, lambda) {
@@ -52,13 +54,13 @@ predict.GammaMixt <- function(gmd, LR, pred="quant", q=0.95, div.col=NULL) {
                dgamma(x, shape = alpha[2], scale = beta[2]))
        d = t(lambda * t(d))
        colnames(d) <- c("CT", "TT")
-       return(DataFrame(div=div, d))
+       return(DataFrame(div = x, d))
    }
    
    PostPrb <- function(x, pars, lambda) {
-       res <- dens(x=div, pars=pars, lambda=lambda)[,2:3]
+       res <- dens(x = x, pars = pars, lambda = lambda)[,2:3]
        res <- as.matrix(res)
-       return(DataFrame(div=div, res/rowSums(res)))
+       return(DataFrame(div = x, res/rowSums(res)))
    }
   
    P <- function(x, pars, lambda) {
@@ -66,14 +68,19 @@ predict.GammaMixt <- function(gmd, LR, pred="quant", q=0.95, div.col=NULL) {
        beta = pars[2,]
        p <- cbind(pgamma(x, shape = alpha[1], scale = beta[1]),
                pgamma(x, shape = alpha[2], scale = beta[2]))
-       p = sum(t(lambda * t(p)))
-       return((DataFrame(div=div, p)))
+       p = rowSums(t(lambda * t(p)))
+       return((DataFrame(div = x, Prob = p)))
    }
   
-   quantileGMD <- function(x, p, pars, lambda) {
-       interval <- c(min(x), max(x))
-       G <- function(x) P(x, pars, lambda) - p
-       return(uniroot(G, interval)$root) 
+   quantileGMD <- function(p, pars, lambda, interval) {
+       G <- function(x) P(pars = pars, lambda = lambda)$Prob - p
+       root <- try(uniroot(G, interval)$root, silent = TRUE)
+       if (inherits(root, "try-error")) {
+          txt <- paste0("The quatile cannot be estimated in the interval",
+                        "provided. Please provide a suitable interval")
+          stop(txt)
+       }
+       return() 
    }
   
    rGMD <- function(q, pars, lambda) {
@@ -89,17 +96,27 @@ predict.GammaMixt <- function(gmd, LR, pred="quant", q=0.95, div.col=NULL) {
        return(rand.samples)
    }
 
-   LR = unlist(LR)
-   div = LR[, div.col]; div <- div$hdiv
    pars <- gmd$gammaPars
    lambda <- gmd$lambda
   
+   if (pred == "quant" && is.null(interval)) {
+       interval <- c(min(div, na.rm = TRUE), max(div, na.rm = TRUE))
+       rmin <- P(interval[1], pars=pars, lambda=lambda)$Prob - q
+       rmax <- P(interval[2], pars=pars, lambda=lambda)$Prob - q
+       if (!(rmin < 0 && rmax > 0)) 
+           txt <- paste0("The 'interval' parameter cannot be estimated from ",
+                         "the data. Please provide  'interval' to compute",
+                         "the quantile")
+           stop(txt)
+   }
+   
    # ------------------------------------------------------------------------- #  
    res <- switch(pred,
-               dens = dens(x=div, pars=pars, lambda=lambda),
-               postPrb = PostPrb(x=div, pars=pars, lambda=lambda),
-               prob = P(x=div, pars=pars, lambda=lambda),
-               quant = quantileGMD(x=div, p=q, pars=pars, lambda=lambda),
+               dens = dens(x=q, pars=pars, lambda=lambda),
+               postPrb = PostPrb(x=q, pars=pars, lambda=lambda),
+               prob = P(x=q, pars=pars, lambda=lambda),
+               quant = quantileGMD(p=q, pars=pars, lambda=lambda,
+                                   interval=interval),
                rnum = rGMD(q, pars=pars, lambda=lambda)
    )
    return(res)
