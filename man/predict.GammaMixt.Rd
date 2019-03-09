@@ -39,9 +39,10 @@ use, i.e. at most how many child processes will be run simultaneously
 (only for Linux OS).}
 }
 \description{
-This is an utility function to get posterior probability 
-    predictions based on a given DMP's Mixtures of Gamma Distributions (GMD)
-    model, obtained with functio \code{\link{gammaMixtCut}}.
+This is an utility function to get the density, probailities,
+    and posterior probability predictions based on a given DMP's Mixtures of
+    Gamma Distributions (GMD) model, obtained with function
+    \code{\link{gammaMixtCut}}.
 }
 \details{
 Predictions are based on the best model fit returned by function

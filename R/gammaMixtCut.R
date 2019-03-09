@@ -112,6 +112,7 @@
 #' @importFrom mclust Mclust
 #' @importFrom mixtools gammamixEM
 #' @importFrom stats uniroot
+#' @export
 
 gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL, 
                        tv.cut=0.25, find.cut=FALSE, 

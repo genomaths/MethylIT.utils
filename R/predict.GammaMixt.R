@@ -1,9 +1,10 @@
 #' @rdname predict.GammaMixt
 #' @aliases predict.GammaMixt
 #' @title Predict function for the DMP's Mixtures of Gamma Distributions model
-#' @description This is an utility function to get posterior probability 
-#'     predictions based on a given DMP's Mixtures of Gamma Distributions (GMD)
-#'     model, obtained with functio \code{\link{gammaMixtCut}}.  
+#' @description This is an utility function to get the density, probailities,
+#'     and posterior probability predictions based on a given DMP's Mixtures of
+#'     Gamma Distributions (GMD) model, obtained with function
+#'     \code{\link{gammaMixtCut}}.
 #' @details Predictions are based on the best model fit returned by function
 #'     \code{\link{nonlinearFitDist}}. The possible prediction are: *density*,
 #'     *quantiles*, *random number* or *probabilities*.
@@ -80,7 +81,8 @@ predict.GammaMixt <- function(gmd, pred="quant", q=0.95, div.col=NULL,
                         "provided. Please provide a suitable interval")
           stop(txt)
        }
-       return() 
+       cat(round(p, digits = 2)*100, "% \n", sep ="")
+       return(unname(root)) 
    }
   
    rGMD <- function(q, pars, lambda) {
