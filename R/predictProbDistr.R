@@ -61,7 +61,8 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
                      )
 
    if (!arg.num) stop("The number of model parameters does not match the model")
-
+  
+   # ------------------------------------------------------------------------- #
    if (pred == "dens") {
        res <- try(switch(dist.name,
                        Weibull2P=dweibull(q, shape=m[1], scale=m[2]),
@@ -74,6 +75,7 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
        ), silent = TRUE)
    }
 
+   # ------------------------------------------------------------------------- #
    if (pred == "quant") {
        res <- try(switch(dist.name,
                        Weibull2P=qweibull(q, shape=m[1], scale=m[2]),
@@ -85,7 +87,8 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
                                        psi=m[3])
        ), silent = TRUE)
    }
-
+   
+   # ------------------------------------------------------------------------- #
    if (pred == "prob") {
        res <- try(switch(dist.name,
                        Weibull2P=pweibull(q, shape=m[1], scale=m[2],
@@ -103,6 +106,7 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
        ), silent = TRUE)
    }
 
+   # ------------------------------------------------------------------------- #
    if (pred == "rnum") {
        res <- try(switch(dist.name,
                        Weibull2P=rweibull(q, shape=m[1], scale=m[2]),
@@ -114,7 +118,8 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
                                        psi=m[4])
      ), silent = TRUE)
    }
-
+   # ------------------------------------------------------------------------- #
+   
    if (!inherits(res, "try-error")) return(res) else {
        warning("Your model paramters return arror")
        return(res <- NA)
