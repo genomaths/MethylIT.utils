@@ -34,6 +34,9 @@
 #'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
 #'     (only for Linux OS).
 #' @importFrom S4Vectors DataFrame
+#' @importFrom stats dgamma pgamma qgamma rgamma uniroot runif
+#' @importFrom MethylIT unlist
+#' @export
 #' @examples
 #' 
 predict.GammaMixt <- function(gmd, ...) UseMethod("predict", gmd)
@@ -41,7 +44,7 @@ predict.GammaMixt <- function(gmd, ...) UseMethod("predict", gmd)
 predict.GammaMixt <- function(gmd, pred="quant", q=0.95, div.col=NULL,
                               interval = NULL) {
   
-   if (!is.null(q) && (inherits(LR, "pDMP") || inherits(LR, "InfDiv"))) {
+   if (!is.null(q) && (inherits(q, "pDMP") || inherits(q, "InfDiv"))) {
        if (is.null(div.col)) stop("Please provide a divergence column")
        q = unlist(q)
        q = q[, div.col]; q <- q$hdiv
@@ -102,7 +105,7 @@ predict.GammaMixt <- function(gmd, pred="quant", q=0.95, div.col=NULL,
    lambda <- gmd$lambda
   
    if (pred == "quant" && is.null(interval)) {
-       interval <- c(min(div, na.rm = TRUE), max(div, na.rm = TRUE))
+       interval <- c(min(q, na.rm = TRUE), max(q, na.rm = TRUE))
        rmin <- P(interval[1], pars=pars, lambda=lambda)$Prob - q
        rmax <- P(interval[2], pars=pars, lambda=lambda)$Prob - q
        if (!(rmin < 0 && rmax > 0)) 

@@ -111,7 +111,8 @@
 #'     \code{\link{evaluateDIMPclass}} and \code{\link[mixtools]{gammamixEM}}.
 #' @importFrom mclust Mclust
 #' @importFrom mixtools gammamixEM
-#' @importFrom stats uniroot
+#' @importFrom stats uniroot dgamma
+#' @importFrom MethylIT selectDIMP unlist
 #' @export
 
 gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL, 
