@@ -2,17 +2,42 @@
 #' @title Cutpoint estimation based on Mixtures of Gamma Distributions
 #' @description This functions estimates cutpoint value to classify DMPs into
 #'     two classes: 1) from treatment and 2) from control, based on Mixtures of
-#'     Gamma Distributions.
+#'     Gamma Distributions. The cutpoint estimations are limited to the analysis
+#'     of mixture distributions of the form:
+#'     \eqn{F(x) = \lambda G(x) + (1 - \lambda) H(x)}, where 
+#'     \eqn{\lambda \in [0, 1]}, \eqn{G(x)} and \eqn{F(x)} are the gamma
+#'     cummulative distribution functions distributions followed by the
+#'     information divergences estimated for individuals from control and 
+#'     treatment populations, respectively.  
 #' @details After the estimation of potential DMPs, the pool of DMPs from
 #'     control and treatment is assumed that follows mixtures of Gamma
 #'     distributions corresponding to two populations. A posterior probability
-#'     2d-vector is estimated for each DMP. By default DMPs with a posterior
-#'     probability to belong to the treatment group greater than *post.cut =
-#'     0.5* is classified as *DMP from treatment*. The post.cut can be modified.
-#'     For all the cases \eqn{0 < post.cut < 1}. If parameter *find.cut = TRUE*,
-#'     then a search for the best cutpoint in a predifined inteval
-#'     (*cut.interval*) is performed calling function
-#'     \code{\link{evaluateDIMPclass}}.
+#'     2d-vector is estimated for each DMP. The cutpoint is determined from the 
+#'     intersection of the two gamma probabilities density distributions. That 
+#'     is, \eqn{f(x) and g(x)} are the estimatied densities for control and 
+#'     treatment groups, repectively, then the cutpoint is the values of x for
+#'     which \eqn{f(x) = g(x)}.
+#'     
+#'     The Mixtures of Gamma Distributions (MGD) is estimated by using function
+#'     \code{\link[mixtools]{gammamixEM}} from package *mixtools*. By default
+#'     function \code{\link[mixtools]{gammamixEM}} produces returns a long list
+#'     including the posterior probability to belong to the treatment. Here, by
+#'     the sake of brevety only the information on the fitted model is given.
+#'     The posterior model probability can be retrieved by using *predict*
+#'     function. Accordign with MGD model, DMPs with a posterior probability to
+#'     belong to the treatment group greater than *post.cut = 0.5* is classified
+#'     as *DMP from treatment*. The post.cut can be modified. For all the cases
+#'     \eqn{0 < post.cut < 1}. The cutpoint and, hence, the classification
+#'     derived throught MGD model might differ from that provided throught
+#'     \code{\link{evaluateDIMPclass}} function, which includes more information
+#'     about the DMP and, therefore, reports better performance. The
+#'     classification perfomance reported when *clas.perf* = TRUE or *find.cut*
+#'     = TRUE is created with function \code{\link{evaluateDIMPclass}} for the
+#'     especified matchin learning model.  
+#'     
+#'     If parameter *find.cut = TRUE*, then a search for the best
+#'     cutpoint in a predifined inteval (*cut.interval*) is performed calling
+#'     function \code{\link{evaluateDIMPclass}}.
 #' @param LR A "pDMP"or "InfDiv" object obtained with functions 
 #'     \code{\link[MethylIT]{getPotentialDIMP}} or
 #'     \code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
@@ -138,8 +163,12 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
       dgamma(x, shape = par1[1], scale = par1[2]) - 
       dgamma(x, shape = par2[1], scale = par2[2])
    }
-   zero <- unlist(uniroot(zerofun, interval = c(lower, upper), 
-                  tol = .Machine$double.eps^0.5, maxiter = 1000))
+   
+   zero <- try(uniroot(zerofun, interval = c(lower, upper), 
+                       tol = .Machine$double.eps^0.5, maxiter = 1000),
+               silent = TRUE)
+   if (!inherits(zero, "try-error")) zero <- unlist(zero) 
+   else zero <- rep(NA, 5)
    
    names(zero) <- c("cutpoint", "error", "iter", "init.it", "estim.prec")
   # -------------------------------------------------------------------- #
@@ -148,8 +177,9 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
        cuts <- seq(cut.interval[1], cut.interval[2], cut.incr)
        k = 1; opt <- FALSE
        while (k < length(cuts) && !opt) {
+           cutpoint <- cutFun(cuts[k])
            dmps <- selectDIMP(LR, div.col = div.col,
-                               cutpoint = cutFun(cuts[k]),
+                               cutpoint = cutpoint,
                                tv.col=tv.col, tv.cut=tv.cut)
              
            conf.mat <- evaluateDIMPclass(dmps, column = column,
@@ -189,8 +219,10 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                                    tasks=tasks, verbose = FALSE, ...)                   
    }
    # -------------------------------------------------------------------- #
+   y <- structure(list(gammaPars=y1$gamma.pars, lambda=y1$lambda,
+                        loglik=y1$loglik), class="GammaMixt"); rm(y1); gc()
    if (clas.perf && !find.cut) {
-       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammaMixture = y1)
+       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammaMixture = y)
        cat("\n")
        cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
        cat("\n")
@@ -200,7 +232,7 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
        print(summary(res))
    }
    if (find.cut) {
-       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammaMixture = y1)
+       res <- list(gammaMixtureCut=zero, conf.mat = conf.mat, gammaMixture = y)
        STAT <- c("Accuracy", "Sensitivity", "Specificity", "Pos Pred Value",
                  "Neg Pred Value","Precision", "Recall", "F1", "Prevalence", 
                  "Detection Rate", "Detection Prevalence", "Balanced Accuracy",
@@ -213,17 +245,17 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
        cat("Cutpoint search performed using model posterior probabilities \n")
        cat("\n")
        cat("Optimized statistic:", STAT[stat + 1], "=", st, "\n")
-       cat("Cutpoint =", cutFun(cuts[k]), "\n")
+       cat("Cutpoint =", cutpoint, "\n")
        cat("PostProbCut =", cuts[k], "\n")
        cat("\n")
        cat("Cytosine sites with treatment PostProbCut >=", cuts[k], "have a \n")
-       cat("divergence value >=", cutFun(cuts[k]), "\n")
+       cat("divergence value >=", cutpoint, "\n")
        cat("\n")
        cat("The accessible objects in the output list are: \n")
        print(summary(res))
    } 
    if (!clas.perf && !find.cut) {
-       res <- list(gammaMixtureCut=zero, gammaMixture=y1)
+       res <- list(gammaMixtureCut=zero, gammaMixture=y)
        cat("\n")
        cat("Cutpoint estimation with Mixtures of Gamma Distributions \n")
        cat("\n")
