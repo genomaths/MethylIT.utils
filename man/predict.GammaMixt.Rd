@@ -26,11 +26,14 @@ columns: a column containing the total variation of methylation level
 divergence of methylation levels (it could be TV or  Hellinger
 divergence).}
 
-\item{dist.name}{name of the distribution to fit: Weibull2P (default:
-"Weibull2P"), Weibull three-parameters (Weibull3P), gamma with
-three-parameter (Gamma3P), gamma with two-parameter (Gamma2P),
-generalized gamma with three-parameter ("GGamma3P") or four-parameter
-("GGamma4P").}
+\item{div.col}{An integer. If 'q' is "pDMP"or "InfDiv" object, then it is the 
+column number for the divergence of methylation levels used in the
+estimation of model 'gmd'. Default: NULL.}
+
+\item{interval}{a vector containing the end-points of the interval to be 
+searched for the quantile(s). An interval would be, e.g., 'interval =
+c(min(x), max(x))', where 'x' is the variable used to estimate model
+'gmd'.}
 
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to

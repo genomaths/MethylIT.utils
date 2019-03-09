@@ -23,11 +23,13 @@
 #' @param pred Type of prediction resquested: *density* ("dens"),*quantiles*
 #'     ("quant"), *random number* ("rnum"), *probabilities* ("prob"), or
 #'     classification *posterior probability* ("postPrb").
-#' @param dist.name name of the distribution to fit: Weibull2P (default:
-#'     "Weibull2P"), Weibull three-parameters (Weibull3P), gamma with
-#'     three-parameter (Gamma3P), gamma with two-parameter (Gamma2P),
-#'     generalized gamma with three-parameter ("GGamma3P") or four-parameter
-#'     ("GGamma4P").
+#' @param div.col An integer. If 'q' is "pDMP"or "InfDiv" object, then it is the 
+#'     column number for the divergence of methylation levels used in the
+#'     estimation of model 'gmd'. Default: NULL.
+#' @param interval a vector containing the end-points of the interval to be 
+#'     searched for the quantile(s). An interval would be, e.g., 'interval =
+#'     c(min(x), max(x))', where 'x' is the variable used to estimate model
+#'     'gmd'.
 #' @param num.cores,tasks Paramaters for parallele computation using package
 #'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
 #'     use, i.e. at most how many child processes will be run simultaneously
@@ -77,15 +79,33 @@ predict.GammaMixt <- function(gmd, pred="quant", q=0.95, div.col=NULL,
    }
   
    quantileGMD <- function(p, pars, lambda, interval) {
-       G <- function(x) P(pars = pars, lambda = lambda)$Prob - p
-       root <- try(uniroot(G, interval)$root, silent = TRUE)
-       if (inherits(root, "try-error")) {
-          txt <- paste0("The quatile cannot be estimated in the interval",
-                        "provided. Please provide a suitable interval")
-          stop(txt)
+       if (length(p) > 1) {
+           root <- lapply(p, function(q) {
+               G <- function(x) P(x, pars = pars, lambda = lambda)$Prob - q
+               r <- try(uniroot(G, interval)$root, silent = TRUE)
+               if (inherits(r, "try-error")) {
+                   txt <- paste0("The quantile cannot be estimated in the",
+                           " interval provided. Please provide a suitable", 
+                           " interval")
+                   stop(txt)
+               }
+               return(r)
+           })
+           root <- unname(unlist(root))
+           names(root) <- paste0(round(p, digits = 3)*100, "%")
+       } else {
+           G <- function(x) P(x, pars = pars, lambda = lambda)$Prob - p
+           root <- try(uniroot(G, interval)$root, silent = TRUE)
+           if (inherits(root, "try-error")) {
+               txt <- paste0("The quantile cannot be estimated in the",
+                           " interval provided. Please provide a suitable", 
+                           " interval")
+               stop(txt)
+           }
+           root <- unname(root)
+           names(root) <- paste0(round(p, digits = 3)*100, "%")
        }
-       cat(round(p, digits = 2)*100, "% \n", sep ="")
-       return(unname(root)) 
+       return(root)
    }
   
    rGMD <- function(q, pars, lambda) {
@@ -105,14 +125,19 @@ predict.GammaMixt <- function(gmd, pred="quant", q=0.95, div.col=NULL,
    lambda <- gmd$lambda
   
    if (pred == "quant" && is.null(interval)) {
+       if (any(q > 1) || any(q < 0)) 
+           stop("'q' must be 0 < q < 1 when pred='quant'") 
        interval <- c(min(q, na.rm = TRUE), max(q, na.rm = TRUE))
        rmin <- P(interval[1], pars=pars, lambda=lambda)$Prob - q
        rmax <- P(interval[2], pars=pars, lambda=lambda)$Prob - q
-       if (!(rmin < 0 && rmax > 0)) 
+       if (!(rmin < 0 && rmax > 0)) {
            txt <- paste0("The 'interval' parameter cannot be estimated from ",
-                         "the data. Please provide  'interval' to compute",
-                         "the quantile")
+                         "the data")
+           cat("Please provide 'interval' to compute the quantile. \n", 
+               "An interval would be, e.g., c(min(x), max(x)), where 'x' 
+               is the variable used to estimate model 'gmd'")
            stop(txt)
+       }
    }
    
    # ------------------------------------------------------------------------- #  
