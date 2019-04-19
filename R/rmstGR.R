@@ -71,6 +71,7 @@
 #'
 #' @importFrom BiocParallel MulticoreParam bplapply SnowParam
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom MethylIT validateClass
 #' @return A GRanges object with the original sample counts, bootstrap p-value
 #'     probability, total variation (difference of methylation levels), and
 #'     p-value adjusment.
@@ -126,13 +127,11 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
                    hdiv.cut=NULL, hdiv.col=NULL, num.permut=100,
                    pAdjustMethod="BH", pvalCutOff=0.05, saveAll=FALSE,
                    num.cores=1L, tasks=0L, verbose=TRUE, ...) {
-   if (inherits(LR, "list")) LR <- try(as(LR, "GRangesList"))
-   if (inherits(LR, "try-error"))
-       stop("LR is not list of GRanges objects")
+   if (any(!unlist(lapply(LR, function(GR) class(GR) == "GRanges"))))
+       stop("At least one element from 'LR' is not a 'GRanges' object")
 
-   if (!is.element(class(LR), c("GRangesList", "CompressedGRangesList"))) {
-       stop("LR is not GRangesList, CompressedGRangesList, GRanges
-           or a list of GRanges object")
+   if (!is.null(hdiv.cut) || !is.null(tv.cut)) {
+       validateClass(LR)
    }
    if (!is.null(control.names)&&!is.null(treatment.names))
      LR = try(LR[c(control.names, treatment.names)], silent=TRUE)
