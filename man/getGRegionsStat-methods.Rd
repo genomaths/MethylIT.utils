@@ -8,6 +8,10 @@
 \alias{getGRegionsStat,list-method}
 \alias{getGRegionsStat,}
 \alias{list-method}
+\alias{getGRegionsStat,InfDiv-method}
+\alias{InfDiv-method}
+\alias{getGRegionsStat,pDMP-method}
+\alias{pDMP-method}
 \alias{getGRegionsStat,GRangesList-method}
 \alias{GRangesList-method}
 \title{Statistic of Genomic Regions}
@@ -18,7 +22,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
   scaling = 1000L, logbase = 2, type = c("any", "start", "end",
   "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
-  num.cores = 1L, tasks = 0)
+  num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{GRanges}(GR, win.size, step.size, grfeatures,
   stat, absolute, select.strand, column, prob, entropy, maxgap, minoverlap,
@@ -30,7 +34,23 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
   scaling = 1000L, logbase = 2, type = c("any", "start", "end",
   "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
-  num.cores = 1L, tasks = 0)
+  num.cores = 1L, tasks = 0, ...)
+
+\S4method{getGRegionsStat}{InfDiv}(GR, win.size = 350, step.size = 350,
+  grfeatures = NULL, stat = c("sum", "mean", "gmaean", "median",
+  "density"), absolute = FALSE, select.strand = NULL, column = 1L,
+  prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
+  scaling = 1000L, logbase = 2, type = c("any", "start", "end",
+  "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
+  num.cores = 1L, tasks = 0, ...)
+
+\S4method{getGRegionsStat}{pDMP}(GR, win.size = 350, step.size = 350,
+  grfeatures = NULL, stat = c("sum", "mean", "gmaean", "median",
+  "density"), absolute = FALSE, select.strand = NULL, column = 1L,
+  prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
+  scaling = 1000L, logbase = 2, type = c("any", "start", "end",
+  "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
+  num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{GRangesList}(GR, win.size = 350,
   step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
@@ -38,7 +58,8 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   select.strand = NULL, column = 1L, prob = FALSE, entropy = FALSE,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   type = c("any", "start", "end", "within", "equal"),
-  ignore.strand = FALSE, na.rm = TRUE, num.cores = 1L, tasks = 0)
+  ignore.strand = FALSE, na.rm = TRUE, num.cores = 1L, tasks = 0,
+  ...)
 }
 \arguments{
 \item{GR}{A Grange object with the variable of interest in its metacolumn.}
@@ -139,7 +160,7 @@ gr2 <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
                 strand = rep(c("+", "-"), 10),
                 GC = runif(20))
 
-grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size = 4)
+grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
 }
 \author{
 Robersy Sanchez

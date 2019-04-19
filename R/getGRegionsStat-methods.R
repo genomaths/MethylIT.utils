@@ -78,7 +78,7 @@
 #'                 strand = rep(c("+", "-"), 10),
 #'                 GC = runif(20))
 #'
-#' grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size = 4)
+#' grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
 #' @importFrom GenomeInfoDb seqnames seqlengths
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
@@ -97,7 +97,7 @@ setGeneric("getGRegionsStat",
                  minoverlap=0L, scaling=1000L, logbase = 2,
                  type=c("any", "start", "end", "within", "equal"),
                  ignore.strand=FALSE, na.rm=TRUE,
-                 num.cores = 1L, tasks = 0)
+                 num.cores = 1L, tasks = 0, ...)
              standardGeneric("getGRegionsStat"))
 
 #' @aliases getGRegionsStat
@@ -297,6 +297,34 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
    }
 )
 
+# ====================== Function to operate on lists ======================= #
+getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
+                           stat=c("sum", "mean", "gmaean", "median", "density"),
+                           absolute=FALSE, select.strand=NULL, column=1L,
+                           prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
+                           scaling=1000L, logbase = 2,
+                           type=c("any", "start", "end", "within", "equal"),
+                           ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L,
+                           tasks = 0, ...) {
+
+   if (inherits(GR,"list") && !(inherits(GR, "InfDiv") || inherits(GR, "pDMP")))
+       GR <- try(as(GR, "GRangesList"))
+   if (Sys.info()['sysname'] == "Linux") {
+       bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
+   } else bpparam <- SnowParam(workers = num.cores, type = "SOCK")
+  
+   GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
+                   stat, absolute, select.strand, column, prob, entropy,
+                   maxgap, minoverlap, scaling, logbase,
+                   type, ignore.strand, na.rm, BPPARAM=bpparam)
+   return(GR)
+}
+
+setClass("InfDiv")
+setClass("pDMP")
+
+# ---------------------------------------------------------------------------- #
+
 #' @aliases getGRegionsStat, list-method
 #' @rdname getGRegionsStat-methods
 #' @importFrom GenomeInfoDb seqnames seqlengths
@@ -304,27 +332,31 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
 #' @importFrom IRanges IRanges
 #' @importFrom data.table data.table
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
-#'
-setMethod("getGRegionsStat", signature(GR="list"),
-           function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmaean", "median", "density"),
-                   absolute=FALSE, select.strand=NULL, column=1L,
-                   prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                   scaling=1000L, logbase = 2,
-                   type=c("any", "start", "end", "within", "equal"),
-                   ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L, tasks = 0) {
-           if (inherits(GR, "list")) GR <- try(as(GR, "GRangesList"))
-           if (Sys.info()['sysname'] == "Linux") {
-             bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
-           } else bpparam <- SnowParam(workers = num.cores, type = "SOCK")
+setMethod("getGRegionsStat", signature(GR="list"), 
+           function(GR, ...) getGRegionsStats(GR, ...))
 
-           GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
-                   stat, absolute, select.strand, column, prob, entropy,
-                   maxgap, minoverlap, scaling, logbase,
-                   type, ignore.strand, na.rm, BPPARAM=bpparam)
-           return(GR)
-           }
-)
+
+#' @aliases getGRegionsStat, InfDiv-method
+#' @rdname getGRegionsStat-methods
+#' @importFrom GenomeInfoDb seqnames seqlengths
+#' @importFrom GenomicRanges GRanges
+#' @importFrom IRanges IRanges
+#' @importFrom data.table data.table
+#' @importFrom BiocParallel MulticoreParam SnowParam bplapply
+setMethod("getGRegionsStat", signature(GR="InfDiv"), 
+           function(GR, ...) getGRegionsStats(GR, ...))
+
+
+#' @aliases getGRegionsStat, pDMP-method
+#' @rdname getGRegionsStat-methods
+#' @importFrom GenomeInfoDb seqnames seqlengths
+#' @importFrom GenomicRanges GRanges
+#' @importFrom IRanges IRanges
+#' @importFrom data.table data.table
+#' @importFrom BiocParallel MulticoreParam SnowParam bplapply
+setMethod("getGRegionsStat", signature(GR="pDMP"), 
+           function(GR, ...) getGRegionsStats(GR, ...))
+
 
 #' @aliases getGRegionsStat, GRangesList-method
 #' @rdname getGRegionsStat-methods
@@ -333,23 +365,6 @@ setMethod("getGRegionsStat", signature(GR="list"),
 #' @importFrom IRanges IRanges
 #' @importFrom data.table data.table
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
-setMethod("getGRegionsStat", signature(GR="GRangesList"),
-          function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmaean", "median", "density"),
-                   absolute=FALSE, select.strand=NULL, column=1L,
-                   prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                   scaling=1000L, logbase = 2,
-                   type=c("any", "start", "end", "within", "equal"),
-                   ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L, tasks = 0){
-            if (Sys.info()['sysname'] == "Linux") {
-              bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
-            } else bpparam <- SnowParam(workers = num.cores, type = "SOCK")
-
-            GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
-                         stat, absolute, select.strand, column, prob, entropy,
-                         maxgap, minoverlap, scaling, logbase, type,
-                         ignore.strand, na.rm, BPPARAM=bpparam)
-            return(GR)
-          }
-)
+setMethod("getGRegionsStat", signature(GR="GRangesList"), 
+           function(GR, ...) getGRegionsStats(GR, ...))
 
