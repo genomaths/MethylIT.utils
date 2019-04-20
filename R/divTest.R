@@ -16,7 +16,7 @@
 #'     a particular case of Gamma distribution: \cr
 #'         \deqn{f(x|a,s) = 1/(s^a Gamma(a)) x^(a-1) e^-(x/s)}
 #'     Chi-square density is derived after replacing a = n/2 and s = 2: \cr
-#'         \deqn{f(x|n) = 1/(2^(n/2) Γ(n/2)) x^(n/2-1) e^(-x/2)}
+#'         \deqn{f(x|n) = 1/(2^(n/2) Gamma(n/2)) x^(n/2-1) e^(-x/2)}
 #' @param GR GRanges objects including control and treatment samples containing
 #'     an information divergence of methylation levels. The names for each
 #'     column must coincide with the names given for parameters:
