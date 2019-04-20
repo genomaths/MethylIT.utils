@@ -42,8 +42,8 @@ For goodness-of-fit the following null hypothesis is tested
     After conducting many such simulations, the confidence level for
     rejecting the null hypothesis is the fraction of the statistics
     calculated in step 3 that are less than the statistic calculated from
-    the empirical data. The significance level α is the same as a confidence
-    level of \eqn{1-\alpha}.
+    the empirical data. The significance level \eqn{\alpha} is the same as a
+    confidence level of \eqn{1-\alpha}.
 }
 \examples{
     set.seed(123)
