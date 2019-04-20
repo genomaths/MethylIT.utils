@@ -1,6 +1,6 @@
 # Welcome to Methyl-IT utility R package
 
-MethylIT_utils is an R package with functions to support <a href="https://github.com/genomaths/MethylIT" target="_blank">MethylIT</a> downstream statistical analyses
+MethylIT_utils is a R package with functions to support <a href="https://github.com/genomaths/MethylIT" target="_blank">MethylIT</a> downstream statistical analyses
 
 You can install MethylIT.utils from GitHub or PSU's GitLab:
 
