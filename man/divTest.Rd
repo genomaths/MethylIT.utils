@@ -102,10 +102,12 @@ The original GRanges object with the columns "beta", "log2FC",
 }
 \description{
 Generalized Linear Model for group comparison of information
-    divergence variables yielded by MethylIT output. Basically, this a
-    wrapping function to perform the fitting of generalized linear models
-    with \code{\link[stats]{glm}} from 'stats' package to any variable of
-    interest given in GRanges objects of MethylIT output.
+    divergence variables yielded by function 
+    \code{\link[MethylIT]{estimateDivergence}} from MethylIT R package output.
+    Basically, this a wrapping function to perform the fitting of generalized
+    linear models with \code{\link[stats]{glm}} from 'stats' package to any
+    variable of interest given in GRanges objects of 
+    \code{\link[MethylIT]{estimateDivergence}} output.
 }
 \details{
 The default parameter setting glm.family = Gamma(link = "log") is
