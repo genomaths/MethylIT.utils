@@ -90,7 +90,7 @@ A GRanges object with the original sample counts, bootstrap p-value
 Count data in MethylIT pipeline is carried in GRanges objects.
     This function provides a shortcut to apply the parametric Bootstrap
     of 2x2 Contingency independence test, which is implemented in function
-    \code{\link[MethylIT]{bootstrap2x2}}. The  goodness of fit statistic is
+    \code{\link[MethylIT.utils]{bootstrap2x2}}. The  goodness of fit statistic is
     the root-mean-square statistic (RMST) or Hellinger divergence, as
     proposed by Perkins et al. [1, 2]. Hellinger divergence (HD) is computed
     as proposed in [3].
