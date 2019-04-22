@@ -80,7 +80,7 @@
 #'
 #' grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
 #' @importFrom GenomeInfoDb seqnames seqlengths
-#' @importFrom GenomicRanges GRanges
+#' @importFrom GenomicRanges GRanges GRangesList
 #' @importFrom IRanges IRanges
 #' @importFrom data.table data.table
 #' @importFrom stats median
@@ -333,7 +333,18 @@ setClass("pDMP")
 #' @importFrom data.table data.table
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="list"), 
-           function(GR, ...) getGRegionsStats(GR, ...))
+           function(GR, win.size=350, step.size=350, grfeatures=NULL,
+                    stat=c("sum", "mean", "gmaean", "median", "density"),
+                    absolute=FALSE, select.strand=NULL, column=1L,
+                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
+                    scaling=1000L, logbase = 2,
+                    type=c("any", "start", "end", "within", "equal"),
+                    ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L,
+                    tasks = 0, ...) 
+               getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
+                               absolute, select.strand, column, prob, entropy,
+                               maxgap, minoverlap, scaling, logbase, type,
+                               ignore.strand, na.rm, num.cores, tasks, ...))
 
 
 #' @aliases getGRegionsStat, InfDiv-method
@@ -344,7 +355,18 @@ setMethod("getGRegionsStat", signature(GR="list"),
 #' @importFrom data.table data.table
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="InfDiv"), 
-           function(GR, ...) getGRegionsStats(GR, ...))
+           function(GR, win.size=350, step.size=350, grfeatures=NULL,
+                   stat=c("sum", "mean", "gmaean", "median", "density"),
+                   absolute=FALSE, select.strand=NULL, column=1L,
+                   prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
+                   scaling=1000L, logbase = 2,
+                   type=c("any", "start", "end", "within", "equal"),
+                   ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L,
+                   tasks = 0, ...) 
+               getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
+                               absolute, select.strand, column, prob, entropy,
+                               maxgap, minoverlap, scaling, logbase, type,
+                               ignore.strand, na.rm, num.cores, tasks, ...))
 
 
 #' @aliases getGRegionsStat, pDMP-method
@@ -355,7 +377,18 @@ setMethod("getGRegionsStat", signature(GR="InfDiv"),
 #' @importFrom data.table data.table
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="pDMP"), 
-           function(GR, ...) getGRegionsStats(GR, ...))
+           function(GR, win.size=350, step.size=350, grfeatures=NULL,
+                   stat=c("sum", "mean", "gmaean", "median", "density"),
+                   absolute=FALSE, select.strand=NULL, column=1L,
+                   prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
+                   scaling=1000L, logbase = 2,
+                   type=c("any", "start", "end", "within", "equal"),
+                   ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L,
+                   tasks = 0, ...) 
+               getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
+                               absolute, select.strand, column, prob, entropy,
+                               maxgap, minoverlap, scaling, logbase, type,
+                               ignore.strand, na.rm, num.cores, tasks, ...))
 
 
 #' @aliases getGRegionsStat, GRangesList-method
@@ -366,5 +399,16 @@ setMethod("getGRegionsStat", signature(GR="pDMP"),
 #' @importFrom data.table data.table
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="GRangesList"), 
-           function(GR, ...) getGRegionsStats(GR, ...))
+           function(GR, win.size=350, step.size=350, grfeatures=NULL,
+                   stat=c("sum", "mean", "gmaean", "median", "density"),
+                   absolute=FALSE, select.strand=NULL, column=1L,
+                   prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
+                   scaling=1000L, logbase = 2,
+                   type=c("any", "start", "end", "within", "equal"),
+                   ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L,
+                   tasks = 0, ...) 
+               getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
+                               absolute, select.strand, column, prob, entropy,
+                               maxgap, minoverlap, scaling, logbase, type,
+                               ignore.strand, na.rm, num.cores, tasks, ...))
 
