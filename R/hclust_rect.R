@@ -39,18 +39,15 @@ hclust_rect <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL,
    if (length(h) > 1L | length(k) > 1L) 
        stop("'k' and 'h' must be a scalar")
    if (!is.null(h)) {
-       if (!is.null(k)) 
-       stop("specify exactly one of 'k' and 'h'")
+       if (!is.null(k)) stop("specify exactly one of 'k' and 'h'")
        k <- min(which(rev(tree$height) < h))
        k <- max(k, 2)
    }
-   else if (is.null(k)) 
-       stop("specify exactly one of 'k' and 'h'")
+   else if (is.null(k)) stop("specify exactly one of 'k' and 'h'")
    if (k < 2 | k > length(tree$height)) 
        stop(gettextf("k must be between 2 and %d", length(tree$height)), 
            domain = NA)
-   if (is.null(cluster)) 
-       cluster <- cutree(tree, k = k)
+   if (is.null(cluster)) cluster <- cutree(tree, k = k)
    clustab <- table(cluster)[unique(cluster[tree$order])]
    m <- c(0, cumsum(clustab))
    if (!is.null(x)) {
