@@ -17,7 +17,7 @@
 \title{Statistic of Genomic Regions}
 \usage{
 getGRegionsStat(GR, win.size = 350, step.size = 350,
-  grfeatures = NULL, stat = c("sum", "mean", "gmaean", "median",
+  grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density"), absolute = FALSE, select.strand = NULL, column = 1L,
   prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
   scaling = 1000L, logbase = 2, type = c("any", "start", "end",
@@ -29,7 +29,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   scaling, logbase, type, ignore.strand, na.rm)
 
 \S4method{getGRegionsStat}{list}(GR, win.size = 350, step.size = 350,
-  grfeatures = NULL, stat = c("sum", "mean", "gmaean", "median",
+  grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density"), absolute = FALSE, select.strand = NULL, column = 1L,
   prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
   scaling = 1000L, logbase = 2, type = c("any", "start", "end",
@@ -37,7 +37,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{InfDiv}(GR, win.size = 350, step.size = 350,
-  grfeatures = NULL, stat = c("sum", "mean", "gmaean", "median",
+  grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density"), absolute = FALSE, select.strand = NULL, column = 1L,
   prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
   scaling = 1000L, logbase = 2, type = c("any", "start", "end",
@@ -45,7 +45,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{pDMP}(GR, win.size = 350, step.size = 350,
-  grfeatures = NULL, stat = c("sum", "mean", "gmaean", "median",
+  grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density"), absolute = FALSE, select.strand = NULL, column = 1L,
   prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
   scaling = 1000L, logbase = 2, type = c("any", "start", "end",
@@ -54,7 +54,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
 
 \S4method{getGRegionsStat}{GRangesList}(GR, win.size = 350,
   step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
-  "gmaean", "median", "density"), absolute = FALSE,
+  "gmean", "median", "density"), absolute = FALSE,
   select.strand = NULL, column = 1L, prob = FALSE, entropy = FALSE,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   type = c("any", "start", "end", "within", "equal"),
