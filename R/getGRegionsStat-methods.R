@@ -84,7 +84,7 @@
 #' @importFrom IRanges IRanges
 #' @importFrom data.table data.table
 #' @importFrom stats median
-#' @importFrom S4Vectors subjectHits queryHits DataFrame mcols 'mcols<-'
+#' @importFrom S4Vectors subjectHits queryHits DataFrame mcols mcols<-
 #' @importFrom BiocGenerics strand start end
 #' @export
 #' @author Robersy Sanchez
