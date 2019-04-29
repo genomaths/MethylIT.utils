@@ -80,10 +80,12 @@
 #'
 #' grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
 #' @importFrom GenomeInfoDb seqnames seqlengths
-#' @importFrom GenomicRanges GRanges GRangesList
+#' @importFrom GenomicRanges GRanges GRangesList findOverlaps
 #' @importFrom IRanges IRanges
 #' @importFrom data.table data.table
 #' @importFrom stats median
+#' @importFrom S4Vectors subjectHits queryHits DataFrame mcols
+#' @importFrom BiocGenerics strand start end
 #' @export
 #' @author Robersy Sanchez
 #'
