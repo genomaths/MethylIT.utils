@@ -87,6 +87,7 @@
 #' @importFrom S4Vectors subjectHits queryHits DataFrame mcols 
 #' @importFrom S4Vectors mcols<-
 #' @importFrom BiocGenerics strand start end
+#' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 #' @export
 #' @author Robersy Sanchez
 #'
