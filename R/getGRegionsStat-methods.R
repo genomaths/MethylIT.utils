@@ -318,7 +318,7 @@ getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
        bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
    } else {
       bpparam <- SnowParam(workers = num.cores, type = "SOCK")
-      BiocParallel::register(snowparam, default = TRUE)
+      BiocParallel::register(bpparam, default = TRUE)
    }
   
    GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
