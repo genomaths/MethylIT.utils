@@ -87,7 +87,7 @@
 #' @importFrom S4Vectors subjectHits queryHits DataFrame mcols 
 #' @importFrom S4Vectors mcols<-
 #' @importFrom BiocGenerics strand start end
-#' @importFrom BiocParallel MulticoreParam SnowParam bplapply
+#' @importFrom BiocParallel MulticoreParam SnowParam bplapply bpstart
 #' @export
 #' @author Robersy Sanchez
 #'
@@ -318,7 +318,7 @@ getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
        bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
    } else {
       bpparam <- SnowParam(workers = num.cores, type = "SOCK")
-      BiocParallel::register(bpparam, default = TRUE)
+      BiocParallel::register(bpstart(bpparam))
    }
   
    GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
