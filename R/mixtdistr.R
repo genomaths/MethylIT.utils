@@ -15,8 +15,8 @@
 #' @param arg A list of named vectors with the corresponding named distribution
 #'     parameters values. The names of the vector of parameters and the
 #'     parameter names must correspond to defined functions. For example, if
-#'     one of the involved distributions is the gamma density
-#'     (\code{\link[stats]{dgamma}}), then the corresponding vector of
+#'     one of the involved distributions is the gamma density (see 
+#'     \code{\link[stats]{GammaDist}}), then the corresponding vector of
 #'     parameters must be gamma = c(shape = 'some value', scale = 'some value').
 #'     See examples for more details.
 #' @param log,log.p	logical; if TRUE, probabilities p are given as log(p).
