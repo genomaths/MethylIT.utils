@@ -316,7 +316,10 @@ getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
        GR <- try(as(GR, "GRangesList"))
    if (Sys.info()['sysname'] == "Linux") {
        bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
-   } else bpparam <- SnowParam(workers = num.cores, type = "SOCK")
+   } else {
+      bpparam <- SnowParam(workers = num.cores, type = "SOCK")
+      BiocParallel::register(snowparam, default = TRUE)
+   }
   
    GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
                    stat, absolute, select.strand, column, prob, entropy,
