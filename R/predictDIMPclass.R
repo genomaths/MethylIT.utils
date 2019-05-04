@@ -72,7 +72,7 @@
 #'                         control.names = c("sample11", "sample12"),
 #'                         treatment.names = c("sample21", "sample22"))
 #' pred
-#' @importFrom biovizBase flatGrl
+#' @importFrom MethylIT unlist
 #' @export
 predictDIMPclass <- function(LR, model, conf.matrix = FALSE,
                              control.names = NULL,
@@ -87,9 +87,9 @@ predictDIMPclass <- function(LR, model, conf.matrix = FALSE,
     idx.ct = match(control.names, sn)
     idx.tt = match(treatment.names, sn)
     CT = GRangesList(LR[ idx.ct ])
-    CT = flatGrl(CT)
+    CT = unlist(CT)
     TT = GRangesList(LR[ idx.tt ])
-    TT = flatGrl(TT)
+    TT = unlist(TT)
     classSet = list(CT = CT, TT = TT)
   } else classSet = LR
 
