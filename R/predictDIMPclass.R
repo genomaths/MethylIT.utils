@@ -117,13 +117,13 @@ predictDIMPclass <- function(LR, model, conf.matrix = FALSE,
   if (!conf.matrix) {
     return(LR)
   } else {
-    TRUE.class <- factor(c(rep("CT", length(CT)), rep("TT", length(TT))), 
+    TRUE_class <- factor(c(rep("CT", length(CT)), rep("TT", length(TT))), 
                        levels = c("CT", "TT"))
-    PRED.class <- factor(c(as.character(LR$CT$class), 
+    PRED_class <- factor(c(as.character(LR$CT$class), 
                            as.character(LR$TT$class)),
                        levels = c("CT", "TT"))
     
-    conf.mat <- confusionMatrix(data=PRED.class, reference=TRUE.class,
+    conf.mat <- confusionMatrix(data=PRED_class, reference=TRUE_class,
                                positive="TT")
     
     return(conf.mat = conf.mat)}
