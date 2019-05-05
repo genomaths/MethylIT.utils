@@ -20,11 +20,16 @@
 #'     step.size are ignored and the statistics are estimated for 'grfeatures'.
 #' @param stat Statistic used to estimate the summarized value of the variable
 #'     of interest in each interval/window. Posible options are: "mean",
-#'     geometric mean ("gmean"), "median", "density", and "sum" (default). Here,
-#'     we define "density" as the sum of values from the variable of interest
-#'     in the given region devided by the length of the region.
+#'     geometric mean ("gmean"), "median", "density", "count" and "sum"
+#'     (default). Here, we define "density" as the sum of values from the
+#'     variable of interest in the given region devided by the length of the
+#'     region. The option 'count' compute the number/count of positions in the 
+#'     specified regions with values greater than zero in the selected 'column'. 
 #' @param absolute Optional. Logic (default: FALSE). Whether to use the absolute
-#'     values of the variable provided
+#'     values of the variable provided. For example, the difference of
+#'     methylation levels could take negative values (TV) and we would be
+#'     interested on the sum of abs(TV), which is sum of the total variation
+#'     distance.
 #' @param select.strand Optional. If provided,"+" or "-", then the summarized
 #'     statistic is computed only for the specified DNA chain.
 #' @param column Integer number denoting the column where the variable of
@@ -95,7 +100,7 @@
 #' @rdname getGRegionsStat-methods
 setGeneric("getGRegionsStat",
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                 stat=c("sum", "mean", "gmean", "median", "density"),
+                 stat=c("sum", "mean", "gmean", "median", "density", "count"),
                  absolute=FALSE, select.strand=NULL, column=1L,
                  prob=FALSE, entropy=FALSE, maxgap=-1L,
                  minoverlap=0L, scaling=1000L, logbase = 2,
@@ -121,6 +126,7 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
        statist <- function(x, stat, absolute) {
            if (absolute) x = abs(x)
            x <- switch(stat[1],
+                       count=sum(x > 0, na.rm=na.rm),
                        sum=sum(x, na.rm=na.rm),
                        mean=mean(x, na.rm=na.rm),
                        gmean=exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
@@ -304,7 +310,8 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
 
 # ====================== Function to operate on lists ======================= #
 getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                           stat=c("sum", "mean", "gmean", "median", "density"),
+                           stat=c("sum", "mean", "gmean", "median", "density",
+                                   "count"),
                            absolute=FALSE, select.strand=NULL, column=1L,
                            prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                            scaling=1000L, logbase = 2,
@@ -342,13 +349,14 @@ setClass("pDMP")
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="list"), 
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                    stat=c("sum", "mean", "gmean", "median", "density"),
-                    absolute=FALSE, select.strand=NULL, column=1L,
-                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                    scaling=1000L, logbase = 2,
-                    type=c("any", "start", "end", "within", "equal"),
-                    ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L,
-                    tasks = 0, ...) 
+                   stat=c("sum", "mean", "gmean", "median", "density", 
+                           "count"),
+                   absolute=FALSE, select.strand=NULL, column=1L,
+                   prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
+                   scaling=1000L, logbase = 2,
+                   type=c("any", "start", "end", "within", "equal"),
+                   ignore.strand=FALSE, na.rm=TRUE, num.cores = 1L,
+                   tasks = 0, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
                                maxgap, minoverlap, scaling, logbase, type,
@@ -364,7 +372,7 @@ setMethod("getGRegionsStat", signature(GR="list"),
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="InfDiv"), 
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmean", "median", "density"),
+                   stat=c("sum", "mean", "gmean", "median", "density", "count"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                    scaling=1000L, logbase = 2,
@@ -386,7 +394,7 @@ setMethod("getGRegionsStat", signature(GR="InfDiv"),
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="pDMP"), 
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmean", "median", "density"),
+                   stat=c("sum", "mean", "gmean", "median", "density", "count"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                    scaling=1000L, logbase = 2,
@@ -408,7 +416,7 @@ setMethod("getGRegionsStat", signature(GR="pDMP"),
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="GRangesList"), 
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmean", "median", "density"),
+                   stat=c("sum", "mean", "gmean", "median", "density", "count"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                    scaling=1000L, logbase = 2,

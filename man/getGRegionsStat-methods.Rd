@@ -18,11 +18,11 @@
 \usage{
 getGRegionsStat(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
-  "density"), absolute = FALSE, select.strand = NULL, column = 1L,
-  prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
-  scaling = 1000L, logbase = 2, type = c("any", "start", "end",
-  "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
-  num.cores = 1L, tasks = 0, ...)
+  "density", "count"), absolute = FALSE, select.strand = NULL,
+  column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
+  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
+  "start", "end", "within", "equal"), ignore.strand = FALSE,
+  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{GRanges}(GR, win.size, step.size, grfeatures,
   stat, absolute, select.strand, column, prob, entropy, maxgap, minoverlap,
@@ -30,31 +30,31 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
 
 \S4method{getGRegionsStat}{list}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
-  "density"), absolute = FALSE, select.strand = NULL, column = 1L,
-  prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
-  scaling = 1000L, logbase = 2, type = c("any", "start", "end",
-  "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
-  num.cores = 1L, tasks = 0, ...)
+  "density", "count"), absolute = FALSE, select.strand = NULL,
+  column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
+  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
+  "start", "end", "within", "equal"), ignore.strand = FALSE,
+  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{InfDiv}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
-  "density"), absolute = FALSE, select.strand = NULL, column = 1L,
-  prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
-  scaling = 1000L, logbase = 2, type = c("any", "start", "end",
-  "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
-  num.cores = 1L, tasks = 0, ...)
+  "density", "count"), absolute = FALSE, select.strand = NULL,
+  column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
+  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
+  "start", "end", "within", "equal"), ignore.strand = FALSE,
+  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{pDMP}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
-  "density"), absolute = FALSE, select.strand = NULL, column = 1L,
-  prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
-  scaling = 1000L, logbase = 2, type = c("any", "start", "end",
-  "within", "equal"), ignore.strand = FALSE, na.rm = TRUE,
-  num.cores = 1L, tasks = 0, ...)
+  "density", "count"), absolute = FALSE, select.strand = NULL,
+  column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
+  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
+  "start", "end", "within", "equal"), ignore.strand = FALSE,
+  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{GRangesList}(GR, win.size = 350,
   step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
-  "gmean", "median", "density"), absolute = FALSE,
+  "gmean", "median", "density", "count"), absolute = FALSE,
   select.strand = NULL, column = 1L, prob = FALSE, entropy = FALSE,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   type = c("any", "start", "end", "within", "equal"),
@@ -76,12 +76,17 @@ step.size are ignored and the statistics are estimated for 'grfeatures'.}
 
 \item{stat}{Statistic used to estimate the summarized value of the variable
 of interest in each interval/window. Posible options are: "mean",
-geometric mean ("gmean"), "median", "density", and "sum" (default). Here,
-we define "density" as the sum of values from the variable of interest
-in the given region devided by the length of the region.}
+geometric mean ("gmean"), "median", "density", "count" and "sum"
+(default). Here, we define "density" as the sum of values from the
+variable of interest in the given region devided by the length of the
+region. The option 'count' compute the number/count of positions in the 
+specified regions with values greater than zero in the selected 'column'.}
 
 \item{absolute}{Optional. Logic (default: FALSE). Whether to use the absolute
-values of the variable provided}
+values of the variable provided. For example, the difference of
+methylation levels could take negative values (TV) and we would be
+interested on the sum of abs(TV), which is sum of the total variation
+distance.}
 
 \item{select.strand}{Optional. If provided,"+" or "-", then the summarized
 statistic is computed only for the specified DNA chain.}
