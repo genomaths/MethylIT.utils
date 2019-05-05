@@ -5,7 +5,7 @@
 \title{Predict DIMP class}
 \usage{
 predictDIMPclass(LR, model, conf.matrix = FALSE, control.names = NULL,
-  treatment.names = NULL)
+  treatment.names = NULL, num.cores = 1, tasks = 0L)
 }
 \arguments{
 \item{LR}{A list of GRanges objects obtained through the through MethylIT
@@ -26,22 +26,28 @@ be include in thr variable LR (default, NULL).}
 
 \item{treatment.names}{Optional. Names/IDs of the treatment samples, which
 must be include in the variable LR (default, NULL).}
+
+\item{num.cores, tasks}{Paramaters for parallele computation using package
+\code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
+use, i.e. at most how many child processes will be run simultaneously
+(see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
+(only for Linux OS).}
 }
 \value{
 The same LR object with a column named "class" added to a GRanges
-  object from LR (default). Based on the model prediction each DIMP is
-  labeled as control "CT" or as treatment "TT". If "conf.matrix" is TRUE and
-  the arguments control.names and treatment.names are provided, then the
-  overall confusion matrix is returned
+    object from LR (default). Based on the model prediction each DIMP is
+    labeled as control "CT" or as treatment "TT". If "conf.matrix" is TRUE and
+    the arguments control.names and treatment.names are provided, then the
+    overall confusion matrix is returned
 }
 \description{
 This function classify each DIMP as a control or a treatment
-  DIMP
+    DIMP
 }
 \details{
 Predictions only makes sense if the query DIMPs belong to same
-  methylation context and derive from an experiment accomplished under the
-  same condition set for the DIMPs used to build the model.
+    methylation context and derive from an experiment accomplished under the
+    same condition set for the DIMPs used to build the model.
 }
 \examples{
 library(MethylIT)
