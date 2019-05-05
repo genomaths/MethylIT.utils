@@ -8,9 +8,9 @@
 #'   same condition set for the DIMPs used to build the model.
 #' @param LR A list of GRanges objects obtained through the through MethylIT
 #'   downstream analysis. Basically, this object is a list of GRanges containing
-#'   only differentially informative position (DIMPs). The metacolumn of each
+#'   only differentially methylated position (DMPs). The metacolumn of each
 #'   GRanges must contain the columna: Hellinger divergence "hdiv", total
-#'   variation "TV", the probability of potential DIMP "wprob", which naturally
+#'   variation "TV", the probability of potential DMP "wprob", which naturally
 #'   are added in the downstream analysis of MethylIT.
 #' @param model A classifier model obtained with the function
 #' 'evaluateDIMPclass'.
@@ -25,70 +25,57 @@
 #'   labeled as control "CT" or as treatment "TT". If "conf.matrix" is TRUE and
 #'   the arguments control.names and treatment.names are provided, then the
 #'   overall confusion matrix is returned
-#' @examples
-#' # Random generation of Hellinger divergence values from a Weibul
-#' # distribution model and estimating their tail probabilities.
-#' num.points <- 5000
-#' set.seed(123)
-#' hdiv11 = rweibull(1:num.points, shape = 0.45, scale = 1.2)
-#' wprob11 = pweibull(hdiv11, shape = 0.45, scale = 1.2, lower.tail = FALSE)
-#' hdiv12 = rweibull(1:num.points, shape = 0.45, scale = 1.2)
-#' wprob12 = pweibull(hdiv12, shape = 0.45, scale = 1.2, lower.tail = FALSE)
-#' hdiv21 = rweibull(1:num.points, shape = 0.6, scale = 1.02)
-#' wprob21 = pweibull(hdiv21, shape = 0.6, scale = 1.02, lower.tail = FALSE)
-#' hdiv22 = rweibull(1:num.points, shape = 0.61, scale = 1.02)
-#' wprob22 = pweibull(hdiv22, shape = 0.61, scale = 1.02, lower.tail = FALSE)
-#' #' Potential signal
-#' PS <- GRangesList(
-#'       sample11 = makeGRangesFromDataFrame(
-#'           data.frame(chr = "chr1", start = 1:num.points, end = 1:num.points,
-#'                      strand = '*', hdiv = hdiv11, wprob = wprob11),
-#'           keep.extra.columns = TRUE),
-#'           sample12 = makeGRangesFromDataFrame(
-#'           data.frame(chr = "chr1", start = 1:num.points, end = 1:num.points,
-#'                      strand = '*', hdiv = hdiv12, wprob = wprob12),
-#'           keep.extra.columns = TRUE),
-#'       sample21 = makeGRangesFromDataFrame(
-#'           data.frame(chr = "chr1", start = 1:num.points, end = 1:num.points,
-#'                      strand = '*', hdiv = hdiv21, wprob = wprob21),
-#'           keep.extra.columns = TRUE),
-#'           sample22 = makeGRangesFromDataFrame(
-#'           data.frame(chr = "chr1", start = 1:num.points, end = 1:num.points,
-#'                      strand = '*', hdiv = hdiv22, wprob = wprob22),
-#'           keep.extra.columns = TRUE))
-#' cutpoint = 5.76
-#' DIMPs = selectDIMP(PS, div.col = 1, cutpoint = cutpoint)
-#'
-#' #' A classification model can be fitted as follow:
-#' conf.mat <- evaluateDIMPclass(DIMPs,
-#'                               column = c(hdiv = TRUE, TV = FALSE,
-#'                                          wprob = FALSE, pos = FALSE),
-#'                               interaction = "wprob:hdiv",
-#'                               control.names = c("sample11", "sample12"),
-#'                               treatment.names = c("sample21", "sample22"))
-#' # Now predictions of DIMP for control and treament can be obtained
-#' pred = predictDIMPclass(LR = DIMPs, model = conf.mat$model,
-#'                         conf.matrix = TRUE,
-#'                         control.names = c("sample11", "sample12"),
-#'                         treatment.names = c("sample21", "sample22"))
-#' pred
 #' @importFrom MethylIT unlist
+#' @importFrom caret confusionMatrix
+#' @examples 
+#' library(MethylIT)
+#' 
+#' data(cutpoint, PS, package = "MethylIT")
+#' 
+#' ## DIMPs are selected using the cupoints
+#' DMPs <- selectDIMP(PS, div.col = 9L, cutpoint = cutpoint$cutpoint,
+#'                    tv.cut = 0.92)
+#' 
+#' ## Classification of DIMPs into two clases: DIMPS from control and DIMPs from
+#' ## treatment samples and evaluation of the classifier performance (for more
+#' ## details see ?evaluateDIMPclass).
+#' perf <- evaluateDIMPclass(LR = DMPs,
+#'                           column = c(hdiv = TRUE, TV = TRUE,
+#'                                      wprob = TRUE, pos = TRUE),
+#'                           classifier = "lda", n.pc = 4L,
+#'                           control.names =  c("C1", "C2", "C3"),
+#'                           treatment.names = c("T1", "T2", "T3"),
+#'                           center = TRUE, scale = TRUE,
+#'                           prop = 0.6)
+#' 
+#' #' Now predictions of DIMP for control and treament can be obtained
+#' pred = predictDIMPclass(LR = DMPs, model = perf$model,
+#'                         conf.matrix = TRUE,
+#'                         control.names = c("C1", "C2", "C3"),
+#'                         treatment.names = c("T1", "T2", "T3"))
 #' @export
 predictDIMPclass <- function(LR, model, conf.matrix = FALSE,
                              control.names = NULL,
                              treatment.names = NULL) {
   if (conf.matrix && (is.null(control.names) || is.null(treatment.names))) {
-    stop(paste0("* if conf.mat = TRUE, then the character vectors for ",
-                "control.names and treatment.names must be provided"))
+       stop(paste0("* if conf.mat = TRUE, then the character vectors for ",
+                   "control.names and treatment.names must be provided"))
   }
-
+  
+  if (inherits(LR, "GRangesList")) LR <- as(LR, "list")
+  if (class(LR)[1] == "list") class(LR) <- "pDMP"
+  r1 <- try(validateClass(LR), silent = TRUE)
+  if (inherits(r1, "try-error"))
+       stop("*** LR is not an object from 'pDMP' class or is not", 
+            " coercible to 'pDMP' class" )
+  
   if (conf.matrix && !is.null(control.names) && !is.null(treatment.names)) {
     sn = names(LR)
     idx.ct = match(control.names, sn)
     idx.tt = match(treatment.names, sn)
-    CT = GRangesList(LR[ idx.ct ])
+    CT = LR[ idx.ct ]
     CT = unlist(CT)
-    TT = GRangesList(LR[ idx.tt ])
+    TT = LR[ idx.tt ]
     TT = unlist(TT)
     classSet = list(CT = CT, TT = TT)
   } else classSet = LR
@@ -130,11 +117,15 @@ predictDIMPclass <- function(LR, model, conf.matrix = FALSE,
   if (!conf.matrix) {
     return(LR)
   } else {
-    conf.mat = data.frame(TRUE.class = c(rep("CT", length(CT)),
-                                         rep("TT", length(TT))),
-                          PRED.class = c(LR$CT$class, LR$TT$class))
-    conf.mat = table(conf.mat)
-    return(list(conf.mat = conf.mat,
-                accuracy = sum(diag(conf.mat)/sum(conf.mat))))}
+    TRUE.class <- factor(c(rep("CT", length(CT)), rep("TT", length(TT))), 
+                       levels = c("CT", "TT"))
+    PRED.class <- factor(c(as.character(LR$CT$class), 
+                           as.character(LR$TT$class)),
+                       levels = c("CT", "TT"))
+    
+    conf.mat <- confusionMatrix(data=PRED.class, reference=TRUE.class,
+                               positive="TT")
+    
+    return(conf.mat = conf.mat)}
 }
 
