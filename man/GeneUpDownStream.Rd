@@ -4,8 +4,8 @@
 \alias{GeneUpDownStream}
 \title{Get Genes plus Up and Down Stream Regions}
 \usage{
-GeneUpDownStream(GR, upstream = 0, downstream = 0, onlyUP = FALSE,
-  onlyDown = FALSE)
+GeneUpDownStream(GR, upstream = 0, downstream = 0, extend = NULL,
+  onlyUP = FALSE, onlyDown = FALSE)
 }
 \arguments{
 \item{GR}{A \code{\link[GenomicRanges]{GRanges-class}} object containing the
@@ -16,6 +16,9 @@ of the GR.}
 
 \item{downstream}{Integer (Default: 0). The amount of DNA bases (bps)
 downstream of the GR.}
+
+\item{extend}{Integer (Default: NULL). If upstream == downstream, then 
+simply you may use extend.}
 
 \item{onlyUP}{Logic (Default: FALSE). If TRUE returns the region upstream the
 GR.}

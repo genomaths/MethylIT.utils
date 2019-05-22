@@ -124,8 +124,8 @@ predictDIMPclass <- function(LR, model, conf.matrix = FALSE,
        if (Sys.info()['sysname'] == "Linux") {
            bpparam <- MulticoreParam(workers = num.cores, tasks=tasks)
        } else bpparam <- SnowParam(workers = num.cores, type = "SOCK")
-       LR = bplapply(classSet, classifier, BPPARAM = bpparam)
-   } else LR = lapply(classSet, classifier)
+       LR <- bplapply(classSet, classifier, BPPARAM = bpparam)
+   } else LR <- lapply(classSet, classifier)
    
    if (!conf.matrix) {
        return(LR)

@@ -11,6 +11,8 @@
 #'     of the GR.
 #' @param downstream Integer (Default: 0). The amount of DNA bases (bps)
 #'     downstream of the GR.
+#' @param extend Integer (Default: NULL). If upstream == downstream, then 
+#'     simply you may use extend. 
 #' @param onlyUP Logic (Default: FALSE). If TRUE returns the region upstream the
 #'     GR.
 #' @param onlyDown Logic (Default: FALSE). If TRUE returns the region downstream
@@ -31,9 +33,15 @@
 #' @importFrom S4Vectors mcols
 #' @export
 
-GeneUpDownStream <- function(GR, upstream=0, downstream=0, onlyUP=FALSE,
-                               onlyDown=FALSE)
-{
+GeneUpDownStream <- function(GR, upstream=0, downstream=0, extend = NULL,
+                               onlyUP=FALSE, onlyDown=FALSE) {
+   if (!is.null(extend)) {
+       if (is.numeric(extend)) extend <- as.integer(extend)
+       else 
+           stop("*** 'extend' must be an integer or coercible to an integer")
+       upstream = extend
+       downstream = extend
+   }
    if (upstream > 0 && !onlyUP && !onlyDown) {
        strands <- as.character( strand( GR ) )
        starts <- start( GR )
