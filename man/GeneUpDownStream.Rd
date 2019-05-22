@@ -5,7 +5,7 @@
 \title{Get Genes plus Up and Down Stream Regions}
 \usage{
 GeneUpDownStream(GR, upstream = 0, downstream = 0, extend = NULL,
-  onlyUP = FALSE, onlyDown = FALSE)
+  fix = NULL, onlyUP = FALSE, onlyDown = FALSE)
 }
 \arguments{
 \item{GR}{A \code{\link[GenomicRanges]{GRanges-class}} object containing the
@@ -20,6 +20,9 @@ downstream of the GR.}
 \item{extend}{Integer (Default: NULL). If upstream == downstream, then 
 simply you may use extend.}
 
+\item{fix}{A string with one of the three possible values: "start", "end" or
+"center" to denoteg what to use as an anchor for each element in GR.}
+
 \item{onlyUP}{Logic (Default: FALSE). If TRUE returns the region upstream the
 GR.}
 
@@ -33,7 +36,10 @@ Given a genes region or genomic region (GR), this function
 }
 \details{
 Users can select whether to request only upstream, only downstream,
-   or both, upstream and downstream.
+     or both, upstream and downstream. Please notice that for a gene on the
+     negative strand, 'the start of the gene' corresponds to the 'end' of the
+     gene in the GRanges object and the 'end of the gene' correspond to the
+     'start' of the gene in the GRanges object.
 }
 \examples{
 starts = c(65419, 450703, 923928, 944204)

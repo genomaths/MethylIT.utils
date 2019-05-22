@@ -2,9 +2,12 @@
 #' @title Get Genes plus Up and Down Stream Regions
 #' @description Given a genes region or genomic region (GR), this function
 #'     yields the GR plus the especified amount of DNA bases upstream and
-#'     downstream the GR.
+#'     downstream the GR. 
 #' @details Users can select whether to request only upstream, only downstream,
-#'    or both, upstream and downstream.
+#'      or both, upstream and downstream. Please notice that for a gene on the
+#'      negative strand, 'the start of the gene' corresponds to the 'end' of the
+#'      gene in the GRanges object and the 'end of the gene' correspond to the
+#'      'start' of the gene in the GRanges object.
 #' @param GR A \code{\link[GenomicRanges]{GRanges-class}} object containing the
 #'     ranges of the genes or genomic regions to be extended upstream/downstream
 #' @param upstream Integer (Default: 0). The amount of DNA bases (bps) upstream
@@ -13,6 +16,8 @@
 #'     downstream of the GR.
 #' @param extend Integer (Default: NULL). If upstream == downstream, then 
 #'     simply you may use extend. 
+#' @param fix A string with one of the three possible values: "start", "end" or
+#'     "center" to denoteg what to use as an anchor for each element in GR.
 #' @param onlyUP Logic (Default: FALSE). If TRUE returns the region upstream the
 #'     GR.
 #' @param onlyDown Logic (Default: FALSE). If TRUE returns the region downstream
@@ -34,7 +39,7 @@
 #' @export
 
 GeneUpDownStream <- function(GR, upstream=0, downstream=0, extend = NULL,
-                               onlyUP=FALSE, onlyDown=FALSE) {
+                               fix = NULL, onlyUP=FALSE, onlyDown=FALSE) {
    if (!is.null(extend)) {
        if (is.numeric(extend)) extend <- as.integer(extend)
        else 
@@ -42,12 +47,29 @@ GeneUpDownStream <- function(GR, upstream=0, downstream=0, extend = NULL,
        upstream = extend
        downstream = extend
    }
+   
+   strands <- as.character( strand( GR ) )
+   if (!is.null(fix)) {
+       if (fix == "start") {
+          starts <- start( GR )
+          ends <- starts
+       }
+       if (fix == "end") {
+          ends <- end( GR )
+          starts <- ends
+       }
+       if (fix == "center") {
+          starts <- start( GR )
+          ends <- end( GR )
+          starts <- round((ends - starts)/2)
+          ends <- starts
+       } 
+   }
+   
+   chrs <- seqnames( GR )
+   
    if (upstream > 0 && !onlyUP && !onlyDown) {
-       strands <- as.character( strand( GR ) )
-       starts <- start( GR )
-       ends <- end( GR )
-       chrs <- seqnames( GR )
-
+      
        ind <- which( strands == "+" )
        starts[ ind ] <- starts[ ind ] - upstream
 
@@ -62,10 +84,6 @@ GeneUpDownStream <- function(GR, upstream=0, downstream=0, extend = NULL,
    }
 
    if (downstream > 0 && !onlyUP && !onlyDown) {
-       strands <- as.character( strand(GR) )
-       starts <- start(GR)
-       ends <- end(GR)
-       chrs <- seqnames(GR)
 
        ind <- which( strands == "+" )
        ends[ ind ] <- ends[ ind ] + downstream
@@ -82,10 +100,7 @@ GeneUpDownStream <- function(GR, upstream=0, downstream=0, extend = NULL,
 
    if (onlyUP) {
        if (onlyDown) stop("* If onlyUP is TRUE, then onlyDown must be FALSE")
-       strands <- as.character( strand( GR ) )
-       starts <- start( GR )
-       ends <- end( GR )
-       chrs <- seqnames( GR )
+
        ind <- which( strands == "+" )
 
        ends[ ind ] <- starts[ ind ] - 1
@@ -104,10 +119,6 @@ GeneUpDownStream <- function(GR, upstream=0, downstream=0, extend = NULL,
 
    if (onlyDown) {
        if (onlyUP) stop("* If onlyDown is TRUE, then onlyUP must be FALSE")
-       strands <- as.character( strand(GR) )
-       starts <- start(GR)
-       ends <- end(GR)
-       chrs <- seqnames(GR)
 
        ind <- which( strands == "+" )
        starts[ ind ] <- ends[ ind ] + 1
