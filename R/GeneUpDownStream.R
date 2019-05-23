@@ -64,9 +64,12 @@ GeneUpDownStream <- function(GR, upstream=0, downstream=0, extend = NULL,
           starts <- round((ends - starts)/2)
           ends <- starts
        } 
+   } else {
+       starts <- start( GR )
+       ends <- end( GR )
    }
    
-   chrs <- seqnames( GR )
+   chrs <- as.character(seqnames( GR ))
    
    if (upstream > 0 && !onlyUP && !onlyDown) {
       
