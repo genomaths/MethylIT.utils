@@ -22,11 +22,11 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
   minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
   "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
+  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{GRanges}(GR, win.size, step.size, grfeatures,
   stat, absolute, select.strand, column, prob, entropy, maxgap, minoverlap,
-  scaling, logbase, type, ignore.strand, na.rm)
+  scaling, logbase, type, ignore.strand, na.rm, naming)
 
 \S4method{getGRegionsStat}{list}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
@@ -34,7 +34,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
   minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
   "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
+  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{InfDiv}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
@@ -42,7 +42,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
   minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
   "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
+  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{pDMP}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
@@ -50,7 +50,7 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
   minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
   "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, num.cores = 1L, tasks = 0, ...)
+  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
 
 \S4method{getGRegionsStat}{GRangesList}(GR, win.size = 350,
   step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
@@ -58,11 +58,12 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   select.strand = NULL, column = 1L, prob = FALSE, entropy = FALSE,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   type = c("any", "start", "end", "within", "equal"),
-  ignore.strand = FALSE, na.rm = TRUE, num.cores = 1L, tasks = 0,
-  ...)
+  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
+  num.cores = 1L, tasks = 0, ...)
 }
 \arguments{
-\item{GR}{A Grange object with the variable of interest in its metacolumn.}
+\item{GR}{A GRange object or a list of GRanges object with the variable of 
+interest in the GRanges metacolumn.}
 
 \item{win.size}{An integer for the size of the windows/regions size of the
 intervals of genomics regions.}
@@ -111,12 +112,16 @@ description of these arguments.}
 stat = "density". For example, if scaling = 1000, then density * scaling
 denotes the sum of values in 1000 bp.}
 
-\item{logbase}{A positive number: the base with respect to which logarithms}
+\item{logbase}{A positive number: the base with respect to which logarithms
+are computed when parameter 'entropy = TRUE' (default: logbase = 2).}
 
 \item{ignore.strand}{When set to TRUE, the strand information is ignored in
 the overlap calculations.}
 
 \item{na.rm}{Logical value. If TRUE, the NA values will be removed}
+
+\item{naming}{Logical value. If TRUE, the rows GRanges object will be 
+given the names(GR). Default is FALSE.}
 
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
@@ -142,6 +147,7 @@ This function split a Grange object into intervals genomic regions
     non-overlapping windows are obtained.
 }
 \examples{
+library(GenomicRanges)
 gr <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
             c(5, 5, 5, 5)),
             ranges = IRanges(start = 1:20, end = 1:20),
