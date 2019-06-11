@@ -314,7 +314,7 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
              widths=width(GR)
              GR$statistic <- (scaling * GR$statistic/widths)
            }
-       }
+       } else cluster.id <- NULL
        if (naming) names(GR) <- cluster.id
        return(GR)
    }
