@@ -125,11 +125,15 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
        if (!is.null(grfeatures) && !inherits(grfeatures,"GRanges")) {
            stop("* 'grfeatures', if provided, must be a GRanges object")
        }
+       stat <- match.arg(stat, c("sum", "mean", "gmean", "median",
+                                 "density", "count"))
+       
+       type <- match.arg(type, c("any", "start", "end", "within", "equal"))
 
        ## === Some functions to use ===
-       statist <- function(x, stat, absolute) {
+       statist <- function(x, stat = c(), absolute) {
            if (absolute) x = abs(x)
-           x <- switch(stat[1],
+           x <- switch(stat,
                        count=sum(x > 0, na.rm=na.rm),
                        sum=sum(x, na.rm=na.rm),
                        mean=mean(x, na.rm=na.rm),
