@@ -20,46 +20,54 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density", "count"), absolute = FALSE, select.strand = NULL,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
-  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
-  "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
+  minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
+  type = c("any", "start", "end", "within", "equal"),
+  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
+  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
 
-\S4method{getGRegionsStat}{GRanges}(GR, win.size, step.size, grfeatures,
-  stat, absolute, select.strand, column, prob, entropy, maxgap, minoverlap,
-  scaling, logbase, type, ignore.strand, na.rm, naming)
+\S4method{getGRegionsStat}{GRanges}(GR, win.size = 350,
+  step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
+  "gmean", "median", "density", "count"), absolute = FALSE,
+  select.strand = NULL, column = 1L, prob = FALSE, entropy = FALSE,
+  maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
+  missings = 0, type = c("any", "start", "end", "within", "equal"),
+  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE)
 
 \S4method{getGRegionsStat}{list}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density", "count"), absolute = FALSE, select.strand = NULL,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
-  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
-  "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
+  minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
+  type = c("any", "start", "end", "within", "equal"),
+  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
+  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
 
 \S4method{getGRegionsStat}{InfDiv}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density", "count"), absolute = FALSE, select.strand = NULL,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
-  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
-  "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
+  minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
+  type = c("any", "start", "end", "within", "equal"),
+  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
+  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
 
 \S4method{getGRegionsStat}{pDMP}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density", "count"), absolute = FALSE, select.strand = NULL,
   column = 1L, prob = FALSE, entropy = FALSE, maxgap = -1L,
-  minoverlap = 0L, scaling = 1000L, logbase = 2, type = c("any",
-  "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, naming = FALSE, num.cores = 1L, tasks = 0, ...)
+  minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
+  type = c("any", "start", "end", "within", "equal"),
+  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
+  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
 
 \S4method{getGRegionsStat}{GRangesList}(GR, win.size = 350,
   step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
   "gmean", "median", "density", "count"), absolute = FALSE,
   select.strand = NULL, column = 1L, prob = FALSE, entropy = FALSE,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
-  type = c("any", "start", "end", "within", "equal"),
+  missings = 0, type = c("any", "start", "end", "within", "equal"),
   ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
-  num.cores = 1L, tasks = 0, ...)
+  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
 }
 \arguments{
 \item{GR}{A GRange object or a list of GRanges object with the variable of 
@@ -115,6 +123,9 @@ denotes the sum of values in 1000 bp.}
 \item{logbase}{A positive number: the base with respect to which logarithms
 are computed when parameter 'entropy = TRUE' (default: logbase = 2).}
 
+\item{missings}{Whether to write '0' or 'NA' on regions where there is not
+data to compute the statistic.}
+
 \item{ignore.strand}{When set to TRUE, the strand information is ignored in
 the overlap calculations.}
 
@@ -128,15 +139,19 @@ given the names(GR). Default is FALSE.}
 use, i.e. at most how many child processes will be run simultaneously
 (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
 (only for Linux OS).}
+
+\item{verbose}{Logical. Default is TRUE. If TRUE, then the progress of the
+computational tasks is given.}
 }
 \value{
-A GRanges object with the new genomic regions and their corresponding
-    summarized statistic.
+An object of the same class of \emph{GR} with the new genomic regions
+    and their corresponding summarized statistic.
 }
 \description{
-A function to estimate the centrality measures of a specified
-    variable given in GRanges object (a column from the metacolums of the
-    GRanges object) after split the GRanges object into intervals.
+A function to estimate summarized measures of a specified
+    variable given in a GRanges object (a column from the metacolums of the
+    GRanges object) after split the GRanges object into intervals. A faster
+    alternative would be \code{\link{getGRegionsStat2}}.
 }
 \details{
 This function split a Grange object into intervals genomic regions
@@ -172,6 +187,9 @@ gr2 <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
                 GC = runif(20))
 
 grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
+}
+\seealso{
+\code{\link{getGRegionsStat2}}.
 }
 \author{
 Robersy Sanchez

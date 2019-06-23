@@ -1,9 +1,10 @@
 #' @name getGRegionsStat-methods
 #' @rdname getGRegionsStat-methods
 #' @title Statistic of Genomic Regions
-#' @description A function to estimate the centrality measures of a specified
-#'     variable given in GRanges object (a column from the metacolums of the
-#'     GRanges object) after split the GRanges object into intervals.
+#' @description A function to estimate summarized measures of a specified
+#'     variable given in a GRanges object (a column from the metacolums of the
+#'     GRanges object) after split the GRanges object into intervals. A faster
+#'     alternative would be \code{\link{getGRegionsStat2}}.
 #' @details This function split a Grange object into intervals genomic regions
 #'     (GR) of fixed size (as given in function "tileMethylCounts2" R package
 #'     methylKit, with small changes). A summarized statistic (mean, median,
@@ -52,6 +53,8 @@
 #'     denotes the sum of values in 1000 bp.
 #' @param logbase A positive number: the base with respect to which logarithms
 #'     are computed when parameter 'entropy = TRUE' (default: logbase = 2).
+#' @param missings Whether to write '0' or 'NA' on regions where there is not
+#'     data to compute the statistic.
 #' @param naming Logical value. If TRUE, the rows GRanges object will be 
 #'     given the names(GR). Default is FALSE.
 #' @param na.rm Logical value. If TRUE, the NA values will be removed
@@ -60,8 +63,10 @@
 #'     use, i.e. at most how many child processes will be run simultaneously
 #'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
 #'     (only for Linux OS).
-#' @return A GRanges object with the new genomic regions and their corresponding
-#'     summarized statistic.
+#' @param verbose Logical. Default is TRUE. If TRUE, then the progress of the
+#'     computational tasks is given.
+#' @return An object of the same class of \emph{GR} with the new genomic regions
+#'     and their corresponding summarized statistic.
 #' @examples
 #' library(GenomicRanges)
 #' gr <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
@@ -97,6 +102,7 @@
 #' @importFrom S4Vectors mcols<-
 #' @importFrom BiocGenerics strand start end
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply bpstart
+#' @seealso \code{\link{getGRegionsStat2}}.
 #' @export
 #' @author Robersy Sanchez
 #'
@@ -104,21 +110,25 @@
 #' @rdname getGRegionsStat-methods
 setGeneric("getGRegionsStat",
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                 stat=c("sum", "mean", "gmean", "median", "density", "count"),
-                 absolute=FALSE, select.strand=NULL, column=1L,
-                 prob=FALSE, entropy=FALSE, maxgap=-1L,
-                 minoverlap=0L, scaling=1000L, logbase = 2,
-                 type=c("any", "start", "end", "within", "equal"),
-                 ignore.strand=FALSE, na.rm=TRUE, naming = FALSE,
-                 num.cores = 1L, tasks = 0, ...)
+                 stat = c("sum", "mean", "gmean", "median", "density", "count"),
+                 absolute = FALSE, select.strand = NULL, column = 1L,
+                 prob = FALSE, entropy = FALSE, maxgap =-1L, minoverlap = 0L, 
+                 scaling = 1000L, logbase = 2, missings = 0,
+                 type = c("any", "start", "end", "within", "equal"),
+                 ignore.strand = FALSE, na.rm=TRUE, naming = FALSE,
+                 num.cores = 1L, tasks = 0, verbose = TRUE, ...)
              standardGeneric("getGRegionsStat"))
 
 #' @aliases getGRegionsStat
 #' @rdname getGRegionsStat-methods
-setMethod("getGRegionsStat", signature(GR="GRanges"),
-   function(GR, win.size, step.size, grfeatures, stat, absolute,
-       select.strand, column, prob, entropy, maxgap, minoverlap,
-       scaling, logbase, type, ignore.strand, na.rm, naming) {
+setMethod("getGRegionsStat", signature(GR = "GRanges"),
+   function(GR, win.size=350, step.size=350, grfeatures=NULL,
+            stat = c("sum", "mean", "gmean", "median", "density", "count"),
+            absolute = FALSE, select.strand = NULL, column = 1L,
+            prob = FALSE, entropy = FALSE, maxgap =-1L, minoverlap = 0L, 
+            scaling = 1000L, logbase = 2, missings = 0,
+            type = c("any", "start", "end", "within", "equal"),
+            ignore.strand = FALSE, na.rm=TRUE, naming = FALSE) {
        ## These NULL quiet: no visible binding for global variable 'x2'
        x1 <- x2 <- ent <- statistic <- NULL
        if (class( GR ) != "GRanges") stop( "object must be a GRanges object!")
@@ -128,18 +138,20 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
        stat <- match.arg(stat, c("sum", "mean", "gmean", "median",
                                  "density", "count"))
        
+       if (!is.element(missings, c(0, NA))) missings <- NA
+       
        type <- match.arg(type, c("any", "start", "end", "within", "equal"))
 
        ## === Some functions to use ===
        statist <- function(x, stat = c(), absolute) {
            if (absolute) x = abs(x)
            x <- switch(stat,
-                       count=sum(x > 0, na.rm=na.rm),
-                       sum=sum(x, na.rm=na.rm),
-                       mean=mean(x, na.rm=na.rm),
-                       gmean=exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
-                       median=median(x, na.rm=na.rm),
-                       density=sum(x, na.rm=na.rm))
+                       count = sum(x > 0, na.rm=na.rm),
+                       sum = sum(x, na.rm = na.rm),
+                       mean = mean(x, na.rm = na.rm),
+                       gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
+                       median = median(x, na.rm = na.rm),
+                       density = sum(x, na.rm = na.rm))
        }
 
        ## =============================== ##
@@ -181,39 +193,48 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
                                    ignore.strand=ignore.strand,
                                    type=type)
            if (length(Hits) > 0) {
-                   all.wins <- all.wins[subjectHits(Hits)]
-                   mcols(all.wins) <- mcols(GR[queryHits(Hits)])
-                   chr <- seqnames(all.wins)
+               mcols(all.wins) <- missings 
+               mcols(all.wins[subjectHits(Hits)]) <- mcols(GR[queryHits(Hits)])
+               chr <- seqnames(all.wins)
 
-                   ## Variable to mark the limits of each GR
-                   text <- paste(chr, start(all.wins), end(all.wins), sep = "_")
-                   cluster.id <- data.frame(cluster.id=text)
-                   GR <- all.wins; rm(all.wins, text); gc()
-           } else GR <- GRanges()
-
+               ## Variable to mark the limits of each GR
+               text <- paste(chr, start(all.wins), end(all.wins), sep = "_")
+               cluster.id <- data.frame(cluster.id=text)
+               GR <- all.wins; rm(all.wins, text); gc()
+               colnames(mcols(GR)) <- "statistic"
+           } else {
+               GR <- all.wins
+               mcols(GR) <- missings
+               colnames(mcols(GR)) <- "statistic"
+           }
        } else {
            ## sites of interest inside of the windows
            Hits <- findOverlaps(GR, grfeatures, maxgap=maxgap,
                            minoverlap=minoverlap, ignore.strand=ignore.strand,
                            type=type)
-           if (length(Hits) > 0){
-                   grfeatures <- grfeatures[subjectHits(Hits)]
-                   mcols(grfeatures) <- mcols(GR[ queryHits(Hits)])
-                   chr <- seqnames(grfeatures)
-                   if (class(names(grfeatures)) == "character") {
-                       cluster.id <- data.frame(cluster.id=names(grfeatures))
-                       names(grfeatures) <- NULL
-                   } else {
-                       text=paste(chr, start(grfeatures), end(grfeatures),
+           if (length(Hits) > 0) {
+               mcols(grfeatures) <- missings
+               mcols(grfeatures[subjectHits(Hits)]) <- mcols(GR[queryHits(Hits)])
+               chr <- seqnames(grfeatures)
+               if (class(names(grfeatures)) == "character") {
+                   cluster.id <- data.frame(cluster.id=names(grfeatures))
+                   names(grfeatures) <- NULL
+               } else {
+                   text=paste(chr, start(grfeatures), end(grfeatures),
                                strand(grfeatures), sep="_")
-                       cluster.id <- data.frame(cluster.id=text)
-                       rm(text)
-                   }
-                   GR <- grfeatures; rm(grfeatures); gc()
-           } else GR <- GRanges()
+                   cluster.id <- data.frame(cluster.id=text)
+                   rm(text)
+               }
+               GR <- grfeatures; rm(grfeatures); gc()
+               colnames(mcols(GR)) <- "statistic"
+           } else {
+               GR <- grfeatures
+               mcols(GR) <- missings
+               colnames(mcols(GR)) <- "statistic"
+           }
        }
 
-       if (length(GR) > 0) {
+       if (sum(GR$statistic, na.rm = TRUE) > 0) {
            mcols(GR) <- DataFrame(cluster.id, mcols(GR))
            GR <- data.table(as.data.frame(GR))
            if (length(column) < 2) {
@@ -318,6 +339,10 @@ setMethod("getGRegionsStat", signature(GR="GRanges"),
              widths=width(GR)
              GR$statistic <- (scaling * GR$statistic/widths)
            }
+           if (!is.na(missings)) {
+              idx <- is.na(GR$statistic)
+              if (any(idx)) GR$statistic[idx] <- 0
+           }
        } else cluster.id <- NULL
        if (naming) names(GR) <- cluster.id
        return(GR)
@@ -330,23 +355,26 @@ getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                                    "count"),
                            absolute=FALSE, select.strand=NULL, column=1L,
                            prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                           scaling=1000L, logbase = 2,
-                           type=c("any", "start", "end", "within", "equal"),
+                           scaling = 1000L, logbase = 2, missings = 0,
+                           type = c("any", "start", "end", "within", "equal"),
                            ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
-                           num.cores = 1L, tasks = 0, ...) {
+                           num.cores = 1L, tasks = 0, verbose = TRUE, ...) {
 
+   if (verbose) progressbar = TRUE else progressbar = FALSE
    if (inherits(GR,"list") && !(inherits(GR, "InfDiv") || inherits(GR, "pDMP")))
        GR <- try(as(GR, "GRangesList"))
    if (Sys.info()['sysname'] == "Linux") {
-       bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
+       bpparam <- MulticoreParam(workers=num.cores, tasks=tasks, 
+                               progressbar = progressbar)
    } else {
-      bpparam <- SnowParam(workers = num.cores, type = "SOCK")
+      bpparam <- SnowParam(workers = num.cores, type = "SOCK",
+                           progressbar = progressbar)
       BiocParallel::register(bpstart(bpparam))
    }
   
    GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
                    stat, absolute, select.strand, column, prob, entropy,
-                   maxgap, minoverlap, scaling, logbase,
+                   maxgap, minoverlap, scaling, logbase, missings,
                    type, ignore.strand, na.rm, naming, BPPARAM=bpparam)
    return(GR)
 }
@@ -363,21 +391,21 @@ setClass("pDMP")
 #' @importFrom IRanges IRanges
 #' @importFrom data.table data.table
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
-setMethod("getGRegionsStat", signature(GR="list"), 
-           function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmean", "median", "density", 
+setMethod("getGRegionsStat", signature(GR = "list"), 
+           function(GR, win.size = 350, step.size = 350, grfeatures = NULL,
+                   stat = c("sum", "mean", "gmean", "median", "density", 
                            "count"),
-                   absolute=FALSE, select.strand=NULL, column=1L,
-                   prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                   scaling=1000L, logbase = 2,
+                   absolute = FALSE, select.strand = NULL, column = 1L,
+                   prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
+                   scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
                    ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
-                   num.cores = 1L, tasks = 0, ...) 
+                   num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
-                               maxgap, minoverlap, scaling, logbase, type,
-                               ignore.strand, na.rm, naming, 
-                               num.cores, tasks, ...))
+                               maxgap, minoverlap, scaling, logbase, missings, 
+                               type, ignore.strand, na.rm, naming, 
+                               num.cores, tasks, verbose, ...))
 
 
 #' @aliases getGRegionsStat, InfDiv-method
@@ -392,15 +420,15 @@ setMethod("getGRegionsStat", signature(GR="InfDiv"),
                    stat=c("sum", "mean", "gmean", "median", "density", "count"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                   scaling=1000L, logbase = 2,
+                   scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
                    ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
-                   num.cores = 1L, tasks = 0, ...) 
+                   num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
-                               maxgap, minoverlap, scaling, logbase, type,
-                               ignore.strand, na.rm, naming, 
-                               num.cores, tasks, ...))
+                               maxgap, minoverlap, scaling, logbase, missings, 
+                               type, ignore.strand, na.rm, naming, 
+                               num.cores, tasks, verbose, ...))
 
 
 #' @aliases getGRegionsStat, pDMP-method
@@ -415,15 +443,15 @@ setMethod("getGRegionsStat", signature(GR="pDMP"),
                    stat=c("sum", "mean", "gmean", "median", "density", "count"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                   scaling=1000L, logbase = 2,
+                   scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
                    ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
-                   num.cores = 1L, tasks = 0, ...) 
+                   num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
-                               maxgap, minoverlap, scaling, logbase, type,
-                               ignore.strand, na.rm, naming, 
-                               num.cores, tasks, ...))
+                               maxgap, minoverlap, scaling, logbase, missings, 
+                               type, ignore.strand, na.rm, naming, 
+                               num.cores, tasks, verbose, ...))
 
 
 #' @aliases getGRegionsStat, GRangesList-method
@@ -438,13 +466,13 @@ setMethod("getGRegionsStat", signature(GR="GRangesList"),
                    stat=c("sum", "mean", "gmean", "median", "density", "count"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
-                   scaling=1000L, logbase = 2,
+                   scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
                    ignore.strand=FALSE, na.rm=TRUE, naming = FALSE,
-                   num.cores = 1L, tasks = 0, ...) 
+                   num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
-                               maxgap, minoverlap, scaling, logbase, type,
-                               ignore.strand, na.rm, naming, 
-                               num.cores, tasks, ...))
+                               maxgap, minoverlap, scaling, logbase, missings, 
+                               type, ignore.strand, na.rm, naming, 
+                               num.cores, tasks, verbose, ...))
 
