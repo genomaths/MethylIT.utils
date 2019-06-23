@@ -8,7 +8,7 @@
 #'     or sum) is calculated for the specified variable values from each region.
 #'     Notice that if win.size == step.size, then non-overlapping windows are
 #'     obtained.
-#' @param GR Preferibly a GRange object or a list of GRanges object with the 
+#' @param GR Preferibly a GRange object or a list of GRanges objects with the 
 #'     variable of interest in the GRanges metacolumn.
 #' @param win.size An integer for the size of the windows/regions size of the
 #'     intervals of genomics regions.
@@ -93,8 +93,8 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
             stat = c("sum", "mean", "gmean", "median", "density", "count"),
             absolute = FALSE, select.strand = NULL, maxgap =-1L, 
             minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
-            type = c("any", "start", "end", "within", "equal"),
-            ignore.strand = FALSE, na.rm=TRUE, naming = FALSE, 
+            type = c("any", "start", "end", "within", "equal"), 
+            ignore.strand = FALSE, na.rm = TRUE, naming = FALSE, 
             verbose = TRUE, ...) {
    
    if (inherits(GR, "list")) {
@@ -114,17 +114,17 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
    type <- match.arg(type, c("any", "start", "end", "within", "equal"))
 
    ## === Some functions to use ===
-   stats <- function(x, stat = c(), absolute) {
+   stats <- function(x, stat = c(), absolute, na.rm) {
            if (absolute) x = abs(x)
            x <- switch(stat,
-                       count = sum(x > 0, na.rm=na.rm),
+                       count = sum(x > 0, na.rm = na.rm),
                        sum = sum(x, na.rm = na.rm),
                        mean = mean(x, na.rm = na.rm),
                        gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
                        median = median(x, na.rm = na.rm),
                        density = sum(x, na.rm = na.rm))
    }
-   fn <- function(x) stats(x, stat = stat, absolute = absolute)
+   fn <- function(x) stats(x, stat = stat, absolute = absolute, na.rm = na.rm)
    sortBySeqnameAndStart <- function(gr) {
        seqlevels(gr) <- sort(seqlevels(gr))
        return(gr[order(as.factor(seqnames(gr)), start(gr)), ])

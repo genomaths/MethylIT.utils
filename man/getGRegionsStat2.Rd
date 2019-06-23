@@ -13,7 +13,7 @@ getGRegionsStat2(GR, win.size = 350, step.size = 350,
   verbose = TRUE, ...)
 }
 \arguments{
-\item{GR}{Preferibly a GRange object or a list of GRanges object with the 
+\item{GR}{Preferibly a GRange object or a list of GRanges objects with the 
 variable of interest in the GRanges metacolumn.}
 
 \item{win.size}{An integer for the size of the windows/regions size of the
