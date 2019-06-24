@@ -43,7 +43,7 @@
 #' @param missings Whether to write '0' or 'NA' on regions where there is not
 #'     data to compute the statistic.
 #' @param naming Logical value. If TRUE, the rows GRanges object will be 
-#'     given the names(GR). Default is FALSE.
+#'     given the names(grfeatures). Default is FALSE.
 #' @param na.rm Logical value. If TRUE, the NA values will be removed
 #' @param num.cores,tasks Paramaters for parallele computation using package
 #'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
