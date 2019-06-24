@@ -235,7 +235,10 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
            else grfeatures$cluster.id  <- paste(chr, start(grfeatures),
                                                end(grfeatures), sep = "_")
                
-           GR <- grfeatures; rm(grfeatures); gc()
+           GR <- grfeatures; 
+           if (is.character(names(grfeatures)) && naming) 
+               names(GR) <- names(grfeatures)
+           rm(grfeatures); gc()
            GR <- as.data.frame(GR)
            GR <- GR[, -c(1:5)]
            if(verbose) setTxtProgressBar(pb, 25) # update progress bar
