@@ -62,7 +62,7 @@ the overlap calculations.}
 \item{na.rm}{Logical value. If TRUE, the NA values will be removed}
 
 \item{naming}{Logical value. If TRUE, the rows GRanges object will be 
-given the names(GR). Default is FALSE.}
+given the names(grfeatures). Default is FALSE.}
 
 \item{verbose}{Logical. Default is TRUE. If TRUE, then the progress of the
 computational tasks is given.}

@@ -230,15 +230,14 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
            colnames(mcols(grfeatures)) <- colnames(mcols(GR))
            chr <- seqnames(grfeatures)
                
-           if (class(names(grfeatures)) == "character") 
-               grfeatures$cluster.id <- names(grfeatures)
+           if (class(names(grfeatures)) == "character" && naming) 
+               grfeatures$cluster.id <- paste(chr, start(grfeatures),
+                                               end(grfeatures), 
+                                               names(grfeatures), sep = "_")
            else grfeatures$cluster.id  <- paste(chr, start(grfeatures),
                                                end(grfeatures), sep = "_")
                
-           GR <- grfeatures; 
-           if (is.character(names(grfeatures)) && naming) 
-               names(GR) <- names(grfeatures)
-           rm(grfeatures); gc()
+           GR <- grfeatures; rm(grfeatures); gc()
            GR <- as.data.frame(GR)
            GR <- GR[, -c(1:5)]
            if(verbose) setTxtProgressBar(pb, 25) # update progress bar
@@ -246,12 +245,15 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
            GR <- GR %>% group_by(cluster.id) %>% summarise_all(list(fn))
            
            if(verbose) setTxtProgressBar(pb, 75) # update progress bar
-           strands <- matrix(unlist(strsplit(GR$cluster.id, "_")), 
-                               ncol = 3, byrow = TRUE)
+           if (naming) strands <- matrix(unlist(strsplit(GR$cluster.id, "_")), 
+                                           ncol = 4, byrow = TRUE)
+           else strands <- matrix(unlist(strsplit(GR$cluster.id, "_")), 
+                                  ncol = 3, byrow = TRUE)
            GR <- data.frame(GR[, -1], chr = strands[,1], 
                            start = as.numeric(strands[, 2]),
                            end = as.numeric(strands[, 3]), strand =  "*")
            GR <- makeGRangesFromDataFrame(GR, keep.extra.columns = TRUE)
+           if (naming) names(GR) <- strands[, 4]
        } else {
            m <- ncol(mcols(GR))
            if (m > 1) {
