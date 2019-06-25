@@ -125,10 +125,7 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                        density = sum(x, na.rm = na.rm))
    }
    fn <- function(x) stats(x, stat = stat, absolute = absolute, na.rm = na.rm)
-   sortBySeqnameAndStart <- function(gr) {
-       seqlevels(gr) <- sort(seqlevels(gr))
-       return(gr[order(as.factor(seqnames(gr)), start(gr)), ])
-   }
+
    ## =============================== ##
    if (!is.null(select.strand)) {
        ## possible values "-", "+", NULL
@@ -270,3 +267,9 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
    return(GR)
 }
 
+
+# ============================ Auxiliary function =========================
+sortBySeqnameAndStart <- function(gr) {
+   seqlevels(gr) <- sort(seqlevels(gr))
+   return(gr[order(as.factor(seqnames(gr)), start(gr)), ])
+}
