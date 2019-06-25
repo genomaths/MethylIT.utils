@@ -79,7 +79,7 @@
 #' @importFrom GenomicRanges GRanges findOverlaps
 #' @importFrom IRanges IRanges
 #' @importFrom stats median
-#' @importFrom dplyr group_by summarise summarize '%>%'
+#' @importFrom dplyr group_by summarise_all '%>%'
 #' @importFrom S4Vectors subjectHits queryHits DataFrame mcols 
 #' @importFrom S4Vectors mcols<-
 #' @importFrom BiocGenerics strand start end
