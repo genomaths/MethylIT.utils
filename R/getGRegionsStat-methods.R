@@ -371,11 +371,14 @@ getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                            progressbar = progressbar)
       BiocParallel::register(bpstart(bpparam))
    }
-  
+ 
+   if (is.character(names(GR))) nams <- names(GR) else nams <- NULL
+   
    GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
                    stat, absolute, select.strand, column, prob, entropy,
                    maxgap, minoverlap, scaling, logbase, missings,
                    type, ignore.strand, na.rm, naming, BPPARAM=bpparam)
+   if (!is.null(nams)) names(GR) <- nams
    return(GR)
 }
 
