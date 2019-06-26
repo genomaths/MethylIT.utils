@@ -77,7 +77,7 @@
 #' 
 #' @importFrom GenomeInfoDb seqnames seqlengths seqlevels
 #' @importFrom GenomicRanges GRanges findOverlaps
-#' @importFrom IRanges IRanges
+#' @importFrom IRanges IRanges width
 #' @importFrom stats median
 #' @importFrom dplyr group_by summarise_all '%>%'
 #' @importFrom S4Vectors subjectHits queryHits DataFrame mcols 
@@ -137,7 +137,6 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
        GR <- GR[idx]
    }
    chrs <- as.character(unique(seqnames(GR)))
-
    
    ## Progress bar
    if(verbose) {
@@ -199,6 +198,10 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                            start = as.numeric(strands[, 2]),
                            end = as.numeric(strands[, 3]), strand =  "*")
            GR <- makeGRangesFromDataFrame(GR, keep.extra.columns = TRUE)
+           if (stat == "density") {
+              widths <- width(GR)
+              mcols(GR) <- (scaling * as.matrix(mcols(GR))/widths)
+           }
        } else {
                m <- ncol(mcols(GR))
                if (m  > 1) {
@@ -251,6 +254,10 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                            end = as.numeric(strands[, 3]), strand =  "*")
            GR <- makeGRangesFromDataFrame(GR, keep.extra.columns = TRUE)
            if (naming) names(GR) <- strands[, 4]
+           if (stat == "density") {
+              widths <- width(GR)
+              mcols(GR) <- (scaling * as.matrix(mcols(GR))/widths)
+           }
        } else {
            m <- ncol(mcols(GR))
            if (m > 1) {
