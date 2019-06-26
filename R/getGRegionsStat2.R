@@ -21,9 +21,10 @@
 #'     of interest in each interval/window. Posible options are: "mean",
 #'     geometric mean ("gmean"), "median", "density", "count" and "sum"
 #'     (default). Here, we define "density" as the sum of values from the
-#'     variable of interest in the given region devided by the length of the
-#'     region. The option 'count' compute the number/count of positions in the 
-#'     specified regions with values greater than zero in the selected 'column'. 
+#'     variable of interest in the given region devided by the length/width of
+#'     the region. The option 'count' compute the number/count of positions in
+#'     the specified regions with values greater than zero in the selected
+#'     'column'.
 #' @param absolute Optional. Logic (default: FALSE). Whether to use the absolute
 #'     values of the variable provided. For example, the difference of
 #'     methylation levels could take negative values (TV) and we would be
@@ -58,6 +59,7 @@
 #'     summarized statistic.
 #' @examples
 #' library(GenomicRanges)
+#' set.seed(1)
 #' gr <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
 #'             c(5, 5, 5, 5)),
 #'             ranges = IRanges(start = 1:20, end = 1:20),
