@@ -30,6 +30,10 @@
 #'     methylation levels could take negative values (TV) and we would be
 #'     interested on the sum of abs(TV), which is sum of the total variation
 #'     distance.
+#' @param column If object \emph{GR} is a list of GRanges objects, then it is
+#'     an integer number denoting the column where the variable of interest is
+#'     located in the metacolumn of the GRanges object or an integer vector of
+#'     two elements (only if prob = TRUE).
 #' @param select.strand Optional. If provided,"+" or "-", then the summarized
 #'     statistic is computed only for the specified DNA chain.
 #' @param maxgap,minoverlap,type See ?findOverlaps in the IRanges package for a
@@ -93,14 +97,14 @@
 
 getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
             stat = c("sum", "mean", "gmean", "median", "density", "count"),
-            absolute = FALSE, select.strand = NULL, maxgap =-1L, 
+            columns = NULL, absolute = FALSE, select.strand = NULL, maxgap =-1L, 
             minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
             type = c("any", "start", "end", "within", "equal"), 
             ignore.strand = FALSE, na.rm = TRUE, naming = FALSE, 
             verbose = TRUE, ...) {
    
    if (inherits(GR, "list")) {
-      GR <- uniqueGRanges(GR, ...)
+      GR <- uniqueGRanges(GR, columns = columns, ...)
    }
    
    ## These NULL quiet: no visible binding for global variable 'x2'
