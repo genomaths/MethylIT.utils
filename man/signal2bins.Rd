@@ -79,7 +79,7 @@ A data.frame object carrying the bin coordinates: \emph{binCoord}
 \description{
 This function summarizes a genomic signal (variable) split into 
     bins (intervals). The signal must be provided in the metacolumn of a
-    \code{\link[GenomicRanges]{GRanges}} object.
+    \code{\link[GenomicRanges]{GRanges-class}} object.
 }
 \details{
 This function is useful, for example, to get the  profile of the 

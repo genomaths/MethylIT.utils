@@ -3,7 +3,7 @@
 #' @title Genomic Signal to Summarized Bins 
 #' @description This function summarizes a genomic signal (variable) split into 
 #'     bins (intervals). The signal must be provided in the metacolumn of a
-#'     \code{\link[GenomicRanges]{GRanges}} object.
+#'     \code{\link[GenomicRanges]{GRanges-class}} object.
 #' @details This function is useful, for example, to get the  profile of the 
 #'     metylation signal around genes regions: gene-body plus 2kb upstream of
 #'     the TSS and 2kb downtream of the TES. The intensity of the signal profile
