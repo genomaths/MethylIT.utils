@@ -7,7 +7,7 @@ Authors@R: person("Robersy", "Sanchez", email = "rus547@psu.edu")
 Maintainer: Robersy Sanchez <rus547@psu.edu>
 Description: MethylIT_utils is an R package with functions to support MethylIT downstream analysis.
 Depends:
-  R (>= 3.4.0),
+  R (>= 3.5.0),
 License: file LICENSE
 biocViews:
   Software, Epigenetics, MathematicalBiology, DNAMethylation, 
