@@ -6,11 +6,11 @@
 \usage{
 getGRegionsStat2(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
-  "density", "count"), absolute = FALSE, select.strand = NULL,
-  maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
-  missings = 0, type = c("any", "start", "end", "within", "equal"),
-  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
-  verbose = TRUE, ...)
+  "density", "count"), columns = NULL, absolute = FALSE,
+  select.strand = NULL, maxgap = -1L, minoverlap = 0L,
+  scaling = 1000L, logbase = 2, missings = 0, type = c("any",
+  "start", "end", "within", "equal"), ignore.strand = FALSE,
+  na.rm = TRUE, naming = FALSE, verbose = TRUE, ...)
 }
 \arguments{
 \item{GR}{Preferibly a GRange object or a list of GRanges objects with the 
@@ -30,9 +30,10 @@ step.size are ignored and the statistics are estimated for 'grfeatures'.}
 of interest in each interval/window. Posible options are: "mean",
 geometric mean ("gmean"), "median", "density", "count" and "sum"
 (default). Here, we define "density" as the sum of values from the
-variable of interest in the given region devided by the length of the
-region. The option 'count' compute the number/count of positions in the 
-specified regions with values greater than zero in the selected 'column'.}
+variable of interest in the given region devided by the length/width of
+the region. The option 'count' compute the number/count of positions in
+the specified regions with values greater than zero in the selected
+'column'.}
 
 \item{absolute}{Optional. Logic (default: FALSE). Whether to use the absolute
 values of the variable provided. For example, the difference of
@@ -70,6 +71,11 @@ computational tasks is given.}
 \item{...}{Argumetns to pass to \code{\link[MethylIT]{uniqueGRanges}} 
 function if \emph{GR} is a list of GRanges objects.}
 
+\item{column}{If object \emph{GR} is a list of GRanges objects, then it is
+an integer number denoting the column where the variable of interest is
+located in the metacolumn of the GRanges object or an integer vector of
+two elements (only if prob = TRUE).}
+
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
 use, i.e. at most how many child processes will be run simultaneously
@@ -94,6 +100,7 @@ This function split a Grange object into intervals genomic regions
 }
 \examples{
 library(GenomicRanges)
+set.seed(1)
 gr <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
             c(5, 5, 5, 5)),
             ranges = IRanges(start = 1:20, end = 1:20),

@@ -10,16 +10,15 @@ signal2bins(signal, regions, stat = "mean", nbins = 20L,
   num.cores = 4L, tasks = 0L, verbose = TRUE, ...)
 }
 \arguments{
-\item{signal}{Preferibly a GRange object or a list of GRanges objects, each 
-GRanges with only one meta-column carrying a signal, or a sungle GRange
-object with a genomic signals in the meta-columns. Each colum carrying a
-signal. For example, methylation levels, any variable regularly measuring
-some genomic magnitude. This GRanges object can be created by using
-function \code{\link[MethylIT]{uniqueGRanges}} from \emph{MethylIT} R
-package.}
+\item{signal}{Preferibly a single GRanges object with genomic signals in
+the meta-columns (each colum carrying a signal) or a list of GRanges
+objects, each GRanges carrying a signal in the meta-column. For example,
+methylation levels, any variable regularly measuring some genomic
+magnitude. This GRanges object can be created by using function
+\code{\link[MethylIT]{uniqueGRanges}} from \emph{MethylIT} R package.}
 
 \item{regions}{A GRanges carrying the genomic region where a summarized 
-statistic can be computed.}
+statistic can be computed. For example, annotated gene coordinates.}
 
 \item{stat}{Statistic used to estimate the summarized value of the variable
 of interest in each interval/window. Posible options are: "mean",
@@ -31,8 +30,8 @@ the specified regions with values greater than zero in the selected
 'column'.}
 
 \item{nbins, nbinsUP, nbinsDown}{An integer denoting the number of bins used to 
-split the \emph{regions}, upstream main regions, and downstream main 
-regions, respectively.}
+split the \emph{regions}, upstream the main regions, and downstream the 
+main \emph{regions}, respectively.}
 
 \item{streamUp, streamDown}{An interger denonting how many base-pairs 
 up- and down-stream the provided \emph{regions} must be include in the
@@ -64,17 +63,17 @@ function if \emph{GR} is a list of GRanges objects.}
 \value{
 A data.frame object carrying the bin coordinates: \emph{binCoord} 
     and, for each sample, the signal summarized in the requested statistic:
-    \emp{statSumary}. Notice that the bin coordinates are relative to
+    \emph{statSumary}. Notice that the bin coordinates are relative to
     original coordinates given in the \emph{GR} objeect. For example, if the
     \emph{GR} object carries genome-wide metylation signals (from several
     samples) and we are interested in to get the methylation signal profile
     around the genes regions, then we must provide the gene annotated
-    coordinates in the argument \code{regions}, and set up the amount of bp
-    upstream of TSS and dowstream of TES, say, \code{streamUp} = 2000
-    \code{streamDown} = 2000. Next, if we set nbins = 20L, nbinsUP = 20L,
-    nbinsDown = 20L, then the first and the last 20 bins of the returned
-    signal profile represent 2000 bp each of them. Since gene-body will vary
-    depending on the gene size, there is not specific amount of bp
+    coordinates in the argument \emph{regions}, and set up the amount of bp
+    upstream of TSS and dowstream of TES, say, \emph{streamUp} = 2000 and
+    \emph{streamDown} = 2000, repectively. Next, if we set nbins = 20L,
+    nbinsUP = 20L, nbinsDown = 20L, then the first and the last 20 bins of
+    the returned signal profile represent 2000 bp each of them. Since
+    gene-body sizes vary genome-wide, there is not a specific number of bp
     represented by the 20 bins covering the gene-body regions.
 }
 \description{
@@ -91,5 +90,5 @@ This function is useful, for example, to get the  profile of the
     treatment would go over or below the control samples.
 }
 \author{
-Robersy Sanchez
+Robersy Sanchez. \url{https://genomaths.com}
 }
