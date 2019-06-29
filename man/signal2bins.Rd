@@ -89,6 +89,9 @@ This function is useful, for example, to get the  profile of the
     an effect on methylation then the intesity of the signal profile for the
     treatment would go over or below the control samples.
 }
+\seealso{
+A faster version: \code{\link{signals2bins}}.
+}
 \author{
 Robersy Sanchez. \url{https://genomaths.com}
 }
