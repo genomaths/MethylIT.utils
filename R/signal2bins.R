@@ -69,7 +69,7 @@
 #'     the returned signal profile represent 2000 bp each of them. Since
 #'     gene-body sizes vary genome-wide, there is not a specific number of bp
 #'     represented by the 20 bins covering the gene-body regions.
-#' @seealso A faster version: \code{\link{signals2bins}}.
+#' @seealso A faster version: \code{\link{signal2bins}}.
 #' @export
 #' @author Robersy Sanchez. \url{https://genomaths.com}
 
