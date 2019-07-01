@@ -7,7 +7,7 @@
 signal2bins(signal, regions, stat = "mean", nbins = 20L,
   nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL,
   streamDown = NULL, absolute = FALSE, na.rm = TRUE, missings = 0,
-  region.size = 200, num.cores = 4L, tasks = 0L, verbose = TRUE,
+  region.size = 200, num.cores = 1L, tasks = 0L, verbose = TRUE,
   ...)
 }
 \arguments{
@@ -94,7 +94,7 @@ This function is useful, for example, to get the  profile of the
     treatment would go over or below the control samples.
 }
 \seealso{
-A faster version: \code{\link{signal2bins}}.
+A faster version: \code{\link{signals2bins}}.
 }
 \author{
 Robersy Sanchez. \url{https://genomaths.com}

@@ -69,14 +69,14 @@
 #'     the returned signal profile represent 2000 bp each of them. Since
 #'     gene-body sizes vary genome-wide, there is not a specific number of bp
 #'     represented by the 20 bins covering the gene-body regions.
-#' @seealso A faster version: \code{\link{signal2bins}}.
+#' @seealso A faster version: \code{\link{signals2bins}}.
 #' @export
 #' @author Robersy Sanchez. \url{https://genomaths.com}
 
 signal2bins <- function(signal, regions, stat = "mean", nbins = 20L,
                         nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL, 
                         streamDown = NULL, absolute = FALSE, na.rm = TRUE,
-                        missings = 0, region.size = 200, num.cores = 4L, 
+                        missings = 0, region.size = 200, num.cores = 1L, 
                         tasks = 0L, verbose = TRUE, ...) {
    t1 <- Sys.time()
    if (!inherits(regions, "GRanges")) 
@@ -116,136 +116,68 @@ signal2bins <- function(signal, regions, stat = "mean", nbins = 20L,
   
    if (absolute) mcols(signal) <- abs(as.matrix(mcols(signal)))
   
-   nams <- colnames(mcols(signal))
-  
    if (verbose) cat("* Computing bins for the main regions, ... \n")
    bdr <- binBuilder(regions = regions, num.bins = nbins, num.cores = num.cores,
                        verbose = verbose)
-  
+
    if (verbose) cat("* Computing summarized statistic for main regions, ... \n")
-   bdr.stat <- statRegions(signal = signal, regions = bdr, stat = stat, 
-                           na.rm = na.rm, missings = missings,
-                           num.cores = num.cores, verbose = verbose)
-   m <- length(nams)
-   if (verbose) {
-       cat("* Summarizing the main regions, ... \n")
-       cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
-   }
-  
-   ## Progress bar
-   if(verbose) {
-       # setup progress bar
-       pb <- txtProgressBar(max = m + 1, style = 3) 
-   }
-  
-   if(verbose) setTxtProgressBar(pb, 1) # update progress bar
-   statR <- matrix(NA, nrow = m, ncol = nbins)
-   for (k in 1:m) {
-       st <- plyr::ldply(bdr.stat, function(x) x[, k])
-       st <- colMeans(st, na.rm = na.rm)
-       st[is.na(st)] <- 0
-       statR[k, ] <- st
-       if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
-   }
-   close(pb)
-  
+   bdr.stat <- statRegion(signal = signal, regions = bdr, stat = stat,
+                           na.rm = na.rm, missings = missings, 
+                           scaling = scaling, ...)
+
    if (!is.null(streamUp)) {
-       upr <- GeneUpDownStream(GR = regions, upstream = streamUp, onlyUP = TRUE)
        cat("* Computing bins for upstream regions, ... \n")
+       upr <- GeneUpDownStream(GR = regions, upstream = streamUp, onlyUP = TRUE)
        upr <- binBuilder(regions = upr, num.bins = nbinsUP, 
                        num.cores = num.cores, verbose = verbose)
     
        if (verbose) 
            cat("* Computing summarized statistic for upstream regions, ... \n")
-       upr.stat <- statRegions(signal = signal, regions = upr,
-                               stat = stat, na.rm = na.rm, missings = missings,
-                               num.cores = num.cores, verbose = verbose)
-    
+       upr.stat <- statRegion(signal = signal, regions = upr, stat = stat,
+                               na.rm = na.rm, missings = missings,
+                               scaling = scaling, ...)
        if (verbose) {
-           cat("* Summarizing upstream regions, ... \n")
-       cat("--- System elapsed time", format.difftime(Sys.time() - t1),
-           "\n\n")
+           cat("--- System elapsed time", format.difftime(Sys.time() - t1),
+               "\n\n")
        }
-       m <- length(nams)
-    
-       ## Progress bar
-       if(verbose) {
-           # setup progress bar
-           pb <- txtProgressBar(max = m + 1, style = 3) 
-       }
-    
-       if(verbose) setTxtProgressBar(pb, 1) # update progress bar
-       statUp <- matrix(NA, nrow = m, ncol = nbinsUP)
-       for (k in 1:m) {
-           st <- plyr::ldply(upr.stat, function(x) x[, k])
-           st <- colMeans(st, na.rm = na.rm)
-           st[is.na(st)] <- 0
-           statUp[k, ] <- st
-           if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
-       }
-       close(pb)
    }
   
    if (!is.null(streamDown)) {
-       dwr <- GeneUpDownStream(GR = regions, downstream = streamDown, 
+      cat("* Computing bins for downstream regions, ... \n")
+      dwr <- GeneUpDownStream(GR = regions, downstream = streamDown, 
                                onlyDown = TRUE)
-       cat("* Computing bins for downstream regions, ... \n")
        dwr <- binBuilder(regions = dwr, num.bins = nbinsDown, 
                       num.cores = num.cores, verbose = verbose)
        if (verbose) 
            cat("* Computing summarized statistic for downstream regions",
-          "... \n")
-       dwr.stat <- statRegions(signal = signal, regions = dwr,
-                               stat = stat, na.rm = na.rm, missings = missings,
-                               num.cores = num.cores, verbose = verbose)
-    
-       if (verbose) {
-           cat("* Summarizing downstream regions, ... \n")
-           cat("--- System elapsed time", format.difftime(Sys.time() - t1),
-               "\n\n")
-       }
-       m <- length(nams)
-    
-       ## Progress bar
-       if(verbose) {
-           # setup progress bar
-           pb <- txtProgressBar(max = m + 1, style = 3) 
-       }
-    
-       if(verbose) setTxtProgressBar(pb, 1) # update progress bar
-       statDw <- matrix(NA, nrow = m, ncol = nbinsDown)
-       for (k in 1:m) {
-           st <- plyr::ldply(dwr.stat, function(x) x[, k])
-           st <- colMeans(st, na.rm = na.rm)
-           st[is.na(st)] <- 0
-           statDw[k, ] <- st
-           if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
-       }
-       close(pb)
+               "... \n")
+       dwr.stat <- statRegion(signal = signal, regions = dwr, stat = stat,
+                               na.rm = na.rm, missings = missings,
+                               scaling = scaling, ...)
    }
   
    if (!is.null(streamDown) && !is.null(streamUp)) {
-     statSumary <- rbind(upr.stat, bdr.stat, dwr.stat)
-     colnames(statSumary) <- nams
-     m <- nbins + nbinsUP + nbinsDown
+       statSumary <- rbind(upr.stat, bdr.stat, dwr.stat)
+       colnames(statSumary) <- nams
+       m <- nbins + nbinsUP + nbinsDown
    }
    
    if (is.null(streamDown) && !is.null(streamUp)) {
-     statSumary <- rbind(upr.stat, bdr.stat)
-     colnames(statSumary) <- nams
-     m <- nbins + nbinsUP
+       statSumary <- rbind(upr.stat, bdr.stat)
+       colnames(statSumary) <- nams
+       m <- nbins + nbinsUP
    }
    
    if (!is.null(streamDown) && is.null(streamUp)) {
-     statSumary <- rbind(bdr.stat, dwr.stat)
-     colnames(statSumary) <- nams
-     m <- nbins + nbinsDown
+       statSumary <- rbind(bdr.stat, dwr.stat)
+       colnames(statSumary) <- nams
+       m <- nbins + nbinsDown
    }
    
    if (is.null(streamDown) && is.null(streamUp)) {
-     statSumary <- bdr.stat
-     colnames(statSumary) <- nams
-     m <- nbins
+       statSumary <- bdr.stat
+       colnames(statSumary) <- nams
+       m <- nbins
    }
    
    if (verbose) 
@@ -284,31 +216,54 @@ binBuilder <- function(regions, num.bins, num.cores, verbose) {
        gr <- makeGRangesFromDataFrame(gr)
        return(gr)
    }, BPPARAM = bpparam) 
+   lgr <- unlist(lgr)
+   lgr$bins <- rep(1:num.bins,length(regions))
    return(lgr)
 } 
 
 
 # ====== Auxiliary function to compute summarized statistic for regions ========
 
-statRegions <- function(signal, regions, stat, na.rm, missings, 
-                        num.cores, verbose) {
-  
-   if (verbose) progressbar = TRUE else progressbar = FALSE
-   if (Sys.info()['sysname'] == "Linux") {
-       bpparam <- MulticoreParam(workers = num.cores, tasks = 0L,
-                               progressbar = progressbar)
-   } else {
-       bpparam <- SnowParam(workers = num.cores, type = "SOCK",
-                           progressbar = progressbar)
+statRegion <- function(signal, regions, stat, na.rm, missings, 
+                       maxgap, minoverlap, ignore.strand, type,
+                       scaling, ...) {
+   
+   ## ------------------------- Stistics to use --------------------------------
+   stats <- function(x, stat = c(), na.rm) {
+      x <- switch(stat,
+                  count = sum(x > 0, na.rm = na.rm),
+                  sum = sum(x, na.rm = na.rm),
+                  mean = mean(x, na.rm = na.rm),
+                  gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
+                  median = median(x, na.rm = na.rm),
+                  density = sum(x, na.rm = na.rm))
    }
-  
-   l <- length(regions)
-   st <- bplapply(1:l, function(k) {
-           st <- getGRegionsStat2(GR = signal, grfeatures = regions[[k]],
-                           missings = missings, stat = stat, verbose = FALSE)
-           st <- as.matrix(mcols(st))
-    
-           return(st)
-       }, BPPARAM = bpparam)
-   return(st)
+   fn <- function(x) stats(x, stat = stat, na.rm = na.rm)
+   # ------------------------------------------------------------------------- #
+   
+   hits <- findOverlaps(signal, regions, ...)
+   if (length(hits) > 0) {
+      bins <- regions$bins
+      m <- ncol(mcols(signal))
+      if (m > 1) {
+         mcols(regions) <- matrix(missings, nrow = length(regions), ncol = m)
+      }
+      else mcols(regions) <- missings
+      mcols(regions[subjectHits(hits)]) <- mcols(signal[queryHits(hits)])
+      colnames(mcols(regions)) <- colnames(mcols(signal))
+      if (stat == "density") {
+         widths <- width(regions)
+         mcols(regions) <- (scaling * as.matrix(mcols(regions))/widths)
+      }
+      
+      signal <- regions
+      signal$bins <- bins; rm(regions, bins); gc()
+      names(signal) <- NULL
+      signal <- as.data.frame(signal)
+      signal <- signal[, -c(1:5)]
+      
+      signal <- signal %>% group_by(bins) %>% summarise_all(list(fn))
+      
+      return(as.data.frame(signal))
+   }
 }
