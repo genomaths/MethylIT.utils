@@ -11,13 +11,14 @@
 #'     an effect on methylation then the intesity of the signal profile for the
 #'     treatment would go over or below the control samples. 
 #'     
-#'     This function does the same as function \code{\link{signal2bins2}},
+#'     This function does the same as function \code{\link{signal2bins}},
 #'     except for that it is significantly faster than
-#'     \code{\link{signal2bins2}} function and small variation on the signal
+#'     \code{\link{signal2bins}} function and small variation on the signal
 #'     profiles. These variations came from the way to split the regions into 
 #'     bins, for which there is not an exact algorithm to perform it. Function
-#'     \code{\link{signal2bins2}} uses \code{\link[base]{cut}}, while current
-#'     function uses \code{\link[IRanges]{tile}} function.
+#'     \code{\link{signal2bins}} uses \code{\link[base]{cut}}, while current
+#'     function uses \emph{tile} function
+#'     (\code{\link[IRanges]{IPosRanges-class}}).
 #' @param signal Preferibly a single GRanges object with genomic signals in
 #'     the meta-columns (each colum carrying a signal) or a list of GRanges
 #'     objects, each GRanges carrying a signal in the meta-column. For example,
