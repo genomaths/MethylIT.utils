@@ -14,7 +14,7 @@
 #'     This function does the same as function \code{\link{signal2bins2}},
 #'     except for that it is significantly faster than
 #'     \code{\link{signal2bins2}} function and small variation on the signal
-#'     profiles. These variations camo from the way to split the regions into 
+#'     profiles. These variations came from the way to split the regions into 
 #'     bins, for which there is not an exact algorithm to perform it. Function
 #'     \code{\link{signal2bins2}} uses \code{\link[base]{cut}}, while current
 #'     function uses \code{\link[IRanges]{tile}} function.
