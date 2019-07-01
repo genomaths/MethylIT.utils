@@ -38,13 +38,15 @@
 #'     interested on the sum of abs(TV), which is sum of the total variation
 #'     distance.
 #' @param na.rm Logical value. If TRUE, the NA values will be removed
+#' @param missings Whether to write '0' or 'NA' on regions where there is not
+#'     data to compute the statistic.
+#' @param region.size An integer. The minimun size of a region to be included in
+#'     the computation. Default 300 (bp).  
 #' @param num.cores,tasks Paramaters for parallele computation using package
 #'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
 #'     use, i.e. at most how many child processes will be run simultaneously
 #'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
 #'     (only for Linux OS).
-#' @param missings Whether to write '0' or 'NA' on regions where there is not
-#'     data to compute the statistic.
 #' @param verbose Logical. Default is TRUE. If TRUE, then the progress of the
 #'     computational tasks is given.
 #' @param ... Argumetns to pass to \code{\link[MethylIT]{uniqueGRanges}} 
@@ -74,187 +76,215 @@
 signal2bins <- function(signal, regions, stat = "mean", nbins = 20L,
                         nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL, 
                         streamDown = NULL, absolute = FALSE, na.rm = TRUE,
-                        missings = 0, num.cores = 4L, tasks = 0L,
-                        verbose = TRUE, ...) {
-  t1 <- Sys.time()
-  if (!inherits(regions, "GRanges")) 
-    stop("*** 'regions' argument must be a GRanges object")
+                        missings = 0, region.size = 200, num.cores = 4L, 
+                        tasks = 0L, verbose = TRUE, ...) {
+   t1 <- Sys.time()
+   if (!inherits(regions, "GRanges")) 
+       stop("*** 'regions' argument must be a GRanges object")
   
-  if (inherits(signal, "list")) {
-    signal <- uniqueGRanges(signal, ...)
-  }
+   if (inherits(signal, "list")) {
+       signal <- uniqueGRanges(signal, ...)
+   }
   
-  signal.chr <- NULL
-  if (inherits(signal, "GRanges")) {
-    chrs <- as.character(seqnames(regions))
-    signal.chr <- unique(as.character(seqnames(signal)))
-    idx <- match(signal.chr, unique(chrs))
-    
-    if (all(is.na(idx))) 
-      stop("*** chromosomes in the signal did not", 
+   signal.chr <- NULL
+   if (inherits(signal, "GRanges")) {
+       if (region.size < nbins) 
+           stop("* Minimum 'region.size' must be greater than 'nbins'")
+       widths <- width(regions)
+       regions <- regions[widths > region.size]
+       if (length(regions) == 0) 
+           stop("* There is not region with width > region.size")
+       
+       chrs <- as.character(seqnames(regions))
+       signal.chr <- unique(as.character(seqnames(signal)))
+       idx <- match(signal.chr, unique(chrs))
+       
+       if (all(is.na(idx))) 
+           stop("*** chromosomes in the signal did not", 
            " match regions chromosomes")
-    else {
-      idx <- unique(chrs)[na.omit(idx)]
-      seqlevels(signal, pruning.mode = "coarse") <- idx
-    }
-  }
+       else {
+           idx <- unique(chrs)[na.omit(idx)]
+           seqlevels(signal, pruning.mode = "coarse") <- idx
+       }
+   }
   
-  if (Sys.info()['sysname'] == "Linux") {
-    bpparam <- MulticoreParam(workers = num.cores, tasks = 0L)
-  } else {
-    bpparam <- SnowParam(workers = num.cores, type = "SOCK")
-  }
+   if (Sys.info()['sysname'] == "Linux") {
+       bpparam <- MulticoreParam(workers = num.cores, tasks = 0L)
+   } else {
+       bpparam <- SnowParam(workers = num.cores, type = "SOCK")
+   }
   
-  if (absolute) mcols(signal) <- abs(as.matrix(mcols(signal)))
+   if (absolute) mcols(signal) <- abs(as.matrix(mcols(signal)))
   
-  nams <- colnames(mcols(signal))
+   nams <- colnames(mcols(signal))
   
-  if (verbose) cat("* Computing bins for the main regions, ... \n")
-  bdr <- binBuilder(regions = regions, num.bins = nbins, num.cores = num.cores,
-                    verbose = verbose)
+   if (verbose) cat("* Computing bins for the main regions, ... \n")
+   bdr <- binBuilder(regions = regions, num.bins = nbins, num.cores = num.cores,
+                       verbose = verbose)
   
-  if (verbose) cat("* Computing summarized statistic for main regions, ... \n")
-  bdr.stat <- statRegions(signal = signal, regions = bdr, stat = stat, 
-                          na.rm = na.rm, missings = missings,
-                          num.cores = num.cores, verbose = verbose)
-  m <- length(nams)
-  if (verbose) {
-    cat("* Summarizing the main regions, ... \n")
-    cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
-  }
+   if (verbose) cat("* Computing summarized statistic for main regions, ... \n")
+   bdr.stat <- statRegions(signal = signal, regions = bdr, stat = stat, 
+                           na.rm = na.rm, missings = missings,
+                           num.cores = num.cores, verbose = verbose)
+   m <- length(nams)
+   if (verbose) {
+       cat("* Summarizing the main regions, ... \n")
+       cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
+   }
   
-  ## Progress bar
-  if(verbose) {
-    # setup progress bar
-    pb <- txtProgressBar(max = m + 1, style = 3) 
-  }
+   ## Progress bar
+   if(verbose) {
+       # setup progress bar
+       pb <- txtProgressBar(max = m + 1, style = 3) 
+   }
   
-  if(verbose) setTxtProgressBar(pb, 1) # update progress bar
-  statR <- matrix(NA, nrow = m, ncol = nbins)
-  for (k in 1:m) {
-    st <- plyr::ldply(bdr.stat, function(x) x[, k])
-    st <- colMeans(st, na.rm = na.rm)
-    st[is.na(st)] <- 0
-    statR[k, ] <- st
-    if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
-  }
-  close(pb)
+   if(verbose) setTxtProgressBar(pb, 1) # update progress bar
+   statR <- matrix(NA, nrow = m, ncol = nbins)
+   for (k in 1:m) {
+       st <- plyr::ldply(bdr.stat, function(x) x[, k])
+       st <- colMeans(st, na.rm = na.rm)
+       st[is.na(st)] <- 0
+       statR[k, ] <- st
+       if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
+   }
+   close(pb)
   
-  if (!is.null(streamUp)) {
-    upr <- GeneUpDownStream(GR = regions, upstream = streamUp, onlyUP = TRUE)
-    cat("* Computing bins for upstream regions, ... \n")
-    upr <- binBuilder(regions = upr, num.bins = nbinsUP, 
+   if (!is.null(streamUp)) {
+       upr <- GeneUpDownStream(GR = regions, upstream = streamUp, onlyUP = TRUE)
+       cat("* Computing bins for upstream regions, ... \n")
+       upr <- binBuilder(regions = upr, num.bins = nbinsUP, 
+                       num.cores = num.cores, verbose = verbose)
+    
+       if (verbose) 
+           cat("* Computing summarized statistic for upstream regions, ... \n")
+       upr.stat <- statRegions(signal = signal, regions = upr,
+                               stat = stat, na.rm = na.rm, missings = missings,
+                               num.cores = num.cores, verbose = verbose)
+    
+       if (verbose) {
+           cat("* Summarizing upstream regions, ... \n")
+       cat("--- System elapsed time", format.difftime(Sys.time() - t1),
+           "\n\n")
+       }
+       m <- length(nams)
+    
+       ## Progress bar
+       if(verbose) {
+           # setup progress bar
+           pb <- txtProgressBar(max = m + 1, style = 3) 
+       }
+    
+       if(verbose) setTxtProgressBar(pb, 1) # update progress bar
+       statUp <- matrix(NA, nrow = m, ncol = nbinsUP)
+       for (k in 1:m) {
+           st <- plyr::ldply(upr.stat, function(x) x[, k])
+           st <- colMeans(st, na.rm = na.rm)
+           st[is.na(st)] <- 0
+           statUp[k, ] <- st
+           if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
+       }
+       close(pb)
+   }
+  
+   if (!is.null(streamDown)) {
+       dwr <- GeneUpDownStream(GR = regions, downstream = streamDown, 
+                               onlyDown = TRUE)
+       cat("* Computing bins for downstream regions, ... \n")
+       dwr <- binBuilder(regions = dwr, num.bins = nbinsDown, 
                       num.cores = num.cores, verbose = verbose)
-    
-    if (verbose) 
-      cat("* Computing summarized statistic for upstream regions, ... \n")
-    upr.stat <- statRegions(signal = signal, regions = upr,
-                            stat = stat, na.rm = na.rm, missings = missings,
-                            num.cores = num.cores, verbose = verbose)
-    
-    if (verbose) {
-      cat("* Summarizing upstream regions, ... \n")
-      cat("--- System elapsed time", format.difftime(Sys.time() - t1),
-          "\n\n")
-    }
-    m <- length(nams)
-    
-    ## Progress bar
-    if(verbose) {
-      # setup progress bar
-      pb <- txtProgressBar(max = m + 1, style = 3) 
-    }
-    
-    if(verbose) setTxtProgressBar(pb, 1) # update progress bar
-    statUp <- matrix(NA, nrow = m, ncol = nbinsUP)
-    for (k in 1:m) {
-      st <- plyr::ldply(upr.stat, function(x) x[, k])
-      st <- colMeans(st, na.rm = na.rm)
-      st[is.na(st)] <- 0
-      statUp[k, ] <- st
-      if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
-    }
-    close(pb)
-  }
-  
-  if (!is.null(streamDown)) {
-    dwr <- GeneUpDownStream(GR = regions, downstream = streamDown, 
-                            onlyDown = TRUE)
-    cat("* Computing bins for downstream regions, ... \n")
-    dwr <- binBuilder(regions = dwr, num.bins = nbinsDown, 
-                      num.cores = num.cores, verbose = verbose)
-    if (verbose) 
-      cat("* Computing summarized statistic for downstream regions",
+       if (verbose) 
+           cat("* Computing summarized statistic for downstream regions",
           "... \n")
-    dwr.stat <- statRegions(signal = signal, regions = dwr,
-                            stat = stat, na.rm = na.rm, missings = missings,
-                            num.cores = num.cores, verbose = verbose)
+       dwr.stat <- statRegions(signal = signal, regions = dwr,
+                               stat = stat, na.rm = na.rm, missings = missings,
+                               num.cores = num.cores, verbose = verbose)
     
-    if (verbose) {
-      cat("* Summarizing downstream regions, ... \n")
-      cat("--- System elapsed time", format.difftime(Sys.time() - t1),
-          "\n\n")
-    }
-    m <- length(nams)
+       if (verbose) {
+           cat("* Summarizing downstream regions, ... \n")
+           cat("--- System elapsed time", format.difftime(Sys.time() - t1),
+               "\n\n")
+       }
+       m <- length(nams)
     
-    ## Progress bar
-    if(verbose) {
-      # setup progress bar
-      pb <- txtProgressBar(max = m + 1, style = 3) 
-    }
+       ## Progress bar
+       if(verbose) {
+           # setup progress bar
+           pb <- txtProgressBar(max = m + 1, style = 3) 
+       }
     
-    if(verbose) setTxtProgressBar(pb, 1) # update progress bar
-    statDw <- matrix(NA, nrow = m, ncol = nbinsDown)
-    for (k in 1:m) {
-      st <- plyr::ldply(dwr.stat, function(x) x[, k])
-      st <- colMeans(st, na.rm = na.rm)
-      st[is.na(st)] <- 0
-      statDw[k, ] <- st
-      if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
-    }
-    close(pb)
-  }
+       if(verbose) setTxtProgressBar(pb, 1) # update progress bar
+       statDw <- matrix(NA, nrow = m, ncol = nbinsDown)
+       for (k in 1:m) {
+           st <- plyr::ldply(dwr.stat, function(x) x[, k])
+           st <- colMeans(st, na.rm = na.rm)
+           st[is.na(st)] <- 0
+           statDw[k, ] <- st
+           if(verbose) setTxtProgressBar(pb, k + 1) # update progress bar
+       }
+       close(pb)
+   }
   
-  statSumary <- t(cbind(statUp, statR, statDw))
-  colnames(statSumary) <- nams
-  m <- nbins + nbinsUP + nbinsDown
-  if (verbose) 
-    cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
-  return(data.frame(binCoord = seq(1, m, 1), statSumary))
+   if (!is.null(streamDown) && !is.null(streamUp)) {
+     statSumary <- rbind(upr.stat, bdr.stat, dwr.stat)
+     colnames(statSumary) <- nams
+     m <- nbins + nbinsUP + nbinsDown
+   }
+   
+   if (is.null(streamDown) && !is.null(streamUp)) {
+     statSumary <- rbind(upr.stat, bdr.stat)
+     colnames(statSumary) <- nams
+     m <- nbins + nbinsUP
+   }
+   
+   if (!is.null(streamDown) && is.null(streamUp)) {
+     statSumary <- rbind(bdr.stat, dwr.stat)
+     colnames(statSumary) <- nams
+     m <- nbins + nbinsDown
+   }
+   
+   if (is.null(streamDown) && is.null(streamUp)) {
+     statSumary <- bdr.stat
+     colnames(statSumary) <- nams
+     m <- nbins
+   }
+   
+   if (verbose) 
+       cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
+   return(data.frame(binCoord = seq(1, m, 1), statSumary))
 }
 
 # ====================== Auxiliary function to build bins ======================
 
 binBuilder <- function(regions, num.bins, num.cores, verbose) {
   
-  starts <- start(regions)
-  ends <- end(regions)
-  chrs <- as.character(seqnames(regions))
-  strands <- as.character(strand(regions))
-  max.end <- max(ends, na.rm = TRUE)
-  min.start <- min(starts, na.rm = TRUE)
+   starts <- start(regions)
+   ends <- end(regions)
+   chrs <- as.character(seqnames(regions))
+   strands <- as.character(strand(regions))
+   max.end <- max(ends, na.rm = TRUE)
+   min.start <- min(starts, na.rm = TRUE)
   
-  if (verbose) progressbar = TRUE else progressbar = FALSE
-  if (Sys.info()['sysname'] == "Linux") {
-    bpparam <- MulticoreParam(workers = num.cores, tasks=0L,
-                              progressbar = progressbar)
-  } else {
-    bpparam <- SnowParam(workers = num.cores, type = "SOCK",
-                         progressbar = progressbar)
-  }
+   if (verbose) progressbar = TRUE else progressbar = FALSE
+   if (Sys.info()['sysname'] == "Linux") {
+       bpparam <- MulticoreParam(workers = num.cores, tasks=0L,
+                               progressbar = progressbar)
+   } else {
+       bpparam <- SnowParam(workers = num.cores, type = "SOCK",
+                           progressbar = progressbar)
+   }
   
-  lgr <- bplapply(1:length(regions), function(k) {
-    s <- seq(starts[k], ends[k], 1)
-    labs <- levels(cut(s, num.bins))
-    gr <- cbind(start = as.numeric( sub("\\((.+),.*", "\\1", labs) ),
-                end = as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs) ))
+   lgr <- bplapply(1:length(regions), function(k) {
+       s <- seq(starts[k], ends[k], 1)
+       labs <- levels(cut(s, num.bins))
+       gr <- cbind(start = as.numeric( sub("\\((.+),.*", "\\1", labs) ),
+                   end = as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs) ))
     
-    gr <- DataFrame(gr, chr = chrs[k], strand = strands[k])
-    gr$start <- gr$start + 1
-    gr <- makeGRangesFromDataFrame(gr)
-    return(gr)
-  }, BPPARAM = bpparam) 
-  return(lgr)
+       gr <- DataFrame(gr, chr = chrs[k], strand = strands[k])
+       gr$start <- gr$start + 1
+       gr <- makeGRangesFromDataFrame(gr)
+       return(gr)
+   }, BPPARAM = bpparam) 
+   return(lgr)
 } 
 
 
@@ -263,23 +293,22 @@ binBuilder <- function(regions, num.bins, num.cores, verbose) {
 statRegions <- function(signal, regions, stat, na.rm, missings, 
                         num.cores, verbose) {
   
-  if (verbose) progressbar = TRUE else progressbar = FALSE
-  if (Sys.info()['sysname'] == "Linux") {
-    bpparam <- MulticoreParam(workers = num.cores, tasks = 0L,
-                              progressbar = progressbar)
-  } else {
-    bpparam <- SnowParam(workers = num.cores, type = "SOCK",
-                         progressbar = progressbar)
-  }
+   if (verbose) progressbar = TRUE else progressbar = FALSE
+   if (Sys.info()['sysname'] == "Linux") {
+       bpparam <- MulticoreParam(workers = num.cores, tasks = 0L,
+                               progressbar = progressbar)
+   } else {
+       bpparam <- SnowParam(workers = num.cores, type = "SOCK",
+                           progressbar = progressbar)
+   }
   
-  l <- length(regions)
-  st <- bplapply(1:l, function(k) {
-    st <- getGRegionsStat2(GR = signal, grfeatures = regions[[k]],
+   l <- length(regions)
+   st <- bplapply(1:l, function(k) {
+           st <- getGRegionsStat2(GR = signal, grfeatures = regions[[k]],
                            missings = missings, stat = stat, verbose = FALSE)
-    st <- as.matrix(mcols(st))
+           st <- as.matrix(mcols(st))
     
-    return(st)
-  }, BPPARAM = bpparam)
-  
-  return(st)
+           return(st)
+       }, BPPARAM = bpparam)
+   return(st)
 }

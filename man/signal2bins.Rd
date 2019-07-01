@@ -7,7 +7,8 @@
 signal2bins(signal, regions, stat = "mean", nbins = 20L,
   nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL,
   streamDown = NULL, absolute = FALSE, na.rm = TRUE, missings = 0,
-  num.cores = 4L, tasks = 0L, verbose = TRUE, ...)
+  region.size = 200, num.cores = 4L, tasks = 0L, verbose = TRUE,
+  ...)
 }
 \arguments{
 \item{signal}{Preferibly a single GRanges object with genomic signals in
@@ -47,6 +48,9 @@ distance.}
 
 \item{missings}{Whether to write '0' or 'NA' on regions where there is not
 data to compute the statistic.}
+
+\item{region.size}{An integer. The minimun size of a region to be included in
+the computation. Default 300 (bp).}
 
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to

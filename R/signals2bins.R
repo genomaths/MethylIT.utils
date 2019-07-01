@@ -48,6 +48,8 @@
 #' @param na.rm Logical value. If TRUE, the NA values will be removed
 #' @param missings Whether to write '0' or 'NA' on regions where there is not
 #'     data to compute the statistic.
+#' @param region.size An integer. The minimun size of a region to be included in
+#'     the computation. Default 300 (bp).  
 #' @param verbose Logical. Default is TRUE. If TRUE, then the progress of the
 #'     computational tasks is given.
 #' @param ... Arguments to pass to 
@@ -80,7 +82,8 @@
 signals2bins <- function(signal, regions, stat = "mean", nbins = 20L,
                        nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL, 
                        streamDown = NULL, absolute = FALSE, na.rm = TRUE,
-                       missings = 0, scaling = 1000L, verbose = TRUE, ...) {
+                       missings = 0, region.size = 300, scaling = 1000L, 
+                       verbose = TRUE, ...) {
    t1 <- Sys.time()
    if (!inherits(regions, "GRanges")) 
        stop("*** 'regions' argument must be a GRanges object")
@@ -91,6 +94,13 @@ signals2bins <- function(signal, regions, stat = "mean", nbins = 20L,
    
    signal.chr <- NULL
    if (inherits(signal, "GRanges")) {
+       if (region.size < nbins) 
+           stop("* Minimum 'region.size' must be greater than 'nbins'")
+       widths <- width(regions)
+       regions <- regions[widths > region.size]
+       if (length(regions) == 0) 
+           stop("* There is not region with width > region.size")
+       
        chrs <- as.character(seqnames(regions))
        signal.chr <- unique(as.character(seqnames(signal)))
        idx <- match(signal.chr, unique(chrs))
@@ -143,8 +153,26 @@ signals2bins <- function(signal, regions, stat = "mean", nbins = 20L,
                                scaling = scaling, ...)
    }
 
-   statSumary <- rbind(upr.stat, bdr.stat, dwr.stat)
-   m <- nbins + nbinsUP + nbinsDown
+   if (!is.null(streamDown) && !is.null(streamUp)) {
+      statSumary <- rbind(upr.stat, bdr.stat, dwr.stat)
+      m <- nbins + nbinsUP + nbinsDown
+   }
+   
+   if (is.null(streamDown) && !is.null(streamUp)) {
+      statSumary <- rbind(upr.stat, bdr.stat)
+      m <- nbins + nbinsUP
+   }
+   
+   if (!is.null(streamDown) && is.null(streamUp)) {
+      statSumary <- rbind(bdr.stat, dwr.stat)
+      m <- nbins + nbinsDown
+   }
+   
+   if (is.null(streamDown) && is.null(streamUp)) {
+      statSumary <- bdr.stat
+      m <- nbins
+   }
+   
    if (verbose) 
        cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
    return(data.frame(binCoord = seq(1, m, 1), statSumary[, -1]))
