@@ -107,7 +107,8 @@ signal2bins <- function(signal, regions, stat = "mean", nbins = 20L,
            seqlevels(signal, pruning.mode = "coarse") <- idx
        }
    }
-  
+   nams <- colnames(mcols(signal))
+   
    if (Sys.info()['sysname'] == "Linux") {
        bpparam <- MulticoreParam(workers = num.cores, tasks = 0L)
    } else {
