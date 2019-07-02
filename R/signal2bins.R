@@ -183,7 +183,7 @@ signal2bins <- function(signal, regions, stat = "mean", nbins = 20L,
    
    if (verbose) 
        cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
-   return(data.frame(binCoord = seq(1, m, 1), statSumary))
+   return(data.frame(binCoord = seq(1, m, 1), statSumary[, -1]))
 }
 
 # ====================== Auxiliary function to build bins ======================
