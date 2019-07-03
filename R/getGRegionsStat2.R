@@ -55,10 +55,19 @@
 #'     use, i.e. at most how many child processes will be run simultaneously
 #'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
 #'     (only for Linux OS).
+#' @param missing Only used if GR is a list of GRanges. See ?
+#'     \code{\link[MethylIT]{uniqueGRanges}}. 
 #' @param verbose Logical. Default is TRUE. If TRUE, then the progress of the
 #'     computational tasks is given.
-#' @param ... Argumetns to pass to \code{\link[MethylIT]{uniqueGRanges}} 
-#'     function if \emph{GR} is a list of GRanges objects.
+#' @param maxgap,minoverlap,type,select,ignore.strand Used to find overlapped 
+#'     regions. See ?\code{\link[IRanges]{findOverlaps}} in the \strong{IRanges} 
+#'     package for a description of these arguments.
+#' @param num.cores,tasks Only used if GR is a list of GRanges. 
+#'     Paramaters for parallele computation using package
+#'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
+#'     use, i.e. at most how many child processes will be run simultaneously
+#'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
+#'     (only for Linux OS).
 #' @return A GRanges object with the new genomic regions and their corresponding
 #'     summarized statistic.
 #' @examples
@@ -99,12 +108,16 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
             stat = c("sum", "mean", "gmean", "median", "density", "count"),
             columns = NULL, absolute = FALSE, select.strand = NULL, maxgap =-1L, 
             minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
-            type = c("any", "start", "end", "within", "equal"), 
-            ignore.strand = FALSE, na.rm = TRUE, naming = FALSE, 
-            verbose = TRUE, ...) {
+            naming = FALSE, type = c("any", "start", "end", "within", "equal"), 
+            chromosomes = NULL, select = "all", ignore.strand = FALSE,
+            na.rm = TRUE, num.cores = 1L, verbose = TRUE, ...) {
    
    if (inherits(GR, "list")) {
-      GR <- uniqueGRanges(GR, columns = columns, ...)
+      GR <- uniqueGRanges(GR, columns = columns, chromosomes = chromosomes, 
+                       maxgap = maxgap, minoverlap = minoverlap,
+                       missing = missing, type = type, 
+                       ignore.strand = ignore.strand, select = select, 
+                       num.cores = num.cores, verbose = verbose)
    }
    
    ## These NULL quiet: no visible binding for global variable 'x2'
@@ -174,7 +187,7 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                
        ## sites of interest inside of the windows
        Hits <- findOverlaps(GR, all.wins, maxgap = maxgap,
-                           minoverlap = minoverlap,
+                           minoverlap = minoverlap, select = select,
                            ignore.strand = ignore.strand, type = type)
        if (length(Hits) > 0) {
            m <- ncol(mcols(GR))
@@ -182,8 +195,9 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                mcols(all.wins) <- matrix(missings, nrow = length(all.wins),
                                            ncol = m)
            } else mcols(all.wins) <- missings
-           mcols(all.wins[subjectHits(Hits)]) <- mcols(GR[queryHits(Hits)])
-           colnames(mcols(all.wins)) <- colnames(mcols(GR))
+           all.wins <- all.wins[subjectHits(Hits)]
+           GR <- GR[queryHits(Hits)]
+           mcols(all.wins) <- mcols(GR)
            chr <- seqnames(all.wins)
 
            ## Variable to mark the limits of each GR
@@ -222,7 +236,7 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
        ## sites of interest inside of the windows
        if(verbose) setTxtProgressBar(pb, 1) # update progress bar
       
-       Hits <- findOverlaps(GR, grfeatures, maxgap=maxgap,
+       Hits <- findOverlaps(GR, grfeatures, maxgap=maxgap, select = select,
                            minoverlap=minoverlap, ignore.strand=ignore.strand,
                            type=type)
        if (length(Hits) > 0) {
@@ -232,8 +246,9 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                                            ncol = m)
            }
            else mcols(grfeatures) <- missings
-           mcols(grfeatures[subjectHits(Hits)]) <- mcols(GR[queryHits(Hits)])
-           colnames(mcols(grfeatures)) <- colnames(mcols(GR))
+           grfeatures <- grfeatures[subjectHits(Hits)]
+           GR <- GR[queryHits(Hits)]
+           mcols(grfeatures) <- mcols(GR)
            chr <- seqnames(grfeatures)
                
            if (class(names(grfeatures)) == "character" && naming) 

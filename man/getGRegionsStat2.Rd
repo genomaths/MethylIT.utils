@@ -8,9 +8,10 @@ getGRegionsStat2(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
   "density", "count"), columns = NULL, absolute = FALSE,
   select.strand = NULL, maxgap = -1L, minoverlap = 0L,
-  scaling = 1000L, logbase = 2, missings = 0, type = c("any",
-  "start", "end", "within", "equal"), ignore.strand = FALSE,
-  na.rm = TRUE, naming = FALSE, verbose = TRUE, ...)
+  scaling = 1000L, logbase = 2, missings = 0, naming = FALSE,
+  type = c("any", "start", "end", "within", "equal"),
+  chromosomes = NULL, select = "all", ignore.strand = FALSE,
+  na.rm = TRUE, num.cores = 1L, verbose = TRUE, ...)
 }
 \arguments{
 \item{GR}{Preferibly a GRange object or a list of GRanges objects with the 
@@ -57,26 +58,37 @@ are computed when parameter 'entropy = TRUE' (default: logbase = 2).}
 \item{missings}{Whether to write '0' or 'NA' on regions where there is not
 data to compute the statistic.}
 
+\item{naming}{Logical value. If TRUE, the rows GRanges object will be 
+given the names(grfeatures). Default is FALSE.}
+
 \item{ignore.strand}{When set to TRUE, the strand information is ignored in
 the overlap calculations.}
 
 \item{na.rm}{Logical value. If TRUE, the NA values will be removed}
 
-\item{naming}{Logical value. If TRUE, the rows GRanges object will be 
-given the names(grfeatures). Default is FALSE.}
+\item{num.cores, tasks}{Paramaters for parallele computation using package
+\code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
+use, i.e. at most how many child processes will be run simultaneously
+(see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
+(only for Linux OS).}
 
 \item{verbose}{Logical. Default is TRUE. If TRUE, then the progress of the
 computational tasks is given.}
-
-\item{...}{Argumetns to pass to \code{\link[MethylIT]{uniqueGRanges}} 
-function if \emph{GR} is a list of GRanges objects.}
 
 \item{column}{If object \emph{GR} is a list of GRanges objects, then it is
 an integer number denoting the column where the variable of interest is
 located in the metacolumn of the GRanges object or an integer vector of
 two elements (only if prob = TRUE).}
 
-\item{num.cores, tasks}{Paramaters for parallele computation using package
+\item{missing}{Only used if GR is a list of GRanges. See ?
+\code{\link[MethylIT]{uniqueGRanges}}.}
+
+\item{maxgap, minoverlap, type, select, ignore.strand}{Used to find overlapped 
+regions. See ?\code{\link[IRanges]{findOverlaps}} in the \strong{IRanges} 
+package for a description of these arguments.}
+
+\item{num.cores, tasks}{Only used if GR is a list of GRanges. 
+Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
 use, i.e. at most how many child processes will be run simultaneously
 (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job

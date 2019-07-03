@@ -58,6 +58,9 @@
 #' @param naming Logical value. If TRUE, the rows GRanges object will be 
 #'     given the names(GR). Default is FALSE.
 #' @param na.rm Logical value. If TRUE, the NA values will be removed
+#' @param maxgap,minoverlap,type,select,ignore.strand Used to find overlapped 
+#'     regions. See ?\code{\link[IRanges]{findOverlaps}} in the \strong{IRanges} 
+#'     package for a description of these arguments.
 #' @param num.cores,tasks Paramaters for parallele computation using package
 #'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
 #'     use, i.e. at most how many child processes will be run simultaneously
@@ -193,8 +196,14 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                                    ignore.strand=ignore.strand,
                                    type=type)
            if (length(Hits) > 0) {
-               mcols(all.wins) <- missings 
-               mcols(all.wins[subjectHits(Hits)]) <- mcols(GR[queryHits(Hits)])
+               m <- ncol(mcols(GR))
+               if (m  > 1) {
+                   mcols(all.wins) <- matrix(missings, nrow = length(all.wins),
+                                           ncol = m)
+               } else mcols(all.wins) <- missings
+               all.wins <- all.wins[subjectHits(Hits)]
+               GR <- GR[queryHits(Hits)]
+               mcols(all.wins) <- mcols(GR)
                chr <- seqnames(all.wins)
 
                ## Variable to mark the limits of each GR
@@ -213,8 +222,17 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                            minoverlap=minoverlap, ignore.strand=ignore.strand,
                            type=type)
            if (length(Hits) > 0) {
-               mcols(grfeatures) <- missings
-               mcols(grfeatures[subjectHits(Hits)]) <- mcols(GR[queryHits(Hits)])
+               m <- ncol(mcols(GR))
+               if (m > 1) {
+                   mcols(grfeatures) <- matrix(missings, 
+                                               nrow = length(grfeatures), 
+                                               ncol = m)
+               }
+               else mcols(grfeatures) <- missings
+               grfeatures <- grfeatures[subjectHits(Hits)]
+               GR <- GR[queryHits(Hits)]
+               mcols(grfeatures) <- mcols(GR)
+              
                chr <- seqnames(grfeatures)
                if (class(names(grfeatures)) == "character") {
                    cluster.id <- data.frame(cluster.id=names(grfeatures))
