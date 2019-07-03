@@ -8,8 +8,8 @@
 #'     or sum) is calculated for the specified variable values from each region.
 #'     Notice that if win.size == step.size, then non-overlapping windows are
 #'     obtained.
-#' @param GR Preferibly a GRange object or a list of GRanges objects with the 
-#'     variable of interest in the GRanges metacolumn.
+#' @param GR A GRange object carying the variables of interest in the 
+#'     GRanges metacolumn.
 #' @param win.size An integer for the size of the windows/regions size of the
 #'     intervals of genomics regions.
 #' @param step.size Interval at which the regions/windows must be defined
@@ -30,14 +30,10 @@
 #'     methylation levels could take negative values (TV) and we would be
 #'     interested on the sum of abs(TV), which is sum of the total variation
 #'     distance.
-#' @param column If object \emph{GR} is a list of GRanges objects, then it is
-#'     an integer number denoting the column where the variable of interest is
-#'     located in the metacolumn of the GRanges object or an integer vector of
-#'     two elements (only if prob = TRUE).
 #' @param select.strand Optional. If provided,"+" or "-", then the summarized
 #'     statistic is computed only for the specified DNA chain.
-#' @param maxgap,minoverlap,type See ?findOverlaps in the IRanges package for a
-#'     description of these arguments.
+#' @param maxgap,minoverlap,type See ?\code{\link[IRanges]{findOverlaps}} in the
+#'     \strong{IRanges} package for a description of these arguments.
 #' @param ignore.strand When set to TRUE, the strand information is ignored in
 #'     the overlap calculations.
 #' @param scaling integer (default 1). Scaling factor to be used when
@@ -49,25 +45,9 @@
 #'     data to compute the statistic.
 #' @param naming Logical value. If TRUE, the rows GRanges object will be 
 #'     given the names(grfeatures). Default is FALSE.
-#' @param na.rm Logical value. If TRUE, the NA values will be removed
-#' @param num.cores,tasks Paramaters for parallele computation using package
-#'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
-#'     use, i.e. at most how many child processes will be run simultaneously
-#'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
-#'     (only for Linux OS).
-#' @param missing Only used if GR is a list of GRanges. See ?
-#'     \code{\link[MethylIT]{uniqueGRanges}}. 
+#' @param na.rm Logical value. If TRUE, the NA values will be removed.
 #' @param verbose Logical. Default is TRUE. If TRUE, then the progress of the
 #'     computational tasks is given.
-#' @param maxgap,minoverlap,type,select,ignore.strand Used to find overlapped 
-#'     regions. See ?\code{\link[IRanges]{findOverlaps}} in the \strong{IRanges} 
-#'     package for a description of these arguments.
-#' @param num.cores,tasks Only used if GR is a list of GRanges. 
-#'     Paramaters for parallele computation using package
-#'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
-#'     use, i.e. at most how many child processes will be run simultaneously
-#'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
-#'     (only for Linux OS).
 #' @return A GRanges object with the new genomic regions and their corresponding
 #'     summarized statistic.
 #' @examples
@@ -107,18 +87,10 @@
 getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
             stat = c("sum", "mean", "gmean", "median", "density", "count"),
             columns = NULL, absolute = FALSE, select.strand = NULL, maxgap =-1L, 
-            minoverlap = 0L, scaling = 1000L, logbase = 2, missings = 0,
-            naming = FALSE, type = c("any", "start", "end", "within", "equal"), 
-            chromosomes = NULL, select = "all", ignore.strand = FALSE,
-            na.rm = TRUE, num.cores = 1L, verbose = TRUE, ...) {
-   
-   if (inherits(GR, "list")) {
-      GR <- uniqueGRanges(GR, columns = columns, chromosomes = chromosomes, 
-                       maxgap = maxgap, minoverlap = minoverlap,
-                       missing = missing, type = type, 
-                       ignore.strand = ignore.strand, select = select, 
-                       num.cores = num.cores, verbose = verbose)
-   }
+            minoverlap = 0L, select = "all", ignore.strand = FALSE, 
+            type = c("any", "start", "end", "within", "equal"), scaling = 1000L, 
+            logbase = 2, missings = 0, naming = FALSE, na.rm = TRUE, 
+            verbose = TRUE, ...) {
    
    ## These NULL quiet: no visible binding for global variable 'x2'
    if (class( GR ) != "GRanges") stop( "object must be a GRanges object!")
