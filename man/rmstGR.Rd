@@ -2,7 +2,7 @@
 % Please edit documentation in R/rmstGR.R
 \name{rmstGR}
 \alias{rmstGR}
-\title{Root Mean Square Test for metadata in a list of GRanges objects}
+\title{Root Mean Square Test for Methylation Analysis}
 \usage{
 rmstGR(LR, count.col = 1:2, control.names = NULL,
   treatment.names = NULL, stat = "rmst", pooling.stat = "sum",

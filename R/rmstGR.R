@@ -1,6 +1,6 @@
 #' @rdname rmstGR
 #'
-#' @title Root Mean Square Test for metadata in a list of GRanges objects
+#' @title Root Mean Square Test for Methylation Analysis
 #' @description Count data in MethylIT pipeline is carried in GRanges objects.
 #'     This function provides a shortcut to apply the parametric Bootstrap
 #'     of 2x2 Contingency independence test, which is implemented in function
@@ -139,7 +139,7 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
        stop("List's names does not match control & treatment names")
 
    # === Auxiliar function to perform RMST ===
-   rmst <- function(GR, ctrl.ns, treat.ns) {
+   rmst <- function(GR) {
        count.matrix = as.matrix(mcols(GR))
        p1 <- count.matrix[, 1:2]
        p1 <- p1[, 1]/rowSums(p1)
@@ -217,10 +217,10 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
    }
 
    if (is.null(control.names) || is.null(treatment.names)) {
-       res <- lapply(LR, function(GR) rmst(GR, ...) )
+       res <- lapply(LR, function(GR) rmst(GR) )
    }
 
-   if (!is.null(control.names)&&!is.null(treatment.names)) {
+   if (!is.null(control.names) && !is.null(treatment.names)) {
        ctrl <- LR[control.names]
        ctrl <- lapply(ctrl, function(GR) {
            GR <- GR[, count.col]
@@ -235,12 +235,12 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
            return(GR)
        })
        if (!is.null(pooling.stat)) {
-           ctrl <- poolFromGRlist(ctrl, stat=pooling.stat,
-                           num.cores=num.cores, verbose=verbose)
-           treat <- poolFromGRlist(treat, stat=pooling.stat,
-                           num.cores=num.cores, verbose=verbose)
-           GR <- uniqueGRanges(list(ctrl, treat), verbose=verbose, ...)
-           res <- rmst(GR, ctrl=FALSE, treat=FALSE, ...)
+           ctrl <- poolFromGRlist(ctrl, stat = pooling.stat,
+                           num.cores = num.cores, verbose = verbose)
+           treat <- poolFromGRlist(treat, stat = pooling.stat,
+                           num.cores = num.cores, verbose = verbose)
+           GR <- uniqueGRanges(list(ctrl, treat), verbose = verbose, ...)
+           res <- rmst(GR)
        } else {
            res = list()
            i = 1
@@ -254,12 +254,14 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
                    if (verbose)
                        cat("*** Testing", paste0(control.names[k], " versus ",
                                            treatment.names[j]), "\n")
-                   res[[i]]=rmst(GR, verbose = verbose, ...)
+                   res[[i]] <- rmst(GR)
                    i = i + 1
                }
                names(res) <- test.name
            }
        }
    }
+   cl <- class(LR)
+   res <- structure(res, class = c(cl, "testDMP"))
    return(res)
 }
