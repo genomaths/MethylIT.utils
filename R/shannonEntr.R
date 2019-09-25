@@ -18,9 +18,12 @@ shannonEntr <- function(p, logbase = 2) {
            logP <- integer(n)
            idx <- p > 0
            logP[idx] <- -log(p[idx], base=logbase)
-       } else logP <- -log(p, base=logbase)
+       } else {
+           if (p > 0 ) logP <- -log(p, base=logbase)
+           logP <- 0
+       }
        return(logP)
-   }
+   }    
    return(p * logb(p) + (1 - p) * logb(1 - p))
 }
 

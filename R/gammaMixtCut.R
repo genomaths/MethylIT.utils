@@ -112,7 +112,7 @@
 #' @importFrom mclust Mclust
 #' @importFrom mixtools gammamixEM
 #' @importFrom stats uniroot dgamma
-#' @importFrom MethylIT selectDIMP unlist
+#' @importFrom MethylIT selectDIMP unlist validateClass
 #' @export
 
 gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL, 
@@ -125,36 +125,30 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                        cut.incr = 0.01, stat = 1, maximize = TRUE, num.cores=1L, 
                        tasks=0L, tol = .Machine$double.eps^0.5,
                        maxiter = 1000, ...) {
-  if (!inherits(LR, "pDMP") && !inherits(LR, "InfDiv"))
-       stop("* LR must an object from class 'pPDM' or 'InfDiv'")
-  if ((find.cut || clas.perf) && is.null(div.col))    
+   
+   # -------------------------- valid "pDMP" object--------------------------- #
+   validateClass(LR)
+   # ---------------------------------------------------=--------------------- #
+   
+   if ((find.cut || clas.perf) && is.null(div.col))    
        stop("If findcut or clas.perf is TRUE, a div.col value must be provided")
   
-  divs = unlist(LR)
-  # To remove divs == 0. The methylation signal only is given for divs > 0
-  divs = divs[ abs(divs$hdiv) > 0 ]
+   cl <- class(LR)
+   divs = unlist(LR)
+   div <- abs(mcols(divs[, div.col])[, 1])
+   # To remove divs == 0. The methylation signal only is given for divs > 0
+   divs = divs[ div  > 0 ]
 
-  # =============  Obtain a prior classification model ===========
-  fit <- Mclust(divs$hdiv, G=2, model="V", prior = priorControl())
-  alpha <- fit$parameters$mean^2/fit$parameters$variance$sigmasq
-  beta <- fit$parameters$variance$sigmasq/fit$parameters$mean
-  pro <- fit$parameters$pro
+   # =============  Obtain a prior classification model ===========
+   fit <- Mclust(div, G=2, model="V", prior = priorControl())
+   alpha <- fit$parameters$mean^2/fit$parameters$variance$sigmasq
+   beta <- fit$parameters$variance$sigmasq/fit$parameters$mean
+   pro <- fit$parameters$pro
 
-  # ================= Fit Gamma mixture ==========================
-  y1 <- gammamixEM(divs$hdiv, lambda = pro, alpha = alpha, beta = beta,
+   # ================= Fit Gamma mixture ==========================
+   y1 <- gammamixEM(div, lambda = pro, alpha = alpha, beta = beta,
                    verb = FALSE)
   
-  # Auxiliar function to find cutpoint/intersection point of the two gamma
-  # distributions
-  cutFun <- function(post.cut) {
-       idx <- which(y1$posterior[, 2] > post.cut)
-       TT <- divs[idx]
-       CT <- divs[-idx]
-       CT <- unlist(CT)
-       TT <- unlist(TT)
-       return(max(c(max(CT$hdiv),min(TT$hdiv))))
-   }
-   
    # === Optimal cutpoint from the intersection of gamma distributios ===
    idx <- y1$posterior[,1] > post.cut
    par1 <- y1$gamma.pars[,1]
@@ -173,11 +167,36 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
    else zero <- rep(NA, 5)
    
    names(zero) <- c("cutpoint", "error", "iter", "init.it", "estim.prec")
+   
+   if (cl != "pDMP") {
+       alpha <- c(par1[1], par2[1])
+       beta <- c(par1[2], par2[2])
+       LR <- lapply(LR, function(x) {
+          div <- abs(mcols(x[, div.col])[, 1])
+          x$wprob <- pmixgamma(div, pi, alpha = alpha, beta = beta, ...)
+          return(x)
+       })
+       class(LR) <- "pDMP"
+       divs
+   }
+   
+   # Auxiliar function to find cutpoint/intersection point of the two gamma
+   # distributions
+   cutFun <- function(post.cut) {
+      idx <- which(y1$posterior[, 2] > post.cut)
+      TT <- div[idx]
+      CT <- div[-idx]
+      return(max(c(max(CT),min(TT))))
+   }
+   
   # -------------------------------------------------------------------- #
   
    if (find.cut) {
        cuts <- seq(cut.interval[1], cut.interval[2], cut.incr)
        k = 1; opt <- FALSE
+       if (stat == 12) st = 1 else st = 0
+       k = 1; opt <- FALSE; cutprob <- cuts[1]
+       
        while (k < length(cuts) && !opt) {
            cutpoint <- cutFun(cuts[k])
            dmps <- selectDIMP(LR, div.col = div.col,
@@ -189,21 +208,33 @@ gammaMixtCut <- function(LR, post.cut = 0.5, div.col=NULL, tv.col=NULL,
                                        treatment.names = treatment.names,
                                        classifier=classifier, prop=prop, 
                                        output = "conf.mat", num.cores=num.cores,
-                                       tasks=tasks, verbose = FALSE, ...)
+                                       tasks=tasks, verbose = FALSE)
            if (stat == 0) {
-               st <- conf.mat$Performance$overall[1]
-               if (st == 1) opt <- TRUE
-               k <- k + 1
-           } 
+              st0 <- conf.mat$Performance$overall[1]
+              if (st < st0) {
+                 st <- st0
+                 cutprob <- cuts[k]
+              }
+              if (st == 1) opt <- TRUE
+              k <- k + 1
+           }
            if (is.element(stat, 1:11)) {
-               st <- conf.mat$Performance$byClass[stat]
-               if (st == 1) opt <- TRUE
-               k <- k + 1
-           } 
+              st0 <- conf.mat$Performance$byClass[stat]
+              if (st < st0) {
+                 st <- st0
+                 cutprob <- cuts[k]
+              }
+              if (st == 1) opt <- TRUE
+              k <- k + 1
+           }
            if (stat == 12) {
-               st <- conf.mat$FDR
-               if (st == 0) opt <- TRUE
-               k <- k + 1
+              st0 <- conf.mat$FDR
+              if (st > st0) {
+                 st <- st0
+                 cutprob <- cuts[k]
+              }
+              if (st == 0) opt <- TRUE
+              k <- k + 1
            }
        }
        conf.mat <- c(Cutpoint=cutFun(cuts[k]), PostProbCut = cuts[k], conf.mat)

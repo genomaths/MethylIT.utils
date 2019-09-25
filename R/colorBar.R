@@ -16,6 +16,7 @@
 #' @param lwd Line width.
 #' @param cex.axis Cex values for color bar axis labels.
 #' @param ... Additional parameter to pass to 'par' R function
+#' @keywords internal
 #' @return Image with color bar
 #'
 .colorBar <- function(z, zlim, col=heat.colors(12), breaks, horiz=TRUE,

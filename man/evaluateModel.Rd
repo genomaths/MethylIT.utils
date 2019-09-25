@@ -23,3 +23,4 @@ AIC value
 Evaluate a glm object using the Akaike information criterion
     (AIC)
 }
+\keyword{internal}

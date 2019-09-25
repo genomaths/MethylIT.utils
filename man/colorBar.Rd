@@ -39,3 +39,4 @@ Image with color bar
 This function is for internal use. It creates a color scaled
     bar for heatmap.
 }
+\keyword{internal}

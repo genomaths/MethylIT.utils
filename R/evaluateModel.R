@@ -11,6 +11,7 @@
 #'   test = "LRT", then the p-value from a likelihood ratio test given by
 #'   \code{\link[stats]{anova}} function from \emph{stats} packages will be the
 #'   reported p-value for the group comparison.
+#' @keywords internal
 #' @return AIC value
 .evaluateModel <- function(model, test = c("Wald", "LRT")) {
    if (!inherits(model, "try-error")) {
