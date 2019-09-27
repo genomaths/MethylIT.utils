@@ -22,11 +22,13 @@
 #'     step.size are ignored and the statistics are estimated for 'grfeatures'.
 #' @param stat Statistic used to estimate the summarized value of the variable
 #'     of interest in each interval/window. Posible options are: "mean",
-#'     geometric mean ("gmean"), "median", "density", "count" and "sum"
-#'     (default). Here, we define "density" as the sum of values from the
+#'     geometric mean ("gmean"), "median", "density", "count", "denCount" and
+#'     "sum" (default). Here, we define "density" as the sum of values from the
 #'     variable of interest in the given region devided by the length of the
-#'     region. The option 'count' compute the number/count of positions in the 
-#'     specified regions with values greater than zero in the selected 'column'. 
+#'     region. The option 'count' compute the number/count of positions in the
+#'     specified regions with values greater than zero in the selected 'column'.
+#'     The statistic "denCount" is defined as the "count" in the given region 
+#'     devided by the length of the region.
 #' @param absolute Optional. Logic (default: FALSE). Whether to use the absolute
 #'     values of the variable provided. For example, the difference of
 #'     methylation levels could take negative values (TV) and we would be
@@ -113,7 +115,8 @@
 #' @rdname getGRegionsStat-methods
 setGeneric("getGRegionsStat",
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                 stat = c("sum", "mean", "gmean", "median", "density", "count"),
+                 stat = c("sum", "mean", "gmean", "median", "density", "count",
+                           "denCount"),
                  absolute = FALSE, select.strand = NULL, column = 1L,
                  prob = FALSE, entropy = FALSE, maxgap =-1L, minoverlap = 0L, 
                  scaling = 1000L, logbase = 2, missings = 0,
@@ -126,7 +129,8 @@ setGeneric("getGRegionsStat",
 #' @rdname getGRegionsStat-methods
 setMethod("getGRegionsStat", signature(GR = "GRanges"),
    function(GR, win.size=350, step.size=350, grfeatures=NULL,
-            stat = c("sum", "mean", "gmean", "median", "density", "count"),
+            stat = c("sum", "mean", "gmean", "median", "density", "count",
+                   "denCount"),
             absolute = FALSE, select.strand = NULL, column = 1L,
             prob = FALSE, entropy = FALSE, maxgap =-1L, minoverlap = 0L, 
             scaling = 1000L, logbase = 2, missings = 0,
@@ -139,7 +143,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            stop("* 'grfeatures', if provided, must be a GRanges object")
        }
        stat <- match.arg(stat, c("sum", "mean", "gmean", "median",
-                                 "density", "count"))
+                                   "density", "count", "denCount"))
        
        if (!is.element(missings, c(0, NA))) missings <- NA
        
@@ -154,7 +158,8 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                        mean = mean(x, na.rm = na.rm),
                        gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
                        median = median(x, na.rm = na.rm),
-                       density = sum(x, na.rm = na.rm))
+                       density = sum(x, na.rm = na.rm),
+                       denCount = sum(x > 0, na.rm=na.rm))
        }
 
        ## =============================== ##
@@ -357,6 +362,10 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
              widths=width(GR)
              GR$statistic <- (scaling * GR$statistic/widths)
            }
+           if (stat == "denCount" && !prob && !entropy) {
+              widths=width(GR)
+              GR$statistic <- (scaling * GR$statistic/widths)
+           }
            if (!is.na(missings)) {
               idx <- is.na(GR$statistic)
               if (any(idx)) GR$statistic[idx] <- 0
@@ -370,7 +379,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
 # ====================== Function to operate on lists ======================= #
 getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                            stat=c("sum", "mean", "gmean", "median", "density",
-                                   "count"),
+                                   "count", "denCount"),
                            absolute=FALSE, select.strand=NULL, column=1L,
                            prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                            scaling = 1000L, logbase = 2, missings = 0,
@@ -415,7 +424,7 @@ setClass("pDMP")
 setMethod("getGRegionsStat", signature(GR = "list"), 
            function(GR, win.size = 350, step.size = 350, grfeatures = NULL,
                    stat = c("sum", "mean", "gmean", "median", "density", 
-                           "count"),
+                           "count", "denCount"),
                    absolute = FALSE, select.strand = NULL, column = 1L,
                    prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
                    scaling=1000L, logbase = 2, missings = 0,
@@ -438,7 +447,8 @@ setMethod("getGRegionsStat", signature(GR = "list"),
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="InfDiv"), 
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmean", "median", "density", "count"),
+                   stat=c("sum", "mean", "gmean", "median", "density", "count",
+                           "denCount"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                    scaling=1000L, logbase = 2, missings = 0,
@@ -461,7 +471,8 @@ setMethod("getGRegionsStat", signature(GR="InfDiv"),
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="pDMP"), 
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmean", "median", "density", "count"),
+                   stat=c("sum", "mean", "gmean", "median", "density", "count",
+                           "denCount"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                    scaling=1000L, logbase = 2, missings = 0,
@@ -484,7 +495,8 @@ setMethod("getGRegionsStat", signature(GR="pDMP"),
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
 setMethod("getGRegionsStat", signature(GR="GRangesList"), 
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
-                   stat=c("sum", "mean", "gmean", "median", "density", "count"),
+                   stat=c("sum", "mean", "gmean", "median", "density", "count",
+                           "denCount"),
                    absolute=FALSE, select.strand=NULL, column=1L,
                    prob=FALSE, entropy=FALSE, maxgap=-1L, minoverlap=0L,
                    scaling=1000L, logbase = 2, missings = 0,
