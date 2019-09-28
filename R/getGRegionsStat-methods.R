@@ -150,16 +150,15 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
        type <- match.arg(type, c("any", "start", "end", "within", "equal"))
 
        ## === Some functions to use ===
-       statist <- function(x, stat = c(), absolute) {
-           if (absolute) x = abs(x)
+       statist <- function(x, stat = c()) {
            x <- switch(stat,
-                       count = sum(x > 0, na.rm=na.rm),
+                       count = sum(x != 0, na.rm = na.rm),
                        sum = sum(x, na.rm = na.rm),
                        mean = mean(x, na.rm = na.rm),
                        gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
                        median = median(x, na.rm = na.rm),
                        density = sum(x, na.rm = na.rm),
-                       denCount = sum(x > 0, na.rm=na.rm))
+                       denCount = sum(x != 0, na.rm=na.rm))
        }
 
        ## =============================== ##
@@ -174,6 +173,8 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
        }
 
        GR <- GR[, column]
+       if (absolute) mcols(GR) <- data.frame(abs(as.matrix(mcols(GR))))
+       
        chrs <- as.character(unique(seqnames(GR)))
 
        ## === If genomic features are not specified ===
@@ -257,7 +258,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            }
        }
 
-       if (sum(GR$statistic, na.rm = TRUE) > 0) {
+       if (abs(sum(GR$statistic, na.rm = TRUE)) > 0) {
            mcols(GR) <- DataFrame(cluster.id, mcols(GR))
            GR <- data.table(as.data.frame(GR))
            if (length(column) < 2) {
@@ -278,7 +279,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                if (!prob && !entropy) {
                    GR <- GR[, list(seqnames=unique(seqnames), start=min(start),
                            end=max(end),
-                           statistic=statist(statistic, stat, absolute)),
+                           statistic = statist(statistic, stat)),
                            by=cluster.id]
                    cluster.id <- GR$cluster.id
                    GR <- data.frame(GR)[, c(grn, "statistic")]
@@ -286,7 +287,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                if (prob && !entropy) {
                    GR <- GR[, list(seqnames=unique(seqnames), start=min(start),
                            end=max(end),
-                           stat.prob=statist(statistic, stat, absolute)),
+                           stat.prob = statist(statistic, stat)),
                            by=cluster.id]
                    cluster.id <- GR$cluster.id
                    GR <- data.frame(GR)[, c(grn, "stat.prob")]
@@ -295,8 +296,8 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                    GR$ent <- shannonEntr(GR$p, logbase=logbase)
                    GR <- GR[ ,list(seqnames=unique(seqnames), start=min(start),
                            end=max(end),
-                           stat.prob=statist(statistic, stat, absolute),
-                           stat.ent=statist(ent, stat, absolute)),
+                           stat.prob = statist(statistic, stat),
+                           stat.ent=statist(ent, stat)),
                            by=cluster.id]
                    cluster.id <- GR$cluster.id
                    GR <- data.frame(GR)[, c(grn, "stat.prob", "stat.ent")]
@@ -305,7 +306,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                    GR$ent <- shannonEntr(GR$p, logbase=logbase)
                    GR <- GR[, list(seqnames=unique(seqnames), start=min(start),
                            end=max(end),
-                           stat.ent=statist(ent, stat, absolute)),
+                           stat.ent=statist(ent, stat)),
                            by=cluster.id]
                    cluster.id <- GR$cluster.id
                    GR <- data.frame(GR)[, c(grn, "stat.ent")]
@@ -318,8 +319,8 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                        GR <- GR[, list(seqnames=unique(seqnames),
                                start=min(start),
                                end=max(end),
-                               x1=statist(x1, stat, absolute),
-                               x2=statist(x2, stat, absolute)),
+                               x1=statist(x1, stat),
+                               x2=statist(x2, stat)),
                                by=cluster.id]
                        GR$stat.prob <- GR$x1 / (GR$x1 + GR$x2)
                        cluster.id <- GR$cluster.id
@@ -330,9 +331,9 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                        GR <- GR[, list(seqnames=unique(seqnames),
                            start=min(start),
                            end=max(end),
-                           x1=statist(x1, stat, absolute),
-                           x2=statist(x2, stat, absolute),
-                           stat.ent=statist(ent, stat, absolute)),
+                           x1=statist(x1, stat),
+                           x2=statist(x2, stat),
+                           stat.ent=statist(ent, stat)),
                            by=cluster.id]
                        GR$stat.prob <- GR$x1 / (GR$x1 + GR$x2)
                        cluster.id <- GR$cluster.id
@@ -343,7 +344,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                        GR <- GR[, list(seqnames=unique(seqnames),
                            start=min(start),
                            end=max(end),
-                           stat.ent=statist(ent, stat, absolute)),
+                           stat.ent=statist(ent, stat)),
                            by=cluster.id]
                        cluster.id <- GR$cluster.id
                        GR <- data.frame(GR)[, c(grn, "stat.ent")]

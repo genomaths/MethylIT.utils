@@ -19,12 +19,13 @@
 #'     step.size are ignored and the statistics are estimated for 'grfeatures'.
 #' @param stat Statistic used to estimate the summarized value of the variable
 #'     of interest in each interval/window. Posible options are: "mean",
-#'     geometric mean ("gmean"), "median", "density", "count" and "sum"
-#'     (default). Here, we define "density" as the sum of values from the
-#'     variable of interest in the given region devided by the length/width of
-#'     the region. The option 'count' compute the number/count of positions in
-#'     the specified regions with values greater than zero in the selected
-#'     'column'.
+#'     geometric mean ("gmean"), "median", "density", "count", "denCount" and
+#'     "sum" (default). Here, we define "density" as the sum of values from the
+#'     variable of interest in the given region devided by the length of the
+#'     region. The option 'count' compute the number/count of positions in the
+#'     specified regions with values greater than zero in the selected 'column'.
+#'     The statistic "denCount" is defined as the "count" in the given region 
+#'     devided by the length of the region.
 #' @param absolute Optional. Logic (default: FALSE). Whether to use the absolute
 #'     values of the variable provided. For example, the difference of
 #'     methylation levels could take negative values (TV) and we would be
@@ -85,7 +86,8 @@
 #' @author Robersy Sanchez
 
 getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
-            stat = c("sum", "mean", "gmean", "median", "density", "count"),
+            stat = c("sum", "mean", "gmean", "median", "density", "count",
+                   "denCount"),
             columns = NULL, absolute = FALSE, select.strand = NULL, maxgap =-1L, 
             minoverlap = 0L, select = "all", ignore.strand = FALSE, 
             type = c("any", "start", "end", "within", "equal"), scaling = 1000L, 
@@ -93,12 +95,12 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
             verbose = TRUE, ...) {
    
    ## These NULL quiet: no visible binding for global variable 'x2'
-   if (class( GR ) != "GRanges") stop( "object must be a GRanges object!")
+   if (class( GR ) != "GRanges") stop( "GR object must be a GRanges object!")
    if (!is.null(grfeatures) && !inherits(grfeatures,"GRanges")) {
        stop("* 'grfeatures', if provided, must be a GRanges object")
    }
    stat <- match.arg(stat, c("sum", "mean", "gmean", "median", "density", 
-                               "count"))
+                               "count", "denCount"))
        
    if (!is.element(missings, c(0, NA))) missings <- NA
        
@@ -108,12 +110,13 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
    stats <- function(x, stat = c(), absolute, na.rm) {
            if (absolute) x = abs(x)
            x <- switch(stat,
-                       count = sum(x > 0, na.rm = na.rm),
+                       count = sum(x != 0, na.rm = na.rm),
                        sum = sum(x, na.rm = na.rm),
                        mean = mean(x, na.rm = na.rm),
                        gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
                        median = median(x, na.rm = na.rm),
-                       density = sum(x, na.rm = na.rm))
+                       density = sum(x, na.rm = na.rm),
+                       denCount = sum(x != 0, na.rm = na.rm))
    }
    fn <- function(x) stats(x, stat = stat, absolute = absolute, na.rm = na.rm)
 
@@ -190,7 +193,7 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                            start = as.numeric(strands[, 2]),
                            end = as.numeric(strands[, 3]), strand =  "*")
            GR <- makeGRangesFromDataFrame(GR, keep.extra.columns = TRUE)
-           if (stat == "density") {
+           if (stat == "density" || stat == "denCount") {
               widths <- width(GR)
               mcols(GR) <- (scaling * as.matrix(mcols(GR))/widths)
            }

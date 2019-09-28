@@ -6,7 +6,7 @@
 \usage{
 getGRegionsStat2(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
-  "density", "count"), columns = NULL, absolute = FALSE,
+  "density", "count", "denCount"), columns = NULL, absolute = FALSE,
   select.strand = NULL, maxgap = -1L, minoverlap = 0L,
   select = "all", ignore.strand = FALSE, type = c("any", "start",
   "end", "within", "equal"), scaling = 1000L, logbase = 2,
@@ -28,12 +28,13 @@ step.size are ignored and the statistics are estimated for 'grfeatures'.}
 
 \item{stat}{Statistic used to estimate the summarized value of the variable
 of interest in each interval/window. Posible options are: "mean",
-geometric mean ("gmean"), "median", "density", "count" and "sum"
-(default). Here, we define "density" as the sum of values from the
-variable of interest in the given region devided by the length/width of
-the region. The option 'count' compute the number/count of positions in
-the specified regions with values greater than zero in the selected
-'column'.}
+geometric mean ("gmean"), "median", "density", "count", "denCount" and
+"sum" (default). Here, we define "density" as the sum of values from the
+variable of interest in the given region devided by the length of the
+region. The option 'count' compute the number/count of positions in the
+specified regions with values greater than zero in the selected 'column'.
+The statistic "denCount" is defined as the "count" in the given region 
+devided by the length of the region.}
 
 \item{absolute}{Optional. Logic (default: FALSE). Whether to use the absolute
 values of the variable provided. For example, the difference of
