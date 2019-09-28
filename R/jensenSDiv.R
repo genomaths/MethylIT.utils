@@ -23,6 +23,7 @@
 #' @references
 #' 1. J. Lin, “Divergence Measures Based on the Shannon Entropy,”
 #' IEEE Trans. Inform. Theory, vol. 37, no. 1, pp. 145–151, 1991.
+#' @author Robersy Sanchez (\url{https://github.com/genomaths}).
 #' @export
 
 jensenSDiv <- function(p, q, Pi=0.5, logbase=2) {

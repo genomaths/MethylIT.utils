@@ -103,8 +103,7 @@ distance.}
 statistic is computed only for the specified DNA chain.}
 
 \item{column}{Integer number denoting the column where the variable of
-interest is located in the metacolumn of the GRanges object or an integer
-vector of two elements (only if prob = TRUE).}
+interest is located in the metacolumn of the GRanges object.}
 
 \item{prob}{Logic. If TRUE and the variable of interest has values between
 zero and 1, then the summarized statistic is comuputed using Fisher's
@@ -198,5 +197,5 @@ grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
 \code{\link{getGRegionsStat2}}.
 }
 \author{
-Robersy Sanchez
+Robersy Sanchez (\url{https://github.com/genomaths}).
 }

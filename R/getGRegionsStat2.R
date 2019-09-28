@@ -82,9 +82,8 @@
 #' @importFrom MethylIT uniqueGRanges
 #' @importFrom utils txtProgressBar
 #' @seealso \code{\link{getGRegionsStat}}
+#' @author Robersy Sanchez (\url{https://github.com/genomaths}).
 #' @export
-#' @author Robersy Sanchez
-
 getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
             stat = c("sum", "mean", "gmean", "median", "density", "count",
                    "denCount"),

@@ -110,5 +110,5 @@ grs
 \code{\link{getGRegionsStat}}
 }
 \author{
-Robersy Sanchez
+Robersy Sanchez (\url{https://github.com/genomaths}).
 }

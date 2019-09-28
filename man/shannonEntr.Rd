@@ -15,11 +15,19 @@ shannonEntr(p, logbase = 2)
 Compute Shannon Entropy of probability vector p.
 }
 \details{
-By definition, if p_i = 0 for some i, the value of the corresponding
-    summ and 0*log(0) is taken to be 0.
+By definition, if p_i = 0 for some i, then the entropy is 0. In 
+    addition, since Shannon entropy is only defined for \eqn{0 <= p <= 1},
+    the function will return 0 for any values of p out of the definition
+    range of values.
 }
 \examples{
 counts = sample.int(10)
 prob = counts/sum(counts)
 shannonEntr(prob)
+
+## Out of the definition range of values for p, 'shannonEntr' will return 0
+shannonEntr(c(0.5, 1.2, -0.3))
+}
+\author{
+Robersy Sanchez (\url{https://github.com/genomaths}).
 }

@@ -37,8 +37,7 @@
 #' @param select.strand Optional. If provided,"+" or "-", then the summarized
 #'     statistic is computed only for the specified DNA chain.
 #' @param column Integer number denoting the column where the variable of
-#'     interest is located in the metacolumn of the GRanges object or an integer
-#'     vector of two elements (only if prob = TRUE).
+#'     interest is located in the metacolumn of the GRanges object.
 #' @param prob Logic. If TRUE and the variable of interest has values between
 #'     zero and 1, then the summarized statistic is comuputed using Fisher's
 #'     transformation. If length(column) == 2, say with colums x1 and x2, then
@@ -109,7 +108,7 @@
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply bpstart
 #' @seealso \code{\link{getGRegionsStat2}}.
 #' @export
-#' @author Robersy Sanchez
+#' @author Robersy Sanchez (\url{https://github.com/genomaths}).
 #'
 #' @aliases getGRegionsStat
 #' @rdname getGRegionsStat-methods
@@ -158,7 +157,8 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                        gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
                        median = median(x, na.rm = na.rm),
                        density = sum(x, na.rm = na.rm),
-                       denCount = sum(x != 0, na.rm=na.rm))
+                       denCount = sum(x != 0, na.rm=na.rm),
+                       entropy = x)
        }
 
        ## =============================== ##
@@ -276,7 +276,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            grn <- c("seqnames", "start", "end")
            ## =========== Compute statistic for regions =====================
            if (length(column) < 2) {
-               if (!prob && !entropy) {
+               if (!entropy) {
                    GR <- GR[, list(seqnames=unique(seqnames), start=min(start),
                            end=max(end),
                            statistic = statist(statistic, stat)),
@@ -284,78 +284,16 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                    cluster.id <- GR$cluster.id
                    GR <- data.frame(GR)[, c(grn, "statistic")]
                }
-               if (prob && !entropy) {
-                   GR <- GR[, list(seqnames=unique(seqnames), start=min(start),
-                           end=max(end),
-                           stat.prob = statist(statistic, stat)),
-                           by=cluster.id]
-                   cluster.id <- GR$cluster.id
-                   GR <- data.frame(GR)[, c(grn, "stat.prob")]
-               }
-               if (prob && entropy) {
-                   GR$ent <- shannonEntr(GR$p, logbase=logbase)
+               if (entropy) {
+                   GR$statistic <- shannonEntr(GR$statistic, logbase=logbase)
                    GR <- GR[ ,list(seqnames=unique(seqnames), start=min(start),
                            end=max(end),
-                           stat.prob = statist(statistic, stat),
-                           stat.ent=statist(ent, stat)),
+                           statistic = statist(statistic, stat)), 
                            by=cluster.id]
                    cluster.id <- GR$cluster.id
-                   GR <- data.frame(GR)[, c(grn, "stat.prob", "stat.ent")]
+                   GR <- data.frame(GR)[, c(grn, "statistic")]
                }
-               if (entropy && !prob) {
-                   GR$ent <- shannonEntr(GR$p, logbase=logbase)
-                   GR <- GR[, list(seqnames=unique(seqnames), start=min(start),
-                           end=max(end),
-                           stat.ent=statist(ent, stat)),
-                           by=cluster.id]
-                   cluster.id <- GR$cluster.id
-                   GR <- data.frame(GR)[, c(grn, "stat.ent")]
-               }
-           } else {
-               if (prob || entropy) {
-                   GR$p <- GR$x1/(GR$x1 + GR$x2)
-                   GR$p[ is.na(GR$p) ] <- 0
-                   if (prob && !entropy) {
-                       GR <- GR[, list(seqnames=unique(seqnames),
-                               start=min(start),
-                               end=max(end),
-                               x1=statist(x1, stat),
-                               x2=statist(x2, stat)),
-                               by=cluster.id]
-                       GR$stat.prob <- GR$x1 / (GR$x1 + GR$x2)
-                       cluster.id <- GR$cluster.id
-                       GR <- data.frame(GR)[, c(grn, "stat.prob")]
-                   }
-                   if (prob && entropy) {
-                       GR$ent <- shannonEntr(GR$p, logbase=logbase)
-                       GR <- GR[, list(seqnames=unique(seqnames),
-                           start=min(start),
-                           end=max(end),
-                           x1=statist(x1, stat),
-                           x2=statist(x2, stat),
-                           stat.ent=statist(ent, stat)),
-                           by=cluster.id]
-                       GR$stat.prob <- GR$x1 / (GR$x1 + GR$x2)
-                       cluster.id <- GR$cluster.id
-                       GR <- data.frame(GR)[, c(grn, "stat.prob", "stat.ent")]
-                   }
-                   if (entropy && !prob) {
-                       GR$ent <- shannonEntr(GR$p, logbase=logbase)
-                       GR <- GR[, list(seqnames=unique(seqnames),
-                           start=min(start),
-                           end=max(end),
-                           stat.ent=statist(ent, stat)),
-                           by=cluster.id]
-                       cluster.id <- GR$cluster.id
-                       GR <- data.frame(GR)[, c(grn, "stat.ent")]
-                   }
-               }
-           }
-
-           if (prob && length(column) < 2) {
-               ## Apply inverse of Fisher transformation
-               GR$stat.prob <- tanh(GR$stat.prob)
-           }
+           } else stop("*** Argument of 'colum' must be an integer number")
 
            if (!is.null(select.strand)) GR$strand <- select.strand
            GR <- makeGRangesFromDataFrame(GR, keep.extra.columns=TRUE)
