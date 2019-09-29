@@ -40,10 +40,7 @@
 #'     interest is located in the metacolumn of the GRanges object.
 #' @param prob Logic. If TRUE and the variable of interest has values between
 #'     zero and 1, then the summarized statistic is comuputed using Fisher's
-#'     transformation. If length(column) == 2, say with colums x1 and x2, then
-#'     the variable of interest will be p = x1/(x1 + x2). For example, if x1
-#'     and x2 are methylated and unmethylated read counts, respectively, then p
-#'     is the methylation level.
+#'     transformation.
 #' @param entropy Logic. Whether to compute the entropy when prob == TRUE.
 #' @param maxgap,minoverlap,type See ?findOverlaps in the IRanges package for a
 #'     description of these arguments.
@@ -56,12 +53,14 @@
 #'     are computed when parameter 'entropy = TRUE' (default: logbase = 2).
 #' @param missings Whether to write '0' or 'NA' on regions where there is not
 #'     data to compute the statistic.
-#' @param naming Logical value. If TRUE, the rows GRanges object will be 
-#'     given the names(GR). Default is FALSE.
-#' @param na.rm Logical value. If TRUE, the NA values will be removed
 #' @param maxgap,minoverlap,type,select,ignore.strand Used to find overlapped 
 #'     regions. See ?\code{\link[IRanges]{findOverlaps}} in the \strong{IRanges} 
 #'     package for a description of these arguments.
+#' @param na.rm Logical value. If TRUE, the NA values will be removed
+#' @param naming Logical value. If TRUE, the rows GRanges object will be 
+#'     given the names(GR). Default is FALSE.
+#' @param output A string. Setting output = "all" will return all the regions
+#'     given in 'grfeatures'. Default is output = "hits".
 #' @param num.cores,tasks Paramaters for parallele computation using package
 #'     \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
 #'     use, i.e. at most how many child processes will be run simultaneously
@@ -121,6 +120,7 @@ setGeneric("getGRegionsStat",
                  scaling = 1000L, logbase = 2, missings = 0,
                  type = c("any", "start", "end", "within", "equal"),
                  ignore.strand = FALSE, na.rm=TRUE, naming = FALSE,
+                 output = c("hits", "all"),
                  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
              standardGeneric("getGRegionsStat"))
 
@@ -134,15 +134,17 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
             prob = FALSE, entropy = FALSE, maxgap =-1L, minoverlap = 0L, 
             scaling = 1000L, logbase = 2, missings = 0,
             type = c("any", "start", "end", "within", "equal"),
-            ignore.strand = FALSE, na.rm=TRUE, naming = FALSE) {
+            ignore.strand = FALSE, na.rm=TRUE, naming = FALSE,
+            output = c("hits", "all")) {
        ## These NULL quiet: no visible binding for global variable 'x2'
-       x1 <- x2 <- ent <- statistic <- NULL
+       ent <- statistic <- NULL
        if (class( GR ) != "GRanges") stop( "object must be a GRanges object!")
        if (!is.null(grfeatures) && !inherits(grfeatures,"GRanges")) {
            stop("* 'grfeatures', if provided, must be a GRanges object")
        }
        stat <- match.arg(stat, c("sum", "mean", "gmean", "median",
                                    "density", "count", "denCount"))
+       output <- match.arg(output)
        
        if (!is.element(missings, c(0, NA))) missings <- NA
        
@@ -182,7 +184,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            if (length(GR) < win.size || length(GR) < step.size) {
                    stop("* 'GR'length is lesser of 'win.size' or 'step.size'")
            }
-           all.wins = GRanges()
+           grfeatures = GRanges()
            for (k in 1:length(chrs)) {
                    ## get max length of chromosome
                    max.length <- max(IRanges::end(GR[seqnames(GR) == chrs[k],]))
@@ -193,32 +195,32 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                                    width=rep(win.size, numTiles))
                    temp.wins <- GRanges(seqnames=rep(chrs[k], numTiles),
                                    ranges=ranges)
-                   all.wins <- suppressWarnings(c(all.wins, temp.wins))
+                   grfeatures <- suppressWarnings(c(grfeatures, temp.wins))
            }
 
            ## sites of interest inside of the windows
-           Hits <- findOverlaps(GR, all.wins, maxgap=maxgap,
+           Hits <- findOverlaps(GR, grfeatures, maxgap=maxgap,
                                    minoverlap=minoverlap,
                                    ignore.strand=ignore.strand,
                                    type=type)
            if (length(Hits) > 0) {
                m <- ncol(mcols(GR))
                if (m  > 1) {
-                   mcols(all.wins) <- matrix(missings, nrow = length(all.wins),
+                   mcols(grfeatures) <- matrix(missings, nrow = length(grfeatures),
                                            ncol = m)
-               } else mcols(all.wins) <- missings
-               all.wins <- all.wins[subjectHits(Hits)]
+               } else mcols(grfeatures) <- missings
+               grfeatures <- grfeatures[subjectHits(Hits)]
                GR <- GR[queryHits(Hits)]
-               mcols(all.wins) <- mcols(GR)
-               chr <- seqnames(all.wins)
+               mcols(grfeatures) <- mcols(GR)
+               chr <- seqnames(grfeatures)
 
                ## Variable to mark the limits of each GR
-               text <- paste(chr, start(all.wins), end(all.wins), sep = "_")
+               text <- paste(chr, start(grfeatures), end(grfeatures), sep = "_")
                cluster.id <- data.frame(cluster.id=text)
-               GR <- all.wins; rm(all.wins, text); gc()
+               GR <- grfeatures; rm(text); gc()
                colnames(mcols(GR)) <- "statistic"
            } else {
-               GR <- all.wins
+               GR <- grfeatures
                mcols(GR) <- missings
                colnames(mcols(GR)) <- "statistic"
            }
@@ -249,7 +251,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                    cluster.id <- data.frame(cluster.id=text)
                    rm(text)
                }
-               GR <- grfeatures; rm(grfeatures); gc()
+               GR <- grfeatures; gc()
                colnames(mcols(GR)) <- "statistic"
            } else {
                GR <- grfeatures
@@ -264,10 +266,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            if (length(column) < 2) {
                colnames(GR) <- c("seqnames", "start", "end", "width",
                                "strand", "cluster.id", "statistic")
-           } else {
-               colnames(GR) <- c("seqnames", "start", "end", "width",
-                               "strand", "cluster.id", "x1", "x2")
-           }
+           } 
 
            if (prob && length(column) < 2) { ## Apply Fisher transformation
                GR$p <- GR$statistic
@@ -311,6 +310,17 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            }
        } else cluster.id <- NULL
        if (naming) names(GR) <- cluster.id
+       if (output == "all") {
+           mcols(grfeatures) <- integer(length(grfeatures)) 
+           colnames(mcols(grfeatures)) <- "statistic"
+           if (naming && is.null(names(grfeatures))) {
+               names(grfeatures) <- paste(chr, start(grfeatures),
+                                           end(grfeatures), sep = "_")
+           }
+           grfeatures <- grfeatures[ -subjectHits(Hits) ]
+           grfeatures <- unique(grfeatures)
+           GR <- c(GR, grfeatures)
+       }
        return(GR)
    }
 )
@@ -324,6 +334,7 @@ getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
                            scaling = 1000L, logbase = 2, missings = 0,
                            type = c("any", "start", "end", "within", "equal"),
                            ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
+                           output = c("hits", "all"),
                            num.cores = 1L, tasks = 0, verbose = TRUE, ...) {
 
    if (verbose) progressbar = TRUE else progressbar = FALSE
@@ -343,7 +354,7 @@ getGRegionsStats <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
    GR <- bplapply(GR, getGRegionsStat, win.size, step.size, grfeatures,
                    stat, absolute, select.strand, column, prob, entropy,
                    maxgap, minoverlap, scaling, logbase, missings,
-                   type, ignore.strand, na.rm, naming, BPPARAM=bpparam)
+                   type, ignore.strand, na.rm, naming, output, BPPARAM=bpparam)
    if (!is.null(nams)) names(GR) <- nams
    return(GR)
 }
@@ -368,12 +379,13 @@ setMethod("getGRegionsStat", signature(GR = "list"),
                    prob = FALSE, entropy = FALSE, maxgap = -1L, minoverlap = 0L,
                    scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
-                   ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
+                   ignore.strand=FALSE, na.rm=TRUE, naming = FALSE,
+                   output = c("hits", "all"),
                    num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
                                maxgap, minoverlap, scaling, logbase, missings, 
-                               type, ignore.strand, na.rm, naming, 
+                               type, ignore.strand, na.rm, naming, output,
                                num.cores, tasks, verbose, ...))
 
 
@@ -393,11 +405,12 @@ setMethod("getGRegionsStat", signature(GR="InfDiv"),
                    scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
                    ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
+                   output = c("hits", "all"),
                    num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
                                maxgap, minoverlap, scaling, logbase, missings, 
-                               type, ignore.strand, na.rm, naming, 
+                               type, ignore.strand, na.rm, naming, output,
                                num.cores, tasks, verbose, ...))
 
 
@@ -417,11 +430,12 @@ setMethod("getGRegionsStat", signature(GR="pDMP"),
                    scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
                    ignore.strand=FALSE, na.rm=TRUE, naming = FALSE, 
+                   output = c("hits", "all"),
                    num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
                                maxgap, minoverlap, scaling, logbase, missings, 
-                               type, ignore.strand, na.rm, naming, 
+                               type, ignore.strand, na.rm, naming, output,
                                num.cores, tasks, verbose, ...))
 
 
@@ -441,10 +455,11 @@ setMethod("getGRegionsStat", signature(GR="GRangesList"),
                    scaling=1000L, logbase = 2, missings = 0,
                    type=c("any", "start", "end", "within", "equal"),
                    ignore.strand=FALSE, na.rm=TRUE, naming = FALSE,
+                   output = c("hits", "all"),
                    num.cores = 1L, tasks = 0, verbose = TRUE, ...) 
                getGRegionsStats(GR, win.size, step.size, grfeatures, stat,
                                absolute, select.strand, column, prob, entropy,
                                maxgap, minoverlap, scaling, logbase, missings, 
-                               type, ignore.strand, na.rm, naming, 
+                               type, ignore.strand, na.rm, naming, output,
                                num.cores, tasks, verbose, ...))
 

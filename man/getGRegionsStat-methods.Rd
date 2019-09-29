@@ -23,7 +23,8 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   missings = 0, type = c("any", "start", "end", "within", "equal"),
   ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
-  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
+  output = c("hits", "all"), num.cores = 1L, tasks = 0,
+  verbose = TRUE, ...)
 
 \S4method{getGRegionsStat}{GRanges}(GR, win.size = 350,
   step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
@@ -31,7 +32,8 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   select.strand = NULL, column = 1L, prob = FALSE, entropy = FALSE,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   missings = 0, type = c("any", "start", "end", "within", "equal"),
-  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE)
+  ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
+  output = c("hits", "all"))
 
 \S4method{getGRegionsStat}{list}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
@@ -40,7 +42,8 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   missings = 0, type = c("any", "start", "end", "within", "equal"),
   ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
-  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
+  output = c("hits", "all"), num.cores = 1L, tasks = 0,
+  verbose = TRUE, ...)
 
 \S4method{getGRegionsStat}{InfDiv}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
@@ -49,7 +52,8 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   missings = 0, type = c("any", "start", "end", "within", "equal"),
   ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
-  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
+  output = c("hits", "all"), num.cores = 1L, tasks = 0,
+  verbose = TRUE, ...)
 
 \S4method{getGRegionsStat}{pDMP}(GR, win.size = 350, step.size = 350,
   grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
@@ -58,7 +62,8 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   missings = 0, type = c("any", "start", "end", "within", "equal"),
   ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
-  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
+  output = c("hits", "all"), num.cores = 1L, tasks = 0,
+  verbose = TRUE, ...)
 
 \S4method{getGRegionsStat}{GRangesList}(GR, win.size = 350,
   step.size = 350, grfeatures = NULL, stat = c("sum", "mean",
@@ -67,7 +72,8 @@ getGRegionsStat(GR, win.size = 350, step.size = 350,
   maxgap = -1L, minoverlap = 0L, scaling = 1000L, logbase = 2,
   missings = 0, type = c("any", "start", "end", "within", "equal"),
   ignore.strand = FALSE, na.rm = TRUE, naming = FALSE,
-  num.cores = 1L, tasks = 0, verbose = TRUE, ...)
+  output = c("hits", "all"), num.cores = 1L, tasks = 0,
+  verbose = TRUE, ...)
 }
 \arguments{
 \item{GR}{A GRange object or a list of GRanges object with the variable of 
@@ -107,10 +113,7 @@ interest is located in the metacolumn of the GRanges object.}
 
 \item{prob}{Logic. If TRUE and the variable of interest has values between
 zero and 1, then the summarized statistic is comuputed using Fisher's
-transformation. If length(column) == 2, say with colums x1 and x2, then
-the variable of interest will be p = x1/(x1 + x2). For example, if x1
-and x2 are methylated and unmethylated read counts, respectively, then p
-is the methylation level.}
+transformation.}
 
 \item{entropy}{Logic. Whether to compute the entropy when prob == TRUE.}
 
@@ -134,6 +137,9 @@ the overlap calculations.}
 
 \item{naming}{Logical value. If TRUE, the rows GRanges object will be 
 given the names(GR). Default is FALSE.}
+
+\item{output}{A string. Setting output = "all" will return all the regions
+given in 'grfeatures'. Default is output = "hits".}
 
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
