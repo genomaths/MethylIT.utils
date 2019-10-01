@@ -2,21 +2,22 @@
 #'
 #' @title Root Mean Square Test for Methylation Analysis
 #' @description Count data in MethylIT pipeline is carried in GRanges objects.
-#'     This function provides a shortcut to apply the parametric Bootstrap
-#'     of 2x2 Contingency independence test, which is implemented in function
-#'     \code{\link[MethylIT.utils]{bootstrap2x2}}. The  goodness of fit statistic is
-#'     the root-mean-square statistic (RMST) or Hellinger divergence, as
-#'     proposed by Perkins et al. [1, 2]. Hellinger divergence (HD) is computed
-#'     as proposed in [3].
+#'     This function provides a shortcut to apply the parametric Bootstrap of
+#'     2x2 Contingency independence test, which is implemented in function
+#'     \code{\link[MethylIT.utils]{bootstrap2x2}}. The  goodness of fit
+#'     statistic is the root-mean-square statistic (RMST) or Hellinger
+#'     divergence, as proposed by Perkins et al. [1, 2]. Hellinger divergence
+#'     (HD) is computed as proposed in [3].
 #' @details Samples from each group are pooled according to the statistic
 #'     selected (see parameter pooling.stat) and a unique GRanges object is
 #'     created with the methylated and unmethylated read counts for each group
 #'     (control and treatment) in the metacolumn. So, a contingency table can be
 #'     built for range from GRanges object.
-#' @param LR A list of GRanges, a GRangesList, a CompressedGRangesList object.
-#'     Each GRanges object from the list must have two columns: methylated
-#'     (mC) and unmethylated (uC) counts. The name of each element from the
-#'     list must coincide with a control or a treatment name.
+#' @param LR A list of GRanges, a GRangesList, a CompressedGRangesList object,
+#'     or an object from Methyl-IT downstream analyses: 'InfDiv' or "pDMP"
+#'     object. Each GRanges object from the list must have two columns:
+#'     methylated (mC) and unmethylated (uC) counts. The name of each element
+#'     from the list must coincide with a control or a treatment name.
 #' @param count.col 2d-vector of integers with the indexes of the read count
 #'     columns. If not given, then it is asssumed that the methylated and
 #'     unmethylated read counts are located in columns 1 and 2 of each GRanges
