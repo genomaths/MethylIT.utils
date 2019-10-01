@@ -145,7 +145,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
        stat <- match.arg(stat, c("sum", "mean", "gmean", "median",
                                    "density", "count", "denCount"))
        output <- match.arg(output)
-       
+
        if (!is.element(missings, c(0, NA))) missings <- NA
        
        type <- match.arg(type, c("any", "start", "end", "within", "equal"))
@@ -199,6 +199,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            }
 
            ## sites of interest inside of the windows
+           if (output == "all") GR0 <- grfeatures
            Hits <- findOverlaps(GR, grfeatures, maxgap=maxgap,
                                    minoverlap=minoverlap,
                                    ignore.strand=ignore.strand,
@@ -217,7 +218,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                ## Variable to mark the limits of each GR
                text <- paste(chr, start(grfeatures), end(grfeatures), sep = "_")
                cluster.id <- data.frame(cluster.id=text)
-               GR <- grfeatures; rm(text); gc()
+               GR <- grfeatures; rm(text, grfeatures); gc()
                colnames(mcols(GR)) <- "statistic"
            } else {
                GR <- grfeatures
@@ -226,6 +227,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
            }
        } else {
            ## sites of interest inside of the windows
+           if (output == "all") GR0 <- grfeatures
            Hits <- findOverlaps(GR, grfeatures, maxgap=maxgap,
                            minoverlap=minoverlap, ignore.strand=ignore.strand,
                            type=type)
@@ -244,14 +246,13 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
                chr <- seqnames(grfeatures)
                if (class(names(grfeatures)) == "character") {
                    cluster.id <- data.frame(cluster.id=names(grfeatures))
-                   names(grfeatures) <- NULL
                } else {
                    text=paste(chr, start(grfeatures), end(grfeatures),
                                strand(grfeatures), sep="_")
                    cluster.id <- data.frame(cluster.id=text)
                    rm(text)
                }
-               GR <- grfeatures; gc()
+               GR <- grfeatures; rm(grfeatures); gc()
                colnames(mcols(GR)) <- "statistic"
            } else {
                GR <- grfeatures
@@ -311,15 +312,14 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"),
        } else cluster.id <- NULL
        if (naming) names(GR) <- cluster.id
        if (output == "all") {
-           mcols(grfeatures) <- integer(length(grfeatures)) 
-           colnames(mcols(grfeatures)) <- "statistic"
-           if (naming && is.null(names(grfeatures))) {
-               names(grfeatures) <- paste(chr, start(grfeatures),
-                                           end(grfeatures), sep = "_")
-           }
-           grfeatures <- grfeatures[ -subjectHits(Hits) ]
-           grfeatures <- unique(grfeatures)
-           GR <- c(GR, grfeatures)
+           mcols(GR0) <- integer(length(GR0)) 
+           colnames(mcols(GR0)) <- "statistic"
+           if (naming && is.null(names(GR0)))    
+               names(GR0) <- paste(chr, start(GR0), end(GR0), sep = "_")
+           GR0 <- GR0[ -subjectHits(Hits) ]
+           GR0 <- unique(GR0)
+           if (ignore.strand) strand(GR0) <- "*"
+           GR <- c(GR, GR0)
        }
        return(GR)
    }

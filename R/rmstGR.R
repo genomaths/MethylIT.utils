@@ -130,7 +130,7 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
    if (any(!unlist(lapply(LR, function(GR) class(GR) == "GRanges"))))
        stop("At least one element from 'LR' is not a 'GRanges' object")
 
-   if (!is.null(hdiv.cut) || !is.null(tv.cut)) {
+   if (inherits(LR, c('InfDiv', "pDMP"))) {
        validateClass(LR)
    }
    if (!is.null(control.names)&&!is.null(treatment.names))
@@ -224,14 +224,14 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
        ctrl <- LR[control.names]
        ctrl <- lapply(ctrl, function(GR) {
            GR <- GR[, count.col]
-           colnames(mcols(GR)) <- c("mC", "uC") # Control counts
+           colnames(mcols(GR)) <- c("c1", "t1") # Control counts
            return(GR)
        })
 
        treat <- LR[treatment.names]
        treat <- lapply(treat, function(GR) {
            GR <- GR[, count.col]
-           colnames(mcols(GR)) <- c("mC", "uC") # Control counts
+           colnames(mcols(GR)) <- c("c2", "t2") # Control counts
            return(GR)
        })
        if (!is.null(pooling.stat)) {
