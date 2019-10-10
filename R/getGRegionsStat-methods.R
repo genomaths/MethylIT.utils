@@ -103,6 +103,7 @@
 #' @importFrom stats median
 #' @importFrom S4Vectors subjectHits queryHits DataFrame mcols 
 #' @importFrom S4Vectors mcols<-
+#' @importFrom MethylIT sortBySeqnameAndStart
 #' @importFrom BiocGenerics strand start end
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply bpstart
 #' @seealso \code{\link{getGRegionsStat2}}.

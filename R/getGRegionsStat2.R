@@ -80,7 +80,7 @@
 #' @importFrom S4Vectors subjectHits queryHits DataFrame mcols 
 #' @importFrom S4Vectors mcols<-
 #' @importFrom BiocGenerics strand start end
-#' @importFrom MethylIT uniqueGRanges
+#' @importFrom MethylIT uniqueGRanges sortBySeqnameAndStart unlist
 #' @importFrom utils txtProgressBar
 #' @seealso \code{\link{getGRegionsStat}}
 #' @author Robersy Sanchez (\url{https://github.com/genomaths}).
@@ -145,7 +145,7 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
            stop("* 'GR'length is lesser of 'win.size' or 'step.size'")
        if(verbose) setTxtProgressBar(pb, 1) # update progress bar
       
-       all.wins <- sapply(1:length(chrs), function(k) {
+       all.wins <- sapply(seq_len(length(chrs)), function(k) {
                    ## get max length of chromosome
                    max.length <- max(IRanges::end(GR[seqnames(GR) == chrs[k],]))
                    ## get sliding windows
@@ -270,9 +270,3 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
    return(GR)
 }
 
-
-# ============================ Auxiliary function =========================
-sortBySeqnameAndStart <- function(gr) {
-   seqlevels(gr) <- sort(seqlevels(gr))
-   return(gr[order(as.factor(seqnames(gr)), start(gr)), ])
-}
