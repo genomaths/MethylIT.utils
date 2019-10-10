@@ -21,6 +21,14 @@
 #' @param theta Parameter theta from \code{\link[MASS]{rnegbin}}
 #'     (overdispersion parameter).
 #' @param sample.ids Names for the samples.
+#' @param chromosome A character string naming the chromosome. Default "1".
+#' @param start An nteger vector with the start position for each cytosine site.
+#'     Default start = seq_len(sites).
+#' @param end An integer vector with the end position for each cytosine site.
+#'     Default end = start. Notice that if end > start, each counts will cover
+#'     a region.
+#' @param strand One of the characters '*', '+', or '-' denoting the DNA strand.
+#'     Default is '*'.
 #' @importFrom stats rbeta rbinom
 #' @importFrom MASS rnegbin
 #' @return A list of GRanges objects with the methylated and unmethylated counts
@@ -45,36 +53,31 @@
 #' treat = simulateCounts(num.samples = 2, sites = sites, alpha = 0.03,
 #'                     beta = 0.5, size = 50, theta = 4.5,
 #'                     sample.ids = c("T1", "T2"))
-#'
-#' #  === Estime Divergences ===
-#' HD = estimateDivergence(ref = ref$C1, indiv =  treat, Bayesian = TRUE,
-#'                         num.cores = 1L, percentile = 1)
-#'
-#' # === Difference of methylation levels of treatment simulated samples.
-#' # Treatment versus reference
-#' data.frame(mean.diff = c(mean(HD$T1$TV), mean(HD$T2$TV)),
-#'            c("T1", "T2"), row.names = 2)
-
 simulateCounts <- function(num.samples, sites, alpha, beta, size, theta,
-                           sample.ids = NULL){
-  coverage <- rnegbin(n = sites, mu = 100, theta = theta)
-  # fix sites w/o reads
-  coverage <- ifelse(coverage<10, 10, coverage)
-  LR = list()
-  for(k in 1:num.samples) {
-    p = rbeta(n = sites, shape1 = alpha, shape2 = beta)
-    shape1 <- theta * p
-    shape2 <- theta * (1 - p)
-    p = rbinom(n = sites, size=size,
+                           sample.ids = NULL, chromosome = "1",
+                           start = NULL, end = NULL, strand = "*"){
+   coverage <- rnegbin(n = sites, mu = 100, theta = theta)
+   chromosome <- chromosome[1] # only one chromosome per simulation
+   if (is.null(start)) {start <- seq_len(sites); end <- start}
+   if (is.null(end)) end <- start
+   # fix sites w/o reads
+   coverage <- ifelse(coverage < 10, 10, coverage)
+   LR = list()
+   for(k in seq_len(num.samples)) {
+       p = rbeta(n = sites, shape1 = alpha, shape2 = beta)
+       shape1 <- theta * p
+       shape2 <- theta * (1 - p)
+       p = rbinom(n = sites, size=size,
                prob = rbeta(n=sites, shape1=shape1, shape2=shape2))/size
-    mC = ceiling(coverage * p)
-    uC = coverage - mC
-    LR[[k]] = makeGRangesFromDataFrame(
-      data.frame(chr = '1', start = 1:sites,
-                 end = 1:sites, strand = '*',
-                 mC = mC, uC = uC),
-      keep.extra.columns = TRUE)
-  }
-  if (!is.null(sample.ids)) names(LR) <- sample.ids
-  return(LR)
+       mC = ceiling(coverage * p)
+       uC = coverage - mC
+       LR[[k]] <- makeGRangesFromDataFrame(data.frame(chr = chromosome, 
+                                                   start = start,
+                                                   end = end,
+                                                   strand = strand, 
+                                                   mC = mC, uC = uC), 
+                                           keep.extra.columns = TRUE)
+   }
+   if (!is.null(sample.ids)) names(LR) <- sample.ids
+   return(LR)
 }

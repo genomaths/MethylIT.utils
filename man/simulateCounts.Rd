@@ -5,7 +5,8 @@
 \title{Simulate read counts of methylated and unmethylated cytosines}
 \usage{
 simulateCounts(num.samples, sites, alpha, beta, size, theta,
-  sample.ids = NULL)
+  sample.ids = NULL, chromosome = "1", start = NULL, end = NULL,
+  strand = "*")
 }
 \arguments{
 \item{num.samples}{Number of samples to generate.}
@@ -24,6 +25,18 @@ simulateCounts(num.samples, sites, alpha, beta, size, theta,
 (overdispersion parameter).}
 
 \item{sample.ids}{Names for the samples.}
+
+\item{chromosome}{A character string naming the chromosome. Default "1".}
+
+\item{start}{An nteger vector with the start position for each cytosine site.
+Default start = seq_len(sites).}
+
+\item{end}{An integer vector with the end position for each cytosine site.
+Default end = start. Notice that if end > start, each counts will cover
+a region.}
+
+\item{strand}{One of the characters '*', '+', or '-' denoting the DNA strand.
+Default is '*'.}
 }
 \value{
 A list of GRanges objects with the methylated and unmethylated counts
@@ -62,15 +75,6 @@ ref = simulateCounts(num.samples = 1, sites = sites, alpha = 0.007,
 treat = simulateCounts(num.samples = 2, sites = sites, alpha = 0.03,
                     beta = 0.5, size = 50, theta = 4.5,
                     sample.ids = c("T1", "T2"))
-
-#  === Estime Divergences ===
-HD = estimateDivergence(ref = ref$C1, indiv =  treat, Bayesian = TRUE,
-                        num.cores = 1L, percentile = 1)
-
-# === Difference of methylation levels of treatment simulated samples.
-# Treatment versus reference
-data.frame(mean.diff = c(mean(HD$T1$TV), mean(HD$T2$TV)),
-           c("T1", "T2"), row.names = 2)
 }
 \author{
 Robersy Sanchez
