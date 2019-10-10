@@ -54,8 +54,8 @@
 #' @param missings Whether to write '0' or 'NA' on regions where there is not
 #'     data to compute the statistic.
 #' @param maxgap,minoverlap,type,select,ignore.strand Used to find overlapped 
-#'     regions. See ?\code{\link[IRanges]{findOverlaps}} in the \strong{IRanges} 
-#'     package for a description of these arguments.
+#'     regions. See \code{\link[IRanges]{findOverlaps-methods}} in the 
+#'     \strong{IRanges} package for a description of these arguments.
 #' @param na.rm Logical value. If TRUE, the NA values will be removed
 #' @param naming Logical value. If TRUE, the rows GRanges object will be 
 #'     given the names(GR). Default is FALSE.

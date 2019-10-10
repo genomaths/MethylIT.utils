@@ -33,7 +33,8 @@
 #'     distance.
 #' @param select.strand Optional. If provided,"+" or "-", then the summarized
 #'     statistic is computed only for the specified DNA chain.
-#' @param maxgap,minoverlap,type See ?\code{\link[IRanges]{findOverlaps}} in the
+#' @param maxgap,minoverlap,type See 
+#'     \code{\link[IRanges]{findOverlaps-methods}} in the
 #'     \strong{IRanges} package for a description of these arguments.
 #' @param ignore.strand When set to TRUE, the strand information is ignored in
 #'     the overlap calculations.
