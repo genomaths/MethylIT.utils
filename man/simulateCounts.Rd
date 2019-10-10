@@ -4,9 +4,11 @@
 \alias{simulateCounts}
 \title{Simulate read counts of methylated and unmethylated cytosines}
 \usage{
-simulateCounts(num.samples, sites, alpha, beta, size, theta,
-  sample.ids = NULL, chromosome = "1", start = NULL, end = NULL,
-  strand = "*")
+simulateCounts(num.samples, sites = NULL, alpha = NULL, beta = NULL,
+  size = NULL, theta, sample.ids = NULL, chromosome = "1",
+  start = NULL, end = NULL, strand = "*", type = c("on_sites",
+  "on_regions"), regions = 10, min_width = 1000, max_width = 5000,
+  minCountPerIndv = 8, maxCountPerIndv = 300, seed = 123)
 }
 \arguments{
 \item{num.samples}{Number of samples to generate.}
@@ -28,8 +30,8 @@ simulateCounts(num.samples, sites, alpha, beta, size, theta,
 
 \item{chromosome}{A character string naming the chromosome. Default "1".}
 
-\item{start}{An nteger vector with the start position for each cytosine site.
-Default start = seq_len(sites).}
+\item{start}{An nteger vector with the start positions for each cytosine 
+site. Default start = NULL.}
 
 \item{end}{An integer vector with the end position for each cytosine site.
 Default end = start. Notice that if end > start, each counts will cover
@@ -37,6 +39,25 @@ a region.}
 
 \item{strand}{One of the characters '*', '+', or '-' denoting the DNA strand.
 Default is '*'.}
+
+\item{type}{One of the string 'on_sites' or 'on_regions'. Default is 
+'on_sites'. If type == 'on_sites', then the counts are intended on 
+single bases, otherwise the counts are covering regions.}
+
+\item{regions, min_width, max_width, minCountPerIndv, minCountPerIndv}{Arguments to provide when type == 'on_regions':
+
+\describe{
+    \item{regions}{Number of regions carrying counts}
+    \item{min_width}{Minimum size for a region}
+    \item{max_width}{Maximum size for a region}
+    \item{minCountPerIndv}{Minimum number of counts per individual on 
+        each region}
+    \item{maxCountPerIndv}{Maximum number of counts per individual on 
+        each region}
+}}
+
+\item{seed}{seed a single value, interpreted as an integer, or NULL, to
+set a seed for Random Number Generation. Default is seed = 123.}
 }
 \value{
 A list of GRanges objects with the methylated and unmethylated counts
@@ -56,26 +77,32 @@ Methylation coverages (minimum 10) are generated from a Negative
     function from R package “stats” and posterior methylation levels are
     generated according Bayes' theorem. The read of methylation counts are
     obtained as the product of coverage by the posterior methylation level.
+    
+    Counts on regions are generated from a Negative Binomial distribution
+    with function \code{\link[MASS]{rnegbin}}.
 }
 \examples{
-# *** Simulate samples with expected average of difference of methylation
-# levels equal to 0.0427.
-# === Expected mean of methylation levels ===
+## *** Simulate samples with expected average of difference of methylation
+## levels equal to 0.0427.
+## === Expected mean of methylation levels ===
 bmean <- function(alpha, beta) alpha/(alpha + beta)
 bmean(0.03, 0.5) - bmean(0.007, 0.5) #' Expected difference = 0.04279707
 
-# === The number of cytosine sitesto generate ===
+## === The number of cytosine sitesto generate ===
 sites = 5000
-# == Set a seed for pseudo-random number generation ===
-set.seed(123)
 
-# === Simulate samples ===
+## === Simulate samples ===
 ref = simulateCounts(num.samples = 1, sites = sites, alpha = 0.007,
                     beta = 0.5, size = 50, theta = 4.5, sample.ids = "C1")
 treat = simulateCounts(num.samples = 2, sites = sites, alpha = 0.03,
                     beta = 0.5, size = 50, theta = 4.5,
                     sample.ids = c("T1", "T2"))
+### === Simulate counts on regions ====
+simulateCounts(num.samples = 7, 
+               sample.ids = c(paste0("C",1:4), paste0("T", 1:3)),
+               type = "on_regions", theta = 2.5, regions = 10)
+               
 }
 \author{
-Robersy Sanchez
+Robersy Sanchez (\url{https://github.com/genomaths}).
 }

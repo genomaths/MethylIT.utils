@@ -151,8 +151,8 @@ use, i.e. at most how many child processes will be run simultaneously
 computational tasks is given.}
 
 \item{maxgap, minoverlap, type, select, ignore.strand}{Used to find overlapped 
-regions. See ?\code{\link[IRanges]{findOverlaps}} in the \strong{IRanges} 
-package for a description of these arguments.}
+regions. See \code{\link[IRanges]{findOverlaps-methods}} in the 
+\strong{IRanges} package for a description of these arguments.}
 }
 \value{
 An object of the same class of \emph{GR} with the new genomic regions
