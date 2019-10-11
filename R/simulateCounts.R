@@ -13,7 +13,9 @@
 #'     obtained as the product of coverage by the posterior methylation level.
 #'     
 #'     Counts on regions are generated from a Negative Binomial distribution
-#'     with function \code{\link[MASS]{rnegbin}}.
+#'     with function \code{\link[MASS]{rnegbin}} with mean mu and variance:
+#'      mu + mu^2/theta. In the simulation perfomed by this function:
+#'      mu = seq(minCountPerIndv, maxCountPerIndv).
 #' @param num.samples Number of samples to generate.
 #' @param sites Number of cytosine sites for each sample.
 #' @param alpha Alpha parameter of beta distribution. Parameter shape1 from
