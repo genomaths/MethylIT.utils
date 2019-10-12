@@ -43,14 +43,16 @@
 #'         \item{regions}{Number of regions carrying counts}
 #'         \item{min_width}{Minimum size for a region}
 #'         \item{max_width}{Maximum size for a region}
-#'         \item{minCountPerIndv}{Minimum number of counts per individual on 
-#'             each region}
-#'         \item{maxCountPerIndv}{Maximum number of counts per individual on 
-#'             each region}
+#'         \item{minCountPerIndv}{Each region must have more than 
+#'             'minCountPerIndv' counts (on average) per individual
+#'             (if 'mu' is not provided)}
+#'         \item{maxCountPerIndv}{Each region must have less than 
+#'             'maxCountPerIndv' counts (on average) per individual (if 'mu' is
+#'             not provided)}
 #'         \item{mu}{The expected value of the data generated with Negative
 #'             Binomial distribution. This a vector of means. Short vectors are
 #'             recycled. Default is NULL and, in this case, simulation is
-#'             perfomed with mu = seq(minCountPerIndv, maxCountPerIndv).}
+#'             performed with mu = seq(minCountPerIndv, maxCountPerIndv).}
 #'     }
 #' @param seed seed a single value, interpreted as an integer, or NULL, to
 #'     set a seed for Random Number Generation. Default is seed = 123.    
