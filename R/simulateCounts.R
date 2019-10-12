@@ -14,8 +14,7 @@
 #'     
 #'     Counts on regions are generated from a Negative Binomial distribution
 #'     with function \code{\link[MASS]{rnegbin}} with mean mu and variance:
-#'      mu + mu^2/theta. In the simulation perfomed by this function:
-#'      mu = seq(minCountPerIndv, maxCountPerIndv).
+#'      mu + mu^2/theta. 
 #' @param num.samples Number of samples to generate.
 #' @param sites Number of cytosine sites for each sample.
 #' @param alpha Alpha parameter of beta distribution. Parameter shape1 from
@@ -37,7 +36,7 @@
 #' @param type One of the string 'on_sites' or 'on_regions'. Default is 
 #'     'on_sites'. If type == 'on_sites', then the counts are intended on 
 #'     single bases, otherwise the counts are covering regions.
-#' @param regions,min_width,max_width,minCountPerIndv,minCountPerIndv 
+#' @param regions,min_width,max_width,minCountPerIndv,minCountPerIndv,mu 
 #'     Arguments to provide when type == 'on_regions':
 #'     
 #'     \describe{
@@ -48,6 +47,10 @@
 #'             each region}
 #'         \item{maxCountPerIndv}{Maximum number of counts per individual on 
 #'             each region}
+#'         \item{mu}{The expected value of the data generated with Negative
+#'             Binomial distribution. This a vector of means. Short vectors are
+#'             recycled. Default is NULL and, in this case, simulation is
+#'             perfomed with mu = seq(minCountPerIndv, maxCountPerIndv).}
 #'     }
 #' @param seed seed a single value, interpreted as an integer, or NULL, to
 #'     set a seed for Random Number Generation. Default is seed = 123.    
@@ -86,7 +89,7 @@ simulateCounts <- function(num.samples, sites = NULL, alpha = NULL,
                            type = c("on_sites", "on_regions"),
                            regions =  10, min_width = 1000,
                            max_width = 5000, minCountPerIndv = 8,
-                           maxCountPerIndv = 300,
+                           maxCountPerIndv = 300, mu = NULL, 
                            seed = 123){
    
    type <- match.arg(type)
@@ -137,7 +140,7 @@ simulateCounts <- function(num.samples, sites = NULL, alpha = NULL,
                                                        start = start,
                                                        end = end, 
                                                        strand = strand))
-      mu <- seq(minCountPerIndv, maxCountPerIndv)
+      if (is.null(mu)) mu <- seq(minCountPerIndv, maxCountPerIndv)
       counts <- t(sapply(seq_len(length(widths)), 
                            function(...) rnegbin(n = num.samples, 
                                                mu = sample(mu, 1),

@@ -8,7 +8,8 @@ simulateCounts(num.samples, sites = NULL, alpha = NULL, beta = NULL,
   size = NULL, theta, sample.ids = NULL, chromosome = "1",
   start = NULL, end = NULL, strand = "*", type = c("on_sites",
   "on_regions"), regions = 10, min_width = 1000, max_width = 5000,
-  minCountPerIndv = 8, maxCountPerIndv = 300, seed = 123)
+  minCountPerIndv = 8, maxCountPerIndv = 300, mu = NULL,
+  seed = 123)
 }
 \arguments{
 \item{num.samples}{Number of samples to generate.}
@@ -44,7 +45,7 @@ Default is '*'.}
 'on_sites'. If type == 'on_sites', then the counts are intended on 
 single bases, otherwise the counts are covering regions.}
 
-\item{regions, min_width, max_width, minCountPerIndv, minCountPerIndv}{Arguments to provide when type == 'on_regions':
+\item{regions, min_width, max_width, minCountPerIndv, minCountPerIndv, mu}{Arguments to provide when type == 'on_regions':
 
 \describe{
     \item{regions}{Number of regions carrying counts}
@@ -54,6 +55,10 @@ single bases, otherwise the counts are covering regions.}
         each region}
     \item{maxCountPerIndv}{Maximum number of counts per individual on 
         each region}
+    \item{mu}{The expected value of the data generated with Negative
+        Binomial distribution. This a vector of means. Short vectors are
+        recycled. Default is NULL and, in this case, simulation is
+        perfomed with mu = seq(minCountPerIndv, maxCountPerIndv).}
 }}
 
 \item{seed}{seed a single value, interpreted as an integer, or NULL, to
@@ -80,8 +85,7 @@ Methylation coverages (minimum 10) are generated from a Negative
     
     Counts on regions are generated from a Negative Binomial distribution
     with function \code{\link[MASS]{rnegbin}} with mean mu and variance:
-     mu + mu^2/theta. In the simulation perfomed by this function:
-     mu = seq(minCountPerIndv, maxCountPerIndv).
+     mu + mu^2/theta.
 }
 \examples{
 ## *** Simulate samples with expected average of difference of methylation
