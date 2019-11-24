@@ -54,6 +54,11 @@
 #'             recycled. Default is NULL and, in this case, simulation is
 #'             performed with mu = seq(minCountPerIndv, maxCountPerIndv).}
 #'     }
+#' @param noise A single number from the interval [0, 1] or a numeric vector of
+#'     lengh(sites) with all its elements from the interval [0, 1]. Adds noise
+#'     to the read counts. The noise is added to the methylation levels 'p',
+#'     which are used to compute the coverage.  If for some site 'p' + noise >
+#'     1', then the noise is not added to the site. Default is zero.
 #' @param seed seed a single value, interpreted as an integer, or NULL, to
 #'     set a seed for Random Number Generation. Default is seed = 123.    
 #' @importFrom stats rbeta rbinom
@@ -92,7 +97,7 @@ simulateCounts <- function(num.samples, sites = NULL, alpha = NULL,
                            regions =  10, min_width = 1000,
                            max_width = 5000, minCountPerIndv = 8,
                            maxCountPerIndv = 300, mu = NULL, 
-                           seed = 123){
+                           noise = 0, seed = 123){
    
    type <- match.arg(type)
    missed <- sapply(list(sites, alpha, beta, size), is.null)
@@ -115,19 +120,22 @@ simulateCounts <- function(num.samples, sites = NULL, alpha = NULL,
       coverage <- ifelse(coverage < 10, 10, coverage)
       LR = list()
       for(k in seq_len(num.samples)) {
-         p = rbeta(n = sites, shape1 = alpha, shape2 = beta)
-         shape1 <- theta * p
-         shape2 <- theta * (1 - p)
-         p = rbinom(n = sites, size=size,
-                    prob = rbeta(n=sites, shape1=shape1, shape2=shape2))/size
-         mC = ceiling(coverage * p)
-         uC = coverage - mC
-         LR[[k]] <- makeGRangesFromDataFrame(data.frame(chr = chromosome, 
-                                                        start = start,
-                                                        end = end,
-                                                        strand = strand, 
-                                                        mC = mC, uC = uC), 
-                                             keep.extra.columns = TRUE)
+           p = rbeta(n = sites, shape1 = alpha, shape2 = beta)
+           shape1 <- theta * p
+           shape2 <- theta * (1 - p)
+           p0 <- rbinom(n = sites, size=size,
+                       prob = rbeta(n=sites, shape1=shape1, shape2=shape2))/size
+           p <- (p0 + noise)
+           idx <- which(p >  1)
+           p[ idx ] <- p0[ idx ]; rm(p0, idx)
+           mC = ceiling(coverage * p)
+           uC = coverage - mC
+           LR[[k]] <- makeGRangesFromDataFrame(data.frame(chr = chromosome, 
+                                                       start = start,
+                                                       end = end,
+                                                       strand = strand, 
+                                                       mC = mC, uC = uC), 
+                                               keep.extra.columns = TRUE)
       }
       if (!is.null(sample.ids)) names(LR) <- sample.ids
    } else {

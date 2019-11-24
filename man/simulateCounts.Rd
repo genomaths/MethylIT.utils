@@ -8,7 +8,7 @@ simulateCounts(num.samples, sites = NULL, alpha = NULL, beta = NULL,
   size = NULL, theta, sample.ids = NULL, chromosome = "1",
   start = NULL, end = NULL, strand = "*", type = c("on_sites",
   "on_regions"), regions = 10, min_width = 1000, max_width = 5000,
-  minCountPerIndv = 8, maxCountPerIndv = 300, mu = NULL,
+  minCountPerIndv = 8, maxCountPerIndv = 300, mu = NULL, noise = 0,
   seed = 123)
 }
 \arguments{
@@ -62,6 +62,12 @@ single bases, otherwise the counts are covering regions.}
         recycled. Default is NULL and, in this case, simulation is
         performed with mu = seq(minCountPerIndv, maxCountPerIndv).}
 }}
+
+\item{noise}{A single number from the interval [0, 1] or a numeric vector of
+lengh(sites) with all its elements from the interval [0, 1]. Adds noise
+to the read counts. The noise is added to the methylation levels 'p',
+which are used to compute the coverage.  If for some site 'p' + noise >
+1', then the noise is not added to the site. Default is zero.}
 
 \item{seed}{seed a single value, interpreted as an integer, or NULL, to
 set a seed for Random Number Generation. Default is seed = 123.}
