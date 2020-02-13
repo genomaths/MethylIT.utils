@@ -7,8 +7,7 @@
 \usage{
 \method{predict}{ProbDistr}(nlm, pred = "quant", q = 0.95, dist.name)
 
-\method{predict}{ProbDistrList}(nlm, pred = "quant", q = 0.95,
-  dist.name, num.cores = 1L, tasks = 0L)
+\method{predict}{ProbDistrList}(nlm, pred = "quant", q = 0.95, dist.name, num.cores = 1L, tasks = 0L)
 }
 \arguments{
 \item{nlm}{An object carrying the best nonlinear fit for a distribution model

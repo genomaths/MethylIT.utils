@@ -4,14 +4,29 @@
 \alias{gammaMixtCut}
 \title{Cutpoint estimation based on Mixtures of Gamma Distributions}
 \usage{
-gammaMixtCut(LR, post.cut = 0.5, div.col = NULL, tv.col = NULL,
-  tv.cut = 0.25, find.cut = FALSE, control.names = NULL,
-  treatment.names = NULL, column = c(hdiv = FALSE, TV = FALSE, wprob =
-  FALSE, pos = FALSE), classifier = c("logistic", "pca.logistic", "lda",
-  "svm", "qda", "pca.lda", "pca.qda"), prop = 0.6, clas.perf = FALSE,
-  cut.interval = c(0.5, 0.8), cut.incr = 0.01, stat = 1,
-  maximize = TRUE, num.cores = 1L, tasks = 0L,
-  tol = .Machine$double.eps^0.5, maxiter = 1000, ...)
+gammaMixtCut(
+  LR,
+  post.cut = 0.5,
+  div.col = NULL,
+  tv.col = NULL,
+  tv.cut = 0.25,
+  find.cut = FALSE,
+  control.names = NULL,
+  treatment.names = NULL,
+  column = c(hdiv = FALSE, TV = FALSE, wprob = FALSE, pos = FALSE),
+  classifier = c("logistic", "pca.logistic", "lda", "svm", "qda", "pca.lda", "pca.qda"),
+  prop = 0.6,
+  clas.perf = FALSE,
+  cut.interval = c(0.5, 0.8),
+  cut.incr = 0.01,
+  stat = 1,
+  maximize = TRUE,
+  num.cores = 1L,
+  tasks = 0L,
+  tol = .Machine$double.eps^0.5,
+  maxiter = 1000,
+  ...
+)
 }
 \arguments{
 \item{LR}{A "pDMP"or "InfDiv" object obtained with functions 

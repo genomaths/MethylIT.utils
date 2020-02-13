@@ -111,7 +111,6 @@
 #' @author Robersy Sanchez (\url{https://github.com/genomaths}).
 #'
 #' @aliases getGRegionsStat
-#' @rdname getGRegionsStat-methods
 setGeneric("getGRegionsStat",
            function(GR, win.size=350, step.size=350, grfeatures=NULL,
                  stat = c("sum", "mean", "gmean", "median", "density", "count",
@@ -126,7 +125,6 @@ setGeneric("getGRegionsStat",
              standardGeneric("getGRegionsStat"))
 
 #' @aliases getGRegionsStat
-#' @rdname getGRegionsStat-methods
 setMethod("getGRegionsStat", signature(GR = "GRanges"),
    function(GR, win.size=350, step.size=350, grfeatures=NULL,
             stat = c("sum", "mean", "gmean", "median", "density", "count",
@@ -366,7 +364,6 @@ setClass("pDMP")
 # ---------------------------------------------------------------------------- #
 
 #' @aliases getGRegionsStat, list-method
-#' @rdname getGRegionsStat-methods
 #' @importFrom GenomeInfoDb seqnames seqlengths
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
@@ -391,7 +388,6 @@ setMethod("getGRegionsStat", signature(GR = "list"),
 
 
 #' @aliases getGRegionsStat, InfDiv-method
-#' @rdname getGRegionsStat-methods
 #' @importFrom GenomeInfoDb seqnames seqlengths
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
@@ -416,7 +412,6 @@ setMethod("getGRegionsStat", signature(GR="InfDiv"),
 
 
 #' @aliases getGRegionsStat, pDMP-method
-#' @rdname getGRegionsStat-methods
 #' @importFrom GenomeInfoDb seqnames seqlengths
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
@@ -441,7 +436,6 @@ setMethod("getGRegionsStat", signature(GR="pDMP"),
 
 
 #' @aliases getGRegionsStat, GRangesList-method
-#' @rdname getGRegionsStat-methods
 #' @importFrom GenomeInfoDb seqnames seqlengths
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges

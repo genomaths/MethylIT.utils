@@ -4,9 +4,19 @@
 \alias{findCutpoint}
 \title{Find a cutoff of divergences of methylation level values}
 \usage{
-findCutpoint(LR, min.tv = 0.25, tv.cut = 0.5, predcuts, tv.col,
-  div.col = NULL, pval.col = NULL, stat = 1, maximize = TRUE,
-  num.cores = 1L, tasks = tasks)
+findCutpoint(
+  LR,
+  min.tv = 0.25,
+  tv.cut = 0.5,
+  predcuts,
+  tv.col,
+  div.col = NULL,
+  pval.col = NULL,
+  stat = 1,
+  maximize = TRUE,
+  num.cores = 1L,
+  tasks = tasks
+)
 }
 \arguments{
 \item{LR}{A list of GRanges, a GRangesList, a CompressedGRangesList object.

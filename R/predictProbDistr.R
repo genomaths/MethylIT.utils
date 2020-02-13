@@ -44,7 +44,8 @@
 #' @importFrom stats dweibull pweibull qweibull rweibull dgamma pgamma qgamma
 #'     rgamma
 #' @importFrom BiocParallel MulticoreParam SnowParam bplapply
-#' @export
+#' @importFrom MethylIT dggamma qggamma pggamma rggamma
+#' @export 
 #'
 predict.ProbDistr<- function(nlm, ...) UseMethod("predict", nlm)
 predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
@@ -65,12 +66,13 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
    # ------------------------------------------------------------------------- #
    if (pred == "dens") {
        res <- try(switch(dist.name,
-                       Weibull2P=dweibull(q, shape=m[1], scale=m[2]),
-                       Weibull3P=dweibull(q - m[3], shape=m[1], scale=m[2]),
-                       Gamma2P=dgamma(q, shape=m[1], scale=m[2]),
-                       Gamma3P=dgamma(q - m[3], shape=m[1], scale=m[2]),
-                       GGamma3P=dggamma(q, alpha=m[1], scale=m[2], psi=m[3]),
-                       GGamma4P=dggamma(q, alpha=m[1], scale=m[2], mu=m[3],
+                       Weibull2P=dweibull(x = q, shape=m[1], scale=m[2]),
+                       Weibull3P=dweibull(x = q - m[3], shape=m[1], scale=m[2]),
+                       Gamma2P=dgamma(x = q, shape=m[1], scale=m[2]),
+                       Gamma3P=dgamma(x = q - m[3], shape=m[1], scale=m[2]),
+                       GGamma3P=dggamma(q = q, alpha=m[1], scale=m[2],
+                                       psi=m[3]),
+                       GGamma4P=dggamma(q = q, alpha=m[1], scale=m[2], mu=m[3],
                                        psi=m[3])
        ), silent = TRUE)
    }
@@ -78,12 +80,13 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
    # ------------------------------------------------------------------------- #
    if (pred == "quant") {
        res <- try(switch(dist.name,
-                       Weibull2P=qweibull(q, shape=m[1], scale=m[2]),
-                       Weibull3P=qweibull(q, shape=m[1], scale=m[2]) + m[3],
-                       Gamma2P=qgamma(q, shape=m[1], scale=m[2]),
-                       Gamma3P=qgamma(q, shape=m[1], scale=m[2]) + m[3],
-                       GGamma3P=qggamma(q, alpha=m[1], scale=m[2], psi=m[3]),
-                      GGamma4P=qggamma(q, alpha=m[1], scale=m[2], mu=m[3],
+                       Weibull2P=qweibull(p = q, shape=m[1], scale=m[2]),
+                       Weibull3P=qweibull(p = q, shape=m[1], scale=m[2]) + m[3],
+                       Gamma2P=qgamma(p = q, shape=m[1], scale=m[2]),
+                       Gamma3P=qgamma(p = q, shape=m[1], scale=m[2]) + m[3],
+                       GGamma3P=qggamma(p = q, alpha=m[1], scale=m[2],
+                                       psi=m[3]),
+                      GGamma4P=qggamma(p = q, alpha=m[1], scale=m[2], mu=m[3],
                                        psi=m[3])
        ), silent = TRUE)
    }
@@ -91,56 +94,57 @@ predict.ProbDistr <- function(nlm, pred="quant", q=0.95, dist.name) {
    # ------------------------------------------------------------------------- #
    if (pred == "prob") {
        res <- try(switch(dist.name,
-                       Weibull2P=pweibull(q, shape=m[1], scale=m[2],
+                       Weibull2P=pweibull(q = q, shape=m[1], scale=m[2],
                                        lower.tail=FALSE),
-                       Weibull3P=pweibull(q - m[3], shape=m[1], scale=m[2],
+                       Weibull3P=pweibull(q = q - m[3], shape=m[1], scale=m[2],
                                        lower.tail = FALSE),
-                       Gamma2P=pgamma(q, shape=m[1], scale=m[2],
+                       Gamma2P=pgamma(q = q, shape=m[1], scale=m[2],
                                    lower.tail = FALSE),
-                       Gamma3P=pgamma(q - m[3], shape=m[1], scale=m[2],
+                       Gamma3P=pgamma(q = q - m[3], shape=m[1], scale=m[2],
                                    lower.tail = FALSE),
-                       GGamma3P=pggamma(q, alpha=m[1], scale=m[2], psi=m[3],
-                                     lower.tail = FALSE),
-                       GGamma4P=pggamma(q, alpha=m[1], scale=m[2], mu=m[3],
-                                     psi=m[4], lower.tail = FALSE)
+                       GGamma3P=pggamma(q = q, alpha=m[1], scale=m[2], psi=m[3],
+                                       lower.tail = FALSE),
+                       GGamma4P=pggamma(q = q, alpha=m[1], scale=m[2], mu=m[3],
+                                       psi=m[4], lower.tail = FALSE)
        ), silent = TRUE)
    }
 
    # ------------------------------------------------------------------------- #
    if (pred == "rnum") {
        res <- try(switch(dist.name,
-                       Weibull2P=rweibull(q, shape=m[1], scale=m[2]),
-                       Weibull3P=rweibull(q, shape=m[1], scale=m[2]) + m[3],
-                       Gamma2P=rgamma(q, shape=m[1], scale=m[2]),
-                       Gamma3P=rgamma(q, shape=m[1], scale=m[2]) + m[3],
-                       GGamma3P=rggamma(q, alpha=m[1], scale=m[2], psi=m[3]),
-                       GGamma4P=rggamma(q, alpha=m[1], scale=m[2], mu=m[3],
+                       Weibull2P=rweibull(n = q, shape=m[1], scale=m[2]),
+                       Weibull3P=rweibull(n = q, shape=m[1], scale=m[2]) + m[3],
+                       Gamma2P=rgamma(n = q, shape=m[1], scale=m[2]),
+                       Gamma3P=rgamma(n = q, shape=m[1], scale=m[2]) + m[3],
+                       GGamma3P=rggamma(n = q, alpha=m[1], scale=m[2], 
+                                       psi=m[3]),
+                       GGamma4P=rggamma(n = q, alpha=m[1], scale=m[2], mu=m[3],
                                        psi=m[4])
      ), silent = TRUE)
    }
    # ------------------------------------------------------------------------- #
    
    if (!inherits(res, "try-error")) return(res) else {
-       warning("Your model paramters return arror")
+       warning("Your model parameters return arror")
        return(res <- NA)
    }
 }
 
 #' @name predict.ProbDistrList
 #' @rdname predict.ProbDistr
-#' @importFrom BiocParallel MulticoreParam SnowParam bplapply
+#' @importFrom BiocParallel MulticoreParam SnowParam bpmapply
 #' @export
 
 predict.ProbDistrList<- function(nlm, ...) UseMethod("predict", nlm)
 predict.ProbDistrList <- function(nlm, pred="quant", q=0.95, dist.name,
                                   num.cores= 1L, tasks=0L) {
    if (Sys.info()['sysname'] == "Linux") {
-       bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
+       bpparam <- MulticoreParam(workers=num.cores, tasks = tasks)
    } else bpparam <- SnowParam(workers = num.cores, type = "SOCK")
 
-   res <- bplapply(nlm, function(model) {
-               predict(model, pred=pred, q=q, dist.name=dist.name)
-           }, BPPARAM=bpparam
+   res <- bpmapply(function(model, distn) {
+               predict(model, pred = pred, q = q, dist.name = distn)
+           }, nlm, dist.name, BPPARAM = bpparam
    )
    names(res) <- names(nlm)
    return(res)

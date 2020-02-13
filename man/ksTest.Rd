@@ -4,8 +4,16 @@
 \alias{ksTest}
 \title{Kolmogorov-Smirnov statistics}
 \usage{
-ksTest(x, CDF = "Weibull", pars, num.sampl = 999, sample.size,
-  numcores = 1, verbose = TRUE, ...)
+ksTest(
+  x,
+  CDF = "Weibull",
+  pars,
+  num.sampl = 999,
+  sample.size,
+  numcores = 1,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{numerical vector to perform the goodness of fit}

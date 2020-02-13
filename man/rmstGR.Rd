@@ -4,11 +4,25 @@
 \alias{rmstGR}
 \title{Root Mean Square Test for Methylation Analysis}
 \usage{
-rmstGR(LR, count.col = 1:2, control.names = NULL,
-  treatment.names = NULL, stat = "rmst", pooling.stat = "sum",
-  tv.cut = NULL, hdiv.cut = NULL, hdiv.col = NULL,
-  num.permut = 100, pAdjustMethod = "BH", pvalCutOff = 0.05,
-  saveAll = FALSE, num.cores = 1L, tasks = 0L, verbose = TRUE, ...)
+rmstGR(
+  LR,
+  count.col = 1:2,
+  control.names = NULL,
+  treatment.names = NULL,
+  stat = "rmst",
+  pooling.stat = "sum",
+  tv.cut = NULL,
+  hdiv.cut = NULL,
+  hdiv.col = NULL,
+  num.permut = 100,
+  pAdjustMethod = "BH",
+  pvalCutOff = 0.05,
+  saveAll = FALSE,
+  num.cores = 1L,
+  tasks = 0L,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{LR}{A list of GRanges, a GRangesList, a CompressedGRangesList object,

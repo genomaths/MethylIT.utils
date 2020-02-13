@@ -4,10 +4,23 @@
 \alias{propTest}
 \title{Beta Regression for methylation levels and rates}
 \usage{
-propTest(GR, control.names, treatment.names, link = "logit",
-  type = "ML", tv.cut = NULL, indvPerGrp = 0, FilterLog2FC = TRUE,
-  pAdjustMethod = "BH", pvalCutOff = 0.05, Minlog2FC = 0.5,
-  saveAll = FALSE, num.cores = 1, tasks = 0L, verbose = TRUE)
+propTest(
+  GR,
+  control.names,
+  treatment.names,
+  link = "logit",
+  type = "ML",
+  tv.cut = NULL,
+  indvPerGrp = 0,
+  FilterLog2FC = TRUE,
+  pAdjustMethod = "BH",
+  pvalCutOff = 0.05,
+  Minlog2FC = 0.5,
+  saveAll = FALSE,
+  num.cores = 1,
+  tasks = 0L,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{GR}{GRanges objects including control and treatment samples containing

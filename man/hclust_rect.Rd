@@ -4,8 +4,18 @@
 \alias{hclust_rect}
 \title{Draw Rectangles with Background Colors Around Hierarchical Clusters}
 \usage{
-hclust_rect(tree, k = NULL, which = NULL, x = NULL, h = NULL,
-  border = 2, cluster = NULL, cuts = NULL, color = NULL, ...)
+hclust_rect(
+  tree,
+  k = NULL,
+  which = NULL,
+  x = NULL,
+  h = NULL,
+  border = 2,
+  cluster = NULL,
+  cuts = NULL,
+  color = NULL,
+  ...
+)
 }
 \arguments{
 \item{tree}{The same as in \code{\link[stats]{rect.hclust}}}

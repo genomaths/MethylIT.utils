@@ -4,8 +4,15 @@
 \alias{GeneUpDownStream}
 \title{Get Genes plus Up and Down Stream Regions}
 \usage{
-GeneUpDownStream(GR, upstream = 0, downstream = 0, extend = NULL,
-  fix = NULL, onlyUP = FALSE, onlyDown = FALSE)
+GeneUpDownStream(
+  GR,
+  upstream = 0,
+  downstream = 0,
+  extend = NULL,
+  fix = NULL,
+  onlyUP = FALSE,
+  onlyDown = FALSE
+)
 }
 \arguments{
 \item{GR}{A \code{\link[GenomicRanges]{GRanges-class}} object containing the

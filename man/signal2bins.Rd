@@ -4,11 +4,24 @@
 \alias{signal2bins}
 \title{Genomic Signal to Summarized Bins}
 \usage{
-signal2bins(signal, regions, stat = "mean", nbins = 20L,
-  nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL,
-  streamDown = NULL, absolute = FALSE, na.rm = TRUE, missings = 0,
-  region.size = 200, num.cores = 1L, tasks = 0L, verbose = TRUE,
-  ...)
+signal2bins(
+  signal,
+  regions,
+  stat = "mean",
+  nbins = 20L,
+  nbinsUP = 20L,
+  nbinsDown = 20L,
+  streamUp = NULL,
+  streamDown = NULL,
+  absolute = FALSE,
+  na.rm = TRUE,
+  missings = 0,
+  region.size = 200,
+  num.cores = 1L,
+  tasks = 0L,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{signal}{Preferibly a single GRanges object with genomic signals in

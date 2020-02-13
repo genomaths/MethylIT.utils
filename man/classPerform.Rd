@@ -4,8 +4,16 @@
 \alias{classPerform}
 \title{Classification performance based on divergences of methylation levels}
 \usage{
-classPerform(LR, min.tv = 0.25, tv.cut, cutoff, tv.col, div.col = NULL,
-  pval.col = NULL, stat = 1)
+classPerform(
+  LR,
+  min.tv = 0.25,
+  tv.cut,
+  cutoff,
+  tv.col,
+  div.col = NULL,
+  pval.col = NULL,
+  stat = 1
+)
 }
 \arguments{
 \item{LR}{A list of GRanges, a GRangesList, a CompressedGRangesList object.

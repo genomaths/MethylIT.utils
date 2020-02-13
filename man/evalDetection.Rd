@@ -4,8 +4,15 @@
 \alias{evalDetection}
 \title{Evaluate detection performance of a signal detector}
 \usage{
-evalDetection(LR, control.names, treatment.names, cutpoint, div.col = 7L,
-  seed = 1234, verbose = TRUE)
+evalDetection(
+  LR,
+  control.names,
+  treatment.names,
+  cutpoint,
+  div.col = 7L,
+  seed = 1234,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{LR}{A list of GRanges objects (LR) including control and treatment

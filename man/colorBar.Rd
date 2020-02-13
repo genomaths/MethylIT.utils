@@ -4,8 +4,18 @@
 \alias{.colorBar}
 \title{Color bar for heatmaps}
 \usage{
-.colorBar(z, zlim, col = heat.colors(12), breaks, horiz = TRUE,
-  ylim = NULL, xlim = NULL, lwd = 0.5, cex.axis = 1, ...)
+.colorBar(
+  z,
+  zlim,
+  col = heat.colors(12),
+  breaks,
+  horiz = TRUE,
+  ylim = NULL,
+  xlim = NULL,
+  lwd = 0.5,
+  cex.axis = 1,
+  ...
+)
 }
 \arguments{
 \item{z}{matrix of values used to visualize the heatmap}

@@ -4,13 +4,28 @@
 \alias{getGRegionsStat2}
 \title{Statistic of Genomic Regions}
 \usage{
-getGRegionsStat2(GR, win.size = 350, step.size = 350,
-  grfeatures = NULL, stat = c("sum", "mean", "gmean", "median",
-  "density", "count", "denCount"), columns = NULL, absolute = FALSE,
-  select.strand = NULL, maxgap = -1L, minoverlap = 0L,
-  select = "all", ignore.strand = FALSE, type = c("any", "start",
-  "end", "within", "equal"), scaling = 1000L, logbase = 2,
-  missings = 0, naming = FALSE, na.rm = TRUE, verbose = TRUE, ...)
+getGRegionsStat2(
+  GR,
+  win.size = 350,
+  step.size = 350,
+  grfeatures = NULL,
+  stat = c("sum", "mean", "gmean", "median", "density", "count", "denCount"),
+  columns = NULL,
+  absolute = FALSE,
+  select.strand = NULL,
+  maxgap = -1L,
+  minoverlap = 0L,
+  select = "all",
+  ignore.strand = FALSE,
+  type = c("any", "start", "end", "within", "equal"),
+  scaling = 1000L,
+  logbase = 2,
+  missings = 0,
+  naming = FALSE,
+  na.rm = TRUE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{GR}{A GRange object carying the variables of interest in the 

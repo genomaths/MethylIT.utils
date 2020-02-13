@@ -4,13 +4,29 @@
 \alias{dmpDensity}
 \title{Linear density of DMPs at a given genomic region}
 \usage{
-dmpDensity(GR, column = 1, cut.col = 1, cutoff, Chr = NULL,
-  start.pos = NULL, end.pos = NULL, int.size1 = NULL,
-  int.size2 = NULL, breaks = NULL, scaling = TRUE, plot = FALSE,
-  noDMP.dens = TRUE, xlabel = "Coordinate",
-  ylabel = "Normalized density", col.dmp = "red", col.ndmp = "blue",
-  yintercept = 0.25, col.yintercept = "magenta",
-  type.yintercept = "dashed", dig.lab = 3)
+dmpDensity(
+  GR,
+  column = 1,
+  cut.col = 1,
+  cutoff,
+  Chr = NULL,
+  start.pos = NULL,
+  end.pos = NULL,
+  int.size1 = NULL,
+  int.size2 = NULL,
+  breaks = NULL,
+  scaling = TRUE,
+  plot = FALSE,
+  noDMP.dens = TRUE,
+  xlabel = "Coordinate",
+  ylabel = "Normalized density",
+  col.dmp = "red",
+  col.ndmp = "blue",
+  yintercept = 0.25,
+  col.yintercept = "magenta",
+  type.yintercept = "dashed",
+  dig.lab = 3
+)
 }
 \arguments{
 \item{GR}{A genomic GRanges object carrying the genomic region where the
@@ -128,9 +144,9 @@ p <- dmpDensity(GR, plot = FALSE)
 # fancy_scientific <- function(l) {
 #   #'turn in to character string in scientific notation
 #   l <- format( l, scientific = TRUE, digits = 1 )
-#   l <- gsub("0e\\\\+00","0",l)
+#   l <- gsub("0e\\+00","0",l)
 #   #'quote the part before the exponent to keep all the digits
-#   l <- gsub("^(.*)e", "'\\\\1'e", l)
+#   l <- gsub("^(.*)e", "'\\1'e", l)
 #   #'turn the 'e+' into plotmath format
 #   l <- gsub("e", "\%*\%10^", l)
 #   l <- gsub("[+]", "", l )

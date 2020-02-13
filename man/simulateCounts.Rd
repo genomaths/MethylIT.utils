@@ -4,12 +4,28 @@
 \alias{simulateCounts}
 \title{Simulate read counts of methylated and unmethylated cytosines}
 \usage{
-simulateCounts(num.samples, sites = NULL, alpha = NULL, beta = NULL,
-  size = NULL, theta, sample.ids = NULL, chromosome = "1",
-  start = NULL, end = NULL, strand = "*", type = c("on_sites",
-  "on_regions"), regions = 10, min_width = 1000, max_width = 5000,
-  minCountPerIndv = 8, maxCountPerIndv = 300, mu = NULL, noise = 0,
-  seed = 123)
+simulateCounts(
+  num.samples,
+  sites = NULL,
+  alpha = NULL,
+  beta = NULL,
+  size = NULL,
+  theta,
+  sample.ids = NULL,
+  chromosome = "1",
+  start = NULL,
+  end = NULL,
+  strand = "*",
+  type = c("on_sites", "on_regions"),
+  regions = 10,
+  min_width = 1000,
+  max_width = 5000,
+  minCountPerIndv = 8,
+  maxCountPerIndv = 300,
+  mu = NULL,
+  noise = 0,
+  seed = 123
+)
 }
 \arguments{
 \item{num.samples}{Number of samples to generate.}

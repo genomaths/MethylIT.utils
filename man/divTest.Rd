@@ -5,12 +5,28 @@
 \title{Group Comparisons of Information Divergences Based on Generalized
     Linear Model}
 \usage{
-divTest(GR, control.names, treatment.names, glm.family = Gamma(link =
-  "log"), var.weights = FALSE, weights = NULL, varFilter = 0,
-  meanFilter = 0, FilterLog2FC = TRUE, Minlog2FC = 1,
-  divPerBp = 0.001, minInd = 2, pAdjustMethod = NULL, scaling = 1L,
-  pvalCutOff = 0.05, saveAll = FALSE, num.cores = 1, tasks = 0L,
-  verbose = TRUE, ...)
+divTest(
+  GR,
+  control.names,
+  treatment.names,
+  glm.family = Gamma(link = "log"),
+  var.weights = FALSE,
+  weights = NULL,
+  varFilter = 0,
+  meanFilter = 0,
+  FilterLog2FC = TRUE,
+  Minlog2FC = 1,
+  divPerBp = 0.001,
+  minInd = 2,
+  pAdjustMethod = NULL,
+  scaling = 1L,
+  pvalCutOff = 0.05,
+  saveAll = FALSE,
+  num.cores = 1,
+  tasks = 0L,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{GR}{GRanges objects including control and treatment samples containing

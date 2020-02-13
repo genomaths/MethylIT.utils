@@ -4,8 +4,7 @@
 \alias{predict.GammaMixt}
 \title{Predict function for the DMP's Mixtures of Gamma Distributions model}
 \usage{
-\method{predict}{GammaMixt}(gmd, pred = "quant", q = 0.95,
-  div.col = NULL, interval = NULL)
+\method{predict}{GammaMixt}(gmd, pred = "quant", q = 0.95, div.col = NULL, interval = NULL)
 }
 \arguments{
 \item{gmd}{An object carrying the best nonlinear fit for a distribution model
