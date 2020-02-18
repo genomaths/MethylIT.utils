@@ -271,6 +271,7 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
            }
        }
    }
+   if (!is.list(res)) res <- list(groupComparison = res)
    cl <- class(res)
    res <- structure(res, class = c("testDMP", cl))
    return(res)
