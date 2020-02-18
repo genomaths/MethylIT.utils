@@ -67,6 +67,7 @@
 #'     (see \code{\link[BiocParallel]{bplapply}} and the number of tasks per job
 #'     (only for Linux OS).
 #' @param verbose if TRUE, prints the function log to stdout
+#' @param progressbar	logical(1). Enable progress bar
 #' @param ... Additional parameters for function
 #'     \code{\link[uniqueGRanges]{MethylIT}}.
 #'
@@ -104,7 +105,7 @@
 #'                 makeGRangesFromDataFrame(x, keep.extra.columns = TRUE))
 #'
 #' rmstGR(LR = data, control.names = c("C1", "C2"),
-#'        treatment.names = c("T1", "T2"),
+#'        treatment.names = c("T1", "T2"), pooling.stat = "sum",
 #'        tv.cut = 0.25, num.permut = 100, pAdjustMethod="BH",
 #'        pvalCutOff = 0.05, num.cores = 4L, verbose=TRUE)
 #' @references
@@ -124,51 +125,52 @@
 #' @seealso \code{\link[MethylIT]{FisherTest}}
 #' @export
 rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
-                   stat="rmst", pooling.stat = "sum", tv.cut=NULL,
+                   stat="rmst", pooling.stat = NULL, tv.cut=NULL,
                    hdiv.cut=NULL, hdiv.col=NULL, num.permut=100,
                    pAdjustMethod="BH", pvalCutOff=0.05, saveAll=FALSE,
-                   num.cores=1L, tasks=0L, verbose=TRUE, ...) {
-   if (any(!unlist(lapply(LR, function(GR) class(GR) == "GRanges"))))
+                   num.cores=1L, tasks=0L, verbose=TRUE, 
+                   progressbar = TRUE, ...) {
+   if (any(!unlist(lapply(LR, function(GR) inherits(GR, "GRanges")))))
        stop("At least one element from 'LR' is not a 'GRanges' object")
-
+  
    if (inherits(LR, c('InfDiv', "pDMP"))) {
        validateClass(LR)
    }
    if (!is.null(control.names)&&!is.null(treatment.names))
-     LR = try(LR[c(control.names, treatment.names)], silent=TRUE)
+       LR = try(LR[c(control.names, treatment.names)], silent=TRUE)
    if (inherits(LR, "try-error"))
        stop("List's names does not match control & treatment names")
-
+  
    # === Auxiliar function to perform RMST ===
-   rmst <- function(GR) {
+   rmst <- function(GR, num.cores, tasks) {
        count.matrix = as.matrix(mcols(GR))
        p1 <- count.matrix[, 1:2]
        p1 <- p1[, 1]/rowSums(p1)
        p2 <- count.matrix[, 3:4]
        p2 <- p2[, 1]/rowSums(p2)
        TV = p2 - p1; rm(p1, p2); gc()
-
+    
        ind <- FALSE; idx <- c()
        if (!is.null(tv.cut)) idx.tv <- which(abs(TV) >= tv.cut)
        if (!is.null(hdiv.cut) && !is.null(hdiv.col))
-         idx.hdiv <- which(mcols(GR[, hdiv.col])[,1] >= hdiv.cut)
-
+           idx.hdiv <- which(mcols(GR[, hdiv.col])[,1] >= hdiv.cut)
+    
        if (!is.null(tv.cut) && (!is.null(hdiv.cut) && !is.null(hdiv.col))) {
-         idx <- unique(c(idx.tv, idx.hdiv))
-         ind <- !is.na(idx)
-       } else {
-         if (!is.null(tv.cut)) {idx <- idx.tv; ind <- !is.na(idx)}
-         if (!is.null(hdiv.cut) && !is.null(hdiv.col)) {
-           idx <- idx.hdiv;
+           idx <- unique(c(idx.tv, idx.hdiv))
            ind <- !is.na(idx)
-         }
+       } else {
+           if (!is.null(tv.cut)) {idx <- idx.tv; ind <- !is.na(idx)}
+           if (!is.null(hdiv.cut) && !is.null(hdiv.col)) {
+               idx <- idx.hdiv;
+               ind <- !is.na(idx)
+           }
        }
-
+    
        if (sum(ind) > 0) {
-         idx = idx[ind]
-         count.matrix = as.matrix(mcols(GR[idx]))
+           idx = idx[ind]
+           count.matrix = as.matrix(mcols(GR[idx]))
        } else count.matrix = as.matrix(mcols(GR))
-
+    
        if (nrow(count.matrix) > 1 ) {
            count.matrix = count.matrix[, 1:4]
            sites = nrow(count.matrix)
@@ -177,23 +179,25 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
            GR$adj.pval <- rep(1, length(GR))
            count.matrix = count.matrix[, 1:4]
            count.matrix=split(count.matrix, row(count.matrix))
-           if (verbose)
-               cat("*** Performing", stat, "test... \n
+       if (verbose)
+           cat("*** Performing", stat, "test... \n
                    # of sites after filtering: ", sites, "\n")
-           if (Sys.info()['sysname'] == "Linux") {
-               bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
-           } else bpparam <- SnowParam(workers = num.cores, type = "SOCK")
-
-           pvals <- unname(unlist(bplapply(count.matrix, function(v) {
-                           m=matrix(as.integer(v), 2, byrow = TRUE)
-                           bootstrap2x2(x=m, stat=stat, num.permut=num.permut)},
-                           BPPARAM=bpparam)))
+       if (Sys.info()['sysname'] == "Linux") {
+           bpparam <- MulticoreParam(workers=num.cores, tasks=tasks, 
+                                       progressbar = progressbar)
+       } else bpparam <- SnowParam(workers = num.cores, type = "SOCK",
+                                   progressbar = progressbar)
+      
+       pvals <- unname(unlist(bplapply(count.matrix, function(v) {
+           m=matrix(as.integer(v), 2, byrow = TRUE)
+           bootstrap2x2(x=m, stat=stat, num.permut=num.permut)},
+           BPPARAM=bpparam)))
        } else {
            count.matrix = count.matrix[1:4]
            pvals <- bootstrap2x2(x=count.matrix, stat=stat,
-                                 num.permut=num.permut)
+                                   num.permut=num.permut)
        }
-
+    
        if ((!is.null(tv.cut) | !is.null(hdiv.cut)) &&
            !saveAll && length(idx) > 0) {
            GR <- GR[idx]
@@ -210,59 +214,64 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
                GR$adj.pval <- p.adjust(pvals, method=pAdjustMethod)
            }
        }
-
+    
        if (!is.null(pvalCutOff) && !saveAll) {
            GR <- GR[ GR$adj.pval < pvalCutOff ]
        }
        return(GR)
    }
-
+  
    if (is.null(control.names) || is.null(treatment.names)) {
-       res <- lapply(LR, function(GR) rmst(GR) )
+       res <- lapply(LR, function(GR) rmst(GR, num.cores = num.cores,
+                                           tasks = tasks) )
    }
-
+  
    if (!is.null(control.names) && !is.null(treatment.names)) {
        ctrl <- LR[control.names]
-       ctrl <- lapply(ctrl, function(GR) {
-           GR <- GR[, count.col]
-           colnames(mcols(GR)) <- c("c1", "t1") # Control counts
-           return(GR)
-       })
-
        treat <- LR[treatment.names]
-       treat <- lapply(treat, function(GR) {
-           GR <- GR[, count.col]
-           colnames(mcols(GR)) <- c("c2", "t2") # Control counts
-           return(GR)
-       })
+
        if (!is.null(pooling.stat)) {
-           ctrl <- poolFromGRlist(ctrl, stat = pooling.stat,
-                           num.cores = num.cores, verbose = verbose)
+           ctrl <- poolFromGRlist(LR = ctrl, stat = pooling.stat,
+                                   num.cores = num.cores, verbose = verbose)
+           colnames(mcols(ctrl)) <- c("c1", "t1") # control counts
+           
            treat <- poolFromGRlist(treat, stat = pooling.stat,
-                           num.cores = num.cores, verbose = verbose)
-           GR <- uniqueGRanges(list(ctrl, treat), verbose = verbose, ...)
-           res <- rmst(GR)
+                                   num.cores = num.cores, verbose = verbose)
+           colnames(mcols(treat)) <- c("c2", "t2") # treatment counts
+           
+           GR <- uniqueGRanges(list(ctrl, treat), verbose = verbose)
+           res <- list(rmst(GR, num.cores = num.cores, tasks = tasks))
        } else {
+           treat <- lapply(treat, function(GR) {
+               GR <- GR[, count.col]
+               colnames(mcols(GR)) <- c("c2", "t2") # treatment counts
+               return(GR)
+           })
+           ctrl <- lapply(ctrl, function(GR) {
+               GR <- GR[, count.col]
+               colnames(mcols(GR)) <- c("c1", "t1") # Control counts
+               return(GR)}
+           )
            res = list()
            i = 1
            test.name = c()
-           for(j in 1:length(ctrl)){
+           for(j in 1:length(ctrl)) {
                for (k in 1:length(treat)) {
                    test.name = c(test.name, paste0(control.names[j], ".",
-                                           treatment.names[k]))
+                                                   treatment.names[k]))
                    GR <- uniqueGRanges(list(ctrl[[j]], treat[[k]]),
-                               verbose = verbose, ...)
+                                       verbose = verbose, ...)
                    if (verbose)
                        cat("*** Testing", paste0(control.names[k], " versus ",
-                                           treatment.names[j]), "\n")
-                   res[[i]] <- rmst(GR)
+                                               treatment.names[j]), "\n")
+                   res[[i]] <- rmst(GR, num.cores = num.cores, tasks = tasks)
                    i = i + 1
                }
                names(res) <- test.name
            }
        }
    }
-   cl <- class(LR)
-   res <- structure(res, class = c(cl, "testDMP"))
+   cl <- class(res)
+   res <- structure(res, class = c("testDMP", cl))
    return(res)
 }

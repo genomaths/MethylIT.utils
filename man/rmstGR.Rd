@@ -10,7 +10,7 @@ rmstGR(
   control.names = NULL,
   treatment.names = NULL,
   stat = "rmst",
-  pooling.stat = "sum",
+  pooling.stat = NULL,
   tv.cut = NULL,
   hdiv.cut = NULL,
   hdiv.col = NULL,
@@ -21,6 +21,7 @@ rmstGR(
   num.cores = 1L,
   tasks = 0L,
   verbose = TRUE,
+  progressbar = TRUE,
   ...
 )
 }
@@ -93,6 +94,8 @@ use, i.e. at most how many child processes will be run simultaneously
 
 \item{verbose}{if TRUE, prints the function log to stdout}
 
+\item{progressbar}{logical(1). Enable progress bar}
+
 \item{...}{Additional parameters for function
 \code{\link[uniqueGRanges]{MethylIT}}.}
 }
@@ -144,7 +147,7 @@ data = lapply(data,
                 makeGRangesFromDataFrame(x, keep.extra.columns = TRUE))
 
 rmstGR(LR = data, control.names = c("C1", "C2"),
-       treatment.names = c("T1", "T2"),
+       treatment.names = c("T1", "T2"), pooling.stat = "sum",
        tv.cut = 0.25, num.permut = 100, pAdjustMethod="BH",
        pvalCutOff = 0.05, num.cores = 4L, verbose=TRUE)
 }
