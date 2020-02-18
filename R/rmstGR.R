@@ -272,7 +272,8 @@ rmstGR <- function(LR, count.col=1:2, control.names=NULL, treatment.names=NULL,
        }
    }
    if (!is.list(res)) res <- list(groupComparison = res)
-   cl <- class(res)
-   res <- structure(res, class = c("testDMP", cl))
+   if (inherits(LR, "InfDiv") || inherits(LR, "pDMP")) cl <- class(LR)
+   else cl <- class(res)
+   res <- structure(res, class = c(cl, "testDMP"))
    return(res)
 }
