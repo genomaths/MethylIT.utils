@@ -30,4 +30,6 @@ Imports:
   stats, 
   MASS
 RoxygenNote: 7.0.2
-Suggests: testthat
+Suggests:
+    spelling, testthat
+Language: en-US

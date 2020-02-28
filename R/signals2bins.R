@@ -6,10 +6,10 @@
 #'     \code{\link[GenomicRanges]{GRanges-class}} object. 
 #' @details This function is useful, for example, to get the  profile of the 
 #'     metylation signal around genes regions: gene-body plus 2kb upstream of
-#'     the TSS and 2kb downtream of the TES. The intensity of the signal profile
-#'     would vary depending on the sample conditions. If a given treatment has
-#'     an effect on methylation then the intesity of the signal profile for the
-#'     treatment would go over or below the control samples. 
+#'     the TSS and 2kb downstream of the TES. The intensity of the signal
+#'     profile would vary depending on the sample conditions. If a given
+#'     treatment has an effect on methylation then the intensity of the signal
+#'     profile for the treatment would go over or below the control samples.
 #'     
 #'     This function does the same as function \code{\link{signal2bins}},
 #'     except for that it is significantly faster than
@@ -19,8 +19,8 @@
 #'     \code{\link{signal2bins}} uses \code{\link[base]{cut}}, while current
 #'     function uses \emph{tile} function
 #'     (\code{\link[IRanges]{IPosRanges-class}}).
-#' @param signal Preferibly a single GRanges object with genomic signals in
-#'     the meta-columns (each colum carrying a signal) or a list of GRanges
+#' @param signal Preferably a single GRanges object with genomic signals in
+#'     the meta-columns (each column carrying a signal) or a list of GRanges
 #'     objects, each GRanges carrying a signal in the meta-column. For example,
 #'     methylation levels, any variable regularly measuring some genomic
 #'     magnitude. This GRanges object can be created by using function
@@ -28,10 +28,10 @@
 #' @param regions A GRanges carrying the genomic region where a summarized 
 #'     statistic can be computed. For example, annotated gene coordinates.
 #' @param stat Statistic used to estimate the summarized value of the variable
-#'     of interest in each interval/window. Posible options are: "mean",
+#'     of interest in each interval/window. Possible options are: "mean",
 #'     geometric mean ("gmean"), "median", "density", "count" and "sum"
 #'     (default). Here, we define "density" as the sum of values from the
-#'     variable of interest in the given region devided by the length/width of
+#'     variable of interest in the given region divided by the length/width of
 #'     the region. The option 'count' compute the number/count of positions in
 #'     the specified regions with values greater than zero in the selected
 #'     'column'.
@@ -49,7 +49,7 @@
 #' @param na.rm Logical value. If TRUE, the NA values will be removed
 #' @param missings Whether to write '0' or 'NA' on regions where there is not
 #'     data to compute the statistic.
-#' @param region.size An integer. The minimun size of a region to be included in
+#' @param region.size An integer. The minimum size of a region to be included in
 #'     the computation. Default 300 (bp).  
 #' @param verbose Logical. Default is TRUE. If TRUE, then the progress of the
 #'     computational tasks is given.
@@ -65,12 +65,12 @@
 #' @return A data.frame object carrying the bin coordinates: \emph{binCoord} 
 #'     and, for each sample, the signal summarized in the requested statistic:
 #'     \emph{statSumary}. Notice that the bin coordinates are relative to
-#'     original coordinates given in the \emph{GR} objeect. For example, if the
+#'     original coordinates given in the \emph{GR} object. For example, if the
 #'     \emph{GR} object carries genome-wide metylation signals (from several
 #'     samples) and we are interested in to get the methylation signal profile
 #'     around the genes regions, then we must provide the gene annotated
 #'     coordinates in the argument \emph{regions}, and set up the amount of bp
-#'     upstream of TSS and dowstream of TES, say, \emph{streamUp} = 2000 and
+#'     upstream of TSS and downstream of TES, say, \emph{streamUp} = 2000 and
 #'     \emph{streamDown} = 2000, repectively. Next, if we set nbins = 20L,
 #'     nbinsUP = 20L, nbinsDown = 20L, then the first and the last 20 bins of
 #'     the returned signal profile represent 2000 bp each of them. Since
