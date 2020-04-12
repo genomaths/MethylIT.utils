@@ -25,6 +25,7 @@
 #' @seealso \code{\link{getGRegionsStat}}
 #' @author Robersy Sanchez. \url{https://genomaths.com}
 #' @examples 
+#' library(GenomicRanges)
 #' some.signal <- makeGRangesFromDataFrame(data.frame(chr = "chr1", 
 #'                                                    start = 1:15,
 #'                                                    end = 1:15,

@@ -31,6 +31,7 @@ range, this function counts the number of sites inside the the given genomic
 regions 'gr'.
 }
 \examples{
+library(GenomicRanges)
 some.signal <- makeGRangesFromDataFrame(data.frame(chr = "chr1", 
                                                    start = 1:15,
                                                    end = 1:15,
