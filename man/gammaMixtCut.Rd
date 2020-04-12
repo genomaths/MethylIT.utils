@@ -29,7 +29,7 @@ gammaMixtCut(
 )
 }
 \arguments{
-\item{LR}{A "pDMP"or "InfDiv" object obtained with functions 
+\item{LR}{A 'pDMP'or 'InfDiv' object obtained with functions 
 \code{\link[MethylIT]{getPotentialDIMP}} or
 \code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
 objects, where each GRanges object from the list must have at least
@@ -65,22 +65,22 @@ treatment samples, which must be include in the variable LR
 must be include in the variable LR (default, NULL).}
 
 \item{column}{a logical vector for column names for the predictor variables
-to be used: Hellinger divergence "hdiv", total variation "TV",
-probability of potential DIMP "wprob", and the relative cytosine site
-position "pos" in respect to the chromosome where it is located. The
+to be used: Hellinger divergence 'hdiv', total variation 'TV',
+probability of potential DIMP 'wprob', and the relative cytosine site
+position 'pos' in respect to the chromosome where it is located. The
 relative position is estimated as (x - x.min)/(x.max - x), where x.min
 and x.max are the maximum and minimum for the corresponding chromosome,
-repectively. If "wprob = TRUE", then Logarithm base-10 of "wprob" will
-be used as predictor in place of "wprob" ( see
+repectively. If 'wprob = TRUE', then Logarithm base-10 of 'wprob' will
+be used as predictor in place of 'wprob' ( see
 \code{\link{evaluateDIMPclass}}).}
 
-\item{classifier}{Classification model to use. Option "logistic" applies a
-logistic regression model; option "lda" applies a Linear Discriminant
-Analysis (LDA); "qda" applies a Quadratic Discriminant Analysis (QDA),
-"pca.logistic" applies logistic regression model using the Principal
+\item{classifier}{Classification model to use. Option 'logistic' applies a
+logistic regression model; option 'lda' applies a Linear Discriminant
+Analysis (LDA); 'qda' applies a Quadratic Discriminant Analysis (QDA),
+'pca.logistic' applies logistic regression model using the Principal
 Component (PCs) estimated with Principal Component Analysis (PCA) as
-predictor variables. pca.lda" applies LDA using PCs as predictor
-variables, and the option "pca.qda" applies a Quadratic Discriminant
+predictor variables. pca.lda' applies LDA using PCs as predictor
+variables, and the option 'pca.qda' applies a Quadratic Discriminant
 Analysis (QDA) using PCs as predictor variables. 'SVM' applies Support
 Vector Machines classifier from R package e1071.}
 
@@ -101,10 +101,10 @@ increamental values runing on the interval *cut.interval*. Deafult,
 
 \item{stat}{An integer number indicating the statistic to be used in the
 testing when *find.cut* = TRUE. The mapping for statistic names are:
-0 = "Accuracy", 1 = "Sensitivity", 2 = "Specificity",
-3 = "Pos Pred Value", 4 = "Neg Pred Value", 5 = "Precision",
-6 = "Recall", 7 = "F1",  8 = "Prevalence", 9 = "Detection Rate",
-10 = "Detection Prevalence", 11 = "Balanced Accuracy", 12 = FDR.}
+0 = 'Accuracy', 1 = 'Sensitivity', 2 = 'Specificity',
+3 = 'Pos Pred Value', 4 = 'Neg Pred Value', 5 = 'Precision',
+6 = 'Recall', 7 = 'F1',  8 = 'Prevalence', 9 = 'Detection Rate',
+10 = 'Detection Prevalence', 11 = 'Balanced Accuracy', 12 = FDR.}
 
 \item{maximize}{Whether to maximize the performance indicator given in
 parameter 'stat'. Default: TRUE.}

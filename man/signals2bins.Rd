@@ -34,9 +34,9 @@ magnitude. This GRanges object can be created by using function
 statistic can be computed. For example, annotated gene coordinates.}
 
 \item{stat}{Statistic used to estimate the summarized value of the variable
-of interest in each interval/window. Possible options are: "mean",
-geometric mean ("gmean"), "median", "density", "count" and "sum"
-(default). Here, we define "density" as the sum of values from the
+of interest in each interval/window. Possible options are: 'mean',
+geometric mean ('gmean'), 'median', 'density', 'count' and 'sum'
+(default). Here, we define 'density' as the sum of values from the
 variable of interest in the given region divided by the length/width of
 the region. The option 'count' compute the number/count of positions in
 the specified regions with values greater than zero in the selected

@@ -26,38 +26,38 @@
 #' @author Robersy Sanchez. \url{https://genomaths.com}
 #' @examples 
 #' library(GenomicRanges)
-#' some.signal <- makeGRangesFromDataFrame(data.frame(chr = "chr1", 
+#' some.signal <- makeGRangesFromDataFrame(data.frame(chr = 'chr1', 
 #'                                                    start = 1:15,
 #'                                                    end = 1:15,
 #'                                                    strand = '*'))
 #' 
-#' some.regions <- makeGRangesFromDataFrame(data.frame(chr = "chr1", 
+#' some.regions <- makeGRangesFromDataFrame(data.frame(chr = 'chr1', 
 #'                                                     start = c(2, 8),
 #'                                                     end = c(7, 14),
 #'                                                     strand = '*'))
 #' 
 #' countSignal(signal = some.signal, gr = some.regions)
 #' 
-countSignal <- function(signal, gr, maxDist = NULL, ignore.strand = TRUE,
-                        verbose = FALSE) {
-    if (!is.null(maxDist)) gr <- reduce(gr, min.gapwidth = maxDist)
+countSignal <- function(signal, gr, maxDist = NULL, ignore.strand = TRUE, 
+    verbose = FALSE) {
+    if (!is.null(maxDist)) 
+        gr <- reduce(gr, min.gapwidth = maxDist)
     gr$region <- paste(seqnames(gr), start(gr), end(gr), sep = "_")
     signal$region <- NA
     
     # To assign the signal ids to the signal
-    Hits <- findOverlaps(signal, gr, ignore.strand = ignore.strand,
-                        type = "within")
+    Hits <- findOverlaps(signal, gr, ignore.strand = ignore.strand, 
+        type = "within")
     signal$region[queryHits(Hits)] <- gr$region[subjectHits(Hits)]
     signal <- unique(signal)
     
     # To count the number of sites inside each region
-    if (verbose)  message("*** Counting sites in clusters ...")
+    if (verbose) 
+        message("*** Counting sites in clusters ...")
     signal <- data.table(as.data.frame(signal))
-    signal <- signal[!is.na(signal$region), list(seqnames = unique(seqnames),
-                                    start = min(start), end = max(end), 
-                                    sites = length(start)),
-                by = region]
-    signal <- makeGRangesFromDataFrame(data.frame(signal), 
-                                        keep.extra.columns = TRUE)
+    signal <- signal[!is.na(signal$region), list(seqnames = unique(seqnames), 
+        start = min(start), end = max(end), sites = length(start)), 
+        by = region]
+    signal <- makeGRangesFromDataFrame(data.frame(signal), keep.extra.columns = TRUE)
     return(signal)
 }

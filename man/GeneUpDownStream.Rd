@@ -27,8 +27,8 @@ downstream of the GR.}
 \item{extend}{Integer (Default: NULL). If upstream == downstream, then 
 simply you may use extend.}
 
-\item{fix}{A string with one of the three possible values: "start", "end" or
-"center" to denoteg what to use as an anchor for each element in GR.}
+\item{fix}{A string with one of the three possible values: 'start', 'end' or
+'center' to denoteg what to use as an anchor for each element in GR.}
 
 \item{onlyUP}{Logic (Default: FALSE). If TRUE returns the region upstream the
 GR.}
@@ -51,11 +51,11 @@ Users can select whether to request only upstream, only downstream,
 \examples{
 starts = c(65419, 450703, 923928, 944204)
 ends = c(71585, 451697, 944581, 959309)
-chrs = c(rep("chr1", 2), rep("chr2", 2))
+chrs = c(rep('chr1', 2), rep('chr2', 2))
 gr = makeGRangesFromDataFrame(
         data.frame(seqnames = chrs, start = starts, end = ends,
-                strand = c("+", "-", "+", "-"),
-                genes = c("A", "B", "C", "D")), keep.extra.columns = TRUE)
+                strand = c('+', '-', '+', '-'),
+                genes = c('A', 'B', 'C', 'D')), keep.extra.columns = TRUE)
 
 gr1 = GeneUpDownStream(GR = gr, upstream = 2000, downstream = 1000)
 }

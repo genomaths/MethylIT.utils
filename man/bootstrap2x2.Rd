@@ -10,7 +10,7 @@ bootstrap2x2(x, stat = "rmst", num.permut = 100)
 \item{x}{A numerical matrix corresponding to cross tabulation (2x2) table
 (contingency table).}
 
-\item{stat}{Statistic to be used in the testing: 'rmst','hdiv', or "all".}
+\item{stat}{Statistic to be used in the testing: 'rmst','hdiv', or 'all'.}
 
 \item{num.permut}{Number of permutations.}
 }
@@ -48,10 +48,10 @@ For goodness-of-fit the following null hypothesis is tested
 \examples{
     set.seed(123)
     TeaTasting = matrix(c(8, 350, 2, 20), nrow = 2,
-                        dimnames = list(Guess = c("Milk", "Tea"),
-                        Truth = c("Milk", "Tea")))
+                        dimnames = list(Guess = c('Milk', 'Tea'),
+                        Truth = c('Milk', 'Tea')))
     ## Small num.permut for test's speed sake
-    bootstrap2x2( TeaTasting, stat = "all", num.permut = 100 )
+    bootstrap2x2( TeaTasting, stat = 'all', num.permut = 100 )
 }
 \references{
 \enumerate{

@@ -11,12 +11,12 @@
 obtained with function \code{\link{nonlinearFitDist}} ('GammaMixt' 
 class).}
 
-\item{pred}{Type of prediction resquested: *density* ("dens"),*quantiles*
-("quant"), *random number* ("rnum"), *probabilities* ("prob"), or
-classification *posterior probability* ("postPrb").}
+\item{pred}{Type of prediction resquested: *density* ('dens'),*quantiles*
+('quant'), *random number* ('rnum'), *probabilities* ('prob'), or
+classification *posterior probability* ('postPrb').}
 
 \item{q}{numeric vector of quantiles, probabilities or an interger if 
-pred = "rnum", or A "pDMP"or "InfDiv" object obtained with functions
+pred = 'rnum', or A 'pDMP'or 'InfDiv' object obtained with functions
 \code{\link[MethylIT]{getPotentialDIMP}} or
 \code{\link[MethylIT]{estimateDivergence}}. These are list of GRanges
 objects, where each GRanges object from the list must have at least two
@@ -25,7 +25,7 @@ columns: a column containing the total variation of methylation level
 divergence of methylation levels (it could be TV or  Hellinger
 divergence).}
 
-\item{div.col}{An integer. If 'q' is "pDMP"or "InfDiv" object, then it is the 
+\item{div.col}{An integer. If 'q' is 'pDMP'or 'InfDiv' object, then it is the 
 column number for the divergence of methylation levels used in the
 estimation of model 'gmd'. Default: NULL.}
 

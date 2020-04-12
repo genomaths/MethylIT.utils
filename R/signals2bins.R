@@ -1,4 +1,5 @@
-# ================================= signals2bins ============================= #
+# ================================= signals2bins
+# ============================= #
 #' @rdname signals2bins 
 #' @title Genomic Signals to Summarized Bins 
 #' @description This function summarizes a genomic signal (variable) split into 
@@ -28,9 +29,9 @@
 #' @param regions A GRanges carrying the genomic region where a summarized 
 #'     statistic can be computed. For example, annotated gene coordinates.
 #' @param stat Statistic used to estimate the summarized value of the variable
-#'     of interest in each interval/window. Possible options are: "mean",
-#'     geometric mean ("gmean"), "median", "density", "count" and "sum"
-#'     (default). Here, we define "density" as the sum of values from the
+#'     of interest in each interval/window. Possible options are: 'mean',
+#'     geometric mean ('gmean'), 'median', 'density', 'count' and 'sum'
+#'     (default). Here, we define 'density' as the sum of values from the
 #'     variable of interest in the given region divided by the length/width of
 #'     the region. The option 'count' compute the number/count of positions in
 #'     the specified regions with values greater than zero in the selected
@@ -80,157 +81,161 @@
 #' @export
 #' @author Robersy Sanchez. \url{https://genomaths.com}
 
-signals2bins <- function(signal, regions, stat = "mean", nbins = 20L,
-                       nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL, 
-                       streamDown = NULL, absolute = FALSE, na.rm = TRUE,
-                       missings = 0, region.size = 300, scaling = 1000L, 
-                       verbose = TRUE, ...) {
-   t1 <- Sys.time()
-   if (!inherits(regions, "GRanges")) 
-       stop("*** 'regions' argument must be a GRanges object")
-
-   if (inherits(signal, "list")) {
-      signal <- uniqueGRanges(signal, ...)
-   }
-   
-   signal.chr <- NULL
-   if (inherits(signal, "GRanges")) {
-       if (region.size < nbins) 
-           stop("* Minimum 'region.size' must be greater than 'nbins'")
-       widths <- width(regions)
-       regions <- regions[widths > region.size]
-       if (length(regions) == 0) 
-           stop("* There is not region with width > region.size")
-       
-       chrs <- as.character(seqnames(regions))
-       signal.chr <- unique(as.character(seqnames(signal)))
-       idx <- match(signal.chr, unique(chrs))
-     
-       if (all(is.na(idx))) 
-           stop("*** chromosomes in the signal did not", 
-                   " match regions chromosomes")
-       else {
-           idx <- unique(chrs)[na.omit(idx)]
-           seqlevels(signal, pruning.mode = "coarse") <- idx
-       }
-   }
-   
-   if (absolute) mcols(signal) <- abs(as.matrix(mcols(signal)))
-   
-   if (verbose) cat("* Computing bins for the main regions, ... \n")
-   bdr <- binbuilder(regions = regions, num.bins = nbins, verbose = verbose)
-   
-   if (verbose) cat("* Computing summarized statistic for main regions, ... \n")
-   bdr.stat <- statRegion(signal = signal, regions = bdr, stat = stat,
-                           na.rm = na.rm, missings = missings, 
-                           scaling = scaling, ...)
-   if (verbose) 
-       cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
-
-   if (!is.null(streamUp)) {
-       upr <- GeneUpDownStream(GR = regions, upstream = streamUp, onlyUP = TRUE)
-       cat("* Computing bins for upstream regions, ... \n")
-       upr <- binbuilder(regions = upr, num.bins = nbinsUP, verbose = verbose)
-       if (verbose) 
-           cat("* Computing summarized statistic for upstream regions, ... \n")
-       upr.stat <- statRegion(signal = signal, regions = upr, stat = stat,
-                               na.rm = na.rm, missings = missings,
-                               scaling = scaling, ...)
-       if (verbose) 
-          cat("--- System elapsed time", format.difftime(Sys.time() - t1),
-               "\n\n")
-   }
-   
-   if (!is.null(streamDown)) {
-       dwr <- GeneUpDownStream(GR = regions, downstream = streamDown, 
-                               onlyDown = TRUE)
-       cat("* Computing bins for downstream regions, ... \n")
-       dwr <- binbuilder(regions = dwr, num.bins = nbinsDown, verbose = verbose)
-       if (verbose) 
-           cat("* Computing summarized statistic for downstream regions",
-               "... \n")
-       dwr.stat <- statRegion(signal = signal, regions = dwr, stat = stat,
-                               na.rm = na.rm, missings = missings,
-                               scaling = scaling, ...)
-   }
-
-   if (!is.null(streamDown) && !is.null(streamUp)) {
-      statSumary <- rbind(upr.stat, bdr.stat, dwr.stat)
-      m <- nbins + nbinsUP + nbinsDown
-   }
-   
-   if (is.null(streamDown) && !is.null(streamUp)) {
-      statSumary <- rbind(upr.stat, bdr.stat)
-      m <- nbins + nbinsUP
-   }
-   
-   if (!is.null(streamDown) && is.null(streamUp)) {
-      statSumary <- rbind(bdr.stat, dwr.stat)
-      m <- nbins + nbinsDown
-   }
-   
-   if (is.null(streamDown) && is.null(streamUp)) {
-      statSumary <- bdr.stat
-      m <- nbins
-   }
-   
-   if (verbose) 
-       cat("--- System elapsed time", format.difftime(Sys.time() - t1), "\n\n")
-   return(data.frame(binCoord = seq(1, m, 1), statSumary[, -1]))
+signals2bins <- function(signal, regions, stat = "mean", nbins = 20L, 
+    nbinsUP = 20L, nbinsDown = 20L, streamUp = NULL, streamDown = NULL, 
+    absolute = FALSE, na.rm = TRUE, missings = 0, region.size = 300, 
+    scaling = 1000L, verbose = TRUE, ...) {
+    t1 <- Sys.time()
+    if (!inherits(regions, "GRanges")) 
+        stop("*** 'regions' argument must be a GRanges object")
+    
+    if (inherits(signal, "list")) {
+        signal <- uniqueGRanges(signal, ...)
+    }
+    
+    signal.chr <- NULL
+    if (inherits(signal, "GRanges")) {
+        if (region.size < nbins) 
+            stop("* Minimum 'region.size' must be greater than 'nbins'")
+        widths <- width(regions)
+        regions <- regions[widths > region.size]
+        if (length(regions) == 0) 
+            stop("* There is not region with width > region.size")
+        
+        chrs <- as.character(seqnames(regions))
+        signal.chr <- unique(as.character(seqnames(signal)))
+        idx <- match(signal.chr, unique(chrs))
+        
+        if (all(is.na(idx))) 
+            stop("*** chromosomes in the signal did not", " match regions chromosomes") else {
+            idx <- unique(chrs)[na.omit(idx)]
+            seqlevels(signal, pruning.mode = "coarse") <- idx
+        }
+    }
+    
+    if (absolute) 
+        mcols(signal) <- abs(as.matrix(mcols(signal)))
+    
+    if (verbose) 
+        cat("* Computing bins for the main regions, ... \n")
+    bdr <- binbuilder(regions = regions, num.bins = nbins, verbose = verbose)
+    
+    if (verbose) 
+        cat("* Computing summarized statistic for main regions, ... \n")
+    bdr.stat <- statRegion(signal = signal, regions = bdr, stat = stat, 
+        na.rm = na.rm, missings = missings, scaling = scaling, ...)
+    if (verbose) 
+        cat("--- System elapsed time", format.difftime(Sys.time() - 
+            t1), "\n\n")
+    
+    if (!is.null(streamUp)) {
+        upr <- GeneUpDownStream(GR = regions, upstream = streamUp, 
+            onlyUP = TRUE)
+        cat("* Computing bins for upstream regions, ... \n")
+        upr <- binbuilder(regions = upr, num.bins = nbinsUP, verbose = verbose)
+        if (verbose) 
+            cat("* Computing summarized statistic for upstream regions, ... \n")
+        upr.stat <- statRegion(signal = signal, regions = upr, stat = stat, 
+            na.rm = na.rm, missings = missings, scaling = scaling, 
+            ...)
+        if (verbose) 
+            cat("--- System elapsed time", format.difftime(Sys.time() - 
+                t1), "\n\n")
+    }
+    
+    if (!is.null(streamDown)) {
+        dwr <- GeneUpDownStream(GR = regions, downstream = streamDown, 
+            onlyDown = TRUE)
+        cat("* Computing bins for downstream regions, ... \n")
+        dwr <- binbuilder(regions = dwr, num.bins = nbinsDown, verbose = verbose)
+        if (verbose) 
+            cat("* Computing summarized statistic for downstream regions", 
+                "... \n")
+        dwr.stat <- statRegion(signal = signal, regions = dwr, stat = stat, 
+            na.rm = na.rm, missings = missings, scaling = scaling, 
+            ...)
+    }
+    
+    if (!is.null(streamDown) && !is.null(streamUp)) {
+        statSumary <- rbind(upr.stat, bdr.stat, dwr.stat)
+        m <- nbins + nbinsUP + nbinsDown
+    }
+    
+    if (is.null(streamDown) && !is.null(streamUp)) {
+        statSumary <- rbind(upr.stat, bdr.stat)
+        m <- nbins + nbinsUP
+    }
+    
+    if (!is.null(streamDown) && is.null(streamUp)) {
+        statSumary <- rbind(bdr.stat, dwr.stat)
+        m <- nbins + nbinsDown
+    }
+    
+    if (is.null(streamDown) && is.null(streamUp)) {
+        statSumary <- bdr.stat
+        m <- nbins
+    }
+    
+    if (verbose) 
+        cat("--- System elapsed time", format.difftime(Sys.time() - 
+            t1), "\n\n")
+    return(data.frame(binCoord = seq(1, m, 1), statSumary[, -1]))
 }
 
-# ====================== Auxiliary function to build bins ======================
+# ====================== Auxiliary function to build bins
+# ======================
 
 binbuilder <- function(regions, num.bins, verbose) {
-   bdr <- tile(regions, n = num.bins)
-   bdr <- unlist(bdr)
-   bdr$bins <- rep(1:num.bins,length(regions))
-   return(bdr)
+    bdr <- tile(regions, n = num.bins)
+    bdr <- unlist(bdr)
+    bdr$bins <- rep(1:num.bins, length(regions))
+    return(bdr)
 }
 
-# ====== Auxiliary function to compute summarized statistic for regions ========
+# ====== Auxiliary function to compute summarized statistic for
+# regions ========
 
-statRegion <- function(signal, regions, stat, na.rm, missings, 
-                        maxgap, minoverlap, ignore.strand, type,
-                        scaling, ...) {
-   
-   ## ------------------------- Stistics to use --------------------------------
-   stats <- function(x, stat = c(), na.rm) {
-      x <- switch(stat,
-                  count = sum(x > 0, na.rm = na.rm),
-                  sum = sum(x, na.rm = na.rm),
-                  mean = mean(x, na.rm = na.rm),
-                  gmean = exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x)),
-                  median = median(x, na.rm = na.rm),
-                  density = sum(x, na.rm = na.rm))
-   }
-   fn <- function(x) stats(x, stat = stat, na.rm = na.rm)
-   # ------------------------------------------------------------------------- #
-   
-   hits <- findOverlaps(signal, regions, ...)
-   if (length(hits) > 0) {
-       bins <- regions$bins
-       m <- ncol(mcols(signal))
-       if (m > 1) {
-           mcols(regions) <- matrix(missings, nrow = length(regions), ncol = m)
-       }
-       else mcols(regions) <- missings
-       mcols(regions[subjectHits(hits)]) <- mcols(signal[queryHits(hits)])
-       colnames(mcols(regions)) <- colnames(mcols(signal))
-       if (stat == "density") {
-           widths <- width(regions)
-           mcols(regions) <- (scaling * as.matrix(mcols(regions))/widths)
-       }
-
-       signal <- regions
-       signal$bins <- bins; rm(regions, bins); gc()
-       names(signal) <- NULL
-       signal <- as.data.frame(signal)
-       signal <- signal[, -c(1:5)]
-
-       signal <- signal %>% group_by(bins) %>% summarise_all(list(fn))
-      
-       return(as.data.frame(signal))
-   }
+statRegion <- function(signal, regions, stat, na.rm, missings, maxgap, 
+    minoverlap, ignore.strand, type, scaling, ...) {
+    
+    ## ------------------------- Stistics to use
+    ## --------------------------------
+    stats <- function(x, stat = c(), na.rm) {
+        x <- switch(stat, count = sum(x > 0, na.rm = na.rm), sum = sum(x, 
+            na.rm = na.rm), mean = mean(x, na.rm = na.rm), gmean = exp(sum(log(x[x > 
+            0]), na.rm = na.rm)/length(x)), median = median(x, na.rm = na.rm), 
+            density = sum(x, na.rm = na.rm))
+    }
+    fn <- function(x) stats(x, stat = stat, na.rm = na.rm)
+    # -------------------------------------------------------------------------
+    # #
+    
+    hits <- findOverlaps(signal, regions, ...)
+    if (length(hits) > 0) {
+        bins <- regions$bins
+        m <- ncol(mcols(signal))
+        if (m > 1) {
+            mcols(regions) <- matrix(missings, nrow = length(regions), 
+                ncol = m)
+        } else mcols(regions) <- missings
+        mcols(regions[subjectHits(hits)]) <- mcols(signal[queryHits(hits)])
+        colnames(mcols(regions)) <- colnames(mcols(signal))
+        if (stat == "density") {
+            widths <- width(regions)
+            mcols(regions) <- (scaling * as.matrix(mcols(regions))/widths)
+        }
+        
+        signal <- regions
+        signal$bins <- bins
+        rm(regions, bins)
+        gc()
+        names(signal) <- NULL
+        signal <- as.data.frame(signal)
+        signal <- signal[, -c(1:5)]
+        
+        signal <- signal %>% group_by(bins) %>% summarise_all(list(fn))
+        
+        return(as.data.frame(signal))
+    }
 }
 

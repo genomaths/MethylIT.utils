@@ -50,10 +50,10 @@ parameter values div.col or pval.col must be given.}
 
 \item{stat}{An integer number indicating the statistic to be used in the
 testing. The mapping for statistic names are:
-0 = "All" 1 = "Accuracy", 2 = "Sensitivity", 3 = "Specificity",
-4 = "Pos Pred Value", 5 = "Neg Pred Value", 6 = "Precision",
-7 = "Recall", 8 = "F1",  9 = "Prevalence", 10 = "Detection Rate",
-11 = "Detection Prevalence", 12 = "Balanced Accuracy".}
+0 = 'All' 1 = 'Accuracy', 2 = 'Sensitivity', 3 = 'Specificity',
+4 = 'Pos Pred Value', 5 = 'Neg Pred Value', 6 = 'Precision',
+7 = 'Recall', 8 = 'F1',  9 = 'Prevalence', 10 = 'Detection Rate',
+11 = 'Detection Prevalence', 12 = 'Balanced Accuracy'.}
 }
 \value{
 A list with the classification repformance results
@@ -64,7 +64,7 @@ The classification performance based on an information
     objects. The total variation distance (TVD, absolute difference of
     methylation levels) is used as pivot to specify the cytosine sites
     considered as true positives and true negatives. Function
-    \code{\link[caret]{confusionMatrix}} from package "caret" is applied to
+    \code{\link[caret]{confusionMatrix}} from package 'caret' is applied to
     get the classification performance.
 }
 \details{

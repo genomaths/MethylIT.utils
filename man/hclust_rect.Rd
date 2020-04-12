@@ -45,8 +45,8 @@ Draws rectangles with background colors around the branches of a
 }
 \details{
 This function is exactly function \code{\link[stats]{rect.hclust}} 
-    with a nice feature added: "to draw the rectangles around hierarchical
-    clusters with background colors".
+    with a nice feature added: 'to draw the rectangles around hierarchical
+    clusters with background colors'.
 }
 \examples{
 ### Violent crime rates by US state

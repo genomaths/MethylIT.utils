@@ -9,10 +9,10 @@
 \arguments{
 \item{model}{glm object}
 
-\item{test}{A character string matching one of "Wald" or "LRT". If test =
-"Wald", then the p-value of the Wald test for the coefficient of the
+\item{test}{A character string matching one of 'Wald' or 'LRT'. If test =
+'Wald', then the p-value of the Wald test for the coefficient of the
 independent variable (\emph{treatment group}) will be reported p-value. If
-test = "LRT", then the p-value from a likelihood ratio test given by
+test = 'LRT', then the p-value from a likelihood ratio test given by
 \code{\link[stats]{anova}} function from \emph{stats} packages will be the
 reported p-value for the group comparison.}
 }

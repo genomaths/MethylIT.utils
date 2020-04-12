@@ -35,14 +35,14 @@ included in the variable GR at the metacolumn.}
 
 \item{link}{Parameter to be passed to function 'betareg' from package
 'betareg'. character specification of the link function in the mean model
-(mu). Currently, "logit", "probit", "cloglog", "cauchit", "log",
-"loglog" are supported. Alternatively, an object of class "link-glm"
+(mu). Currently, 'logit', 'probit', 'cloglog', 'cauchit', 'log',
+'loglog' are supported. Alternatively, an object of class 'link-glm'
 can be supplied (see \code{\link[betareg]{betareg}}).}
 
 \item{type}{Parameter to be passed to function 'betareg' from package
 'betareg'. A character specification of the type of estimator. Currently,
-maximum likelihood ("ML"), ML with bias correction ("BC"), and ML with
-bias reduction ("BR") are supported.}
+maximum likelihood ('ML'), ML with bias correction ('BC'), and ML with
+bias reduction ('BR') are supported.}
 
 \item{tv.cut}{A cutoff for the total variation distance (TVD; absolute value
 of methylation levels differences) estimated at each site/range as the
@@ -81,13 +81,13 @@ BiocParallel package).}
 \item{verbose}{if TRUE, prints the function log to stdout}
 }
 \value{
-The original GRanges object with the columns "beta", "log2FC",
-    "pvalue", and TV added.
+The original GRanges object with the columns 'beta', 'log2FC',
+    'pvalue', and TV added.
 }
 \description{
 Beta Regression analysis for treatment versus control group
-    comparison of methylation levels, appends three new metacolumns "beta",
-    "log2FC", "pvalue" to the provided GRanges argument
+    comparison of methylation levels, appends three new metacolumns 'beta',
+    'log2FC', 'pvalue' to the provided GRanges argument
 }
 \details{
 Beta Regression analysis for group comparison of methylation levels
@@ -97,12 +97,12 @@ Beta Regression analysis for group comparison of methylation levels
 num.cyt <- 11001 # Number of cytosine position with methylation call
 max.cyt = 14000
 ## Gene annotation
-genes <- GRanges(seqnames = "1",
+genes <- GRanges(seqnames = '1',
                  ranges = IRanges(start = c(3631, 6788, 11649),
                                   end = c(5899, 9130, 13714)),
-                 strand = c("+", "-", "-"))
-mcols(genes) <- data.frame(gene_id = c("AT1G01010", "AT1G01020",
-                                       "AT1G01030"))
+                 strand = c('+', '-', '-'))
+mcols(genes) <- data.frame(gene_id = c('AT1G01010', 'AT1G01020',
+                                       'AT1G01030'))
 
 set.seed(123) #'#' To set a seed for random number generation
 ## GRanges object of the reference with methylation levels in
@@ -155,22 +155,22 @@ nlms <- nonlinearFitDist(HD, column = 4, verbose = FALSE)
 PS <- getPotentialDIMP(LR = HD, nlms = nlms, div.col = 4, alpha = 0.05)
 
 ## The cutpoint estimation used to discriminate the signal from the noise
-cutpoints <- estimateCutPoint(PS, control.names = c("sample11", "sample12"),
-                              treatment.names = c("sample21", "sample22"),
+cutpoints <- estimateCutPoint(PS, control.names = c('sample11', 'sample12'),
+                              treatment.names = c('sample21', 'sample22'),
                               div.col = 4, verbose = TRUE)
 ## DIMPs are selected using the cupoints
 DIMPs <- selectDIMP(PS, div.col = 4, cutpoint = min(cutpoints$cutpoint))
 
 ## Finally DIMPs statistics genes
-p_DIMPs = getGRegionsStat(GR = DIMPs, grfeatures = genes, stat = "mean",
+p_DIMPs = getGRegionsStat(GR = DIMPs, grfeatures = genes, stat = 'mean',
                           prob = TRUE, column = 2L)
 
-GR_p_DIMP = uniqueGRanges(p_DIMPs, type = "equal", chromosomes = "1")
-colnames(mcols(GR_p_DIMP)) <-  c("sample11", "sample12", "sample21",
-                                "sample22")
+GR_p_DIMP = uniqueGRanges(p_DIMPs, type = 'equal', chromosomes = '1')
+colnames(mcols(GR_p_DIMP)) <-  c('sample11', 'sample12', 'sample21',
+                                'sample22')
 names(GR_p_DIMP) <- genes$gene_id
 
 ## Group differences between methylation levels
-propTest(GR = GR_p_DIMP, control.names = c("sample11", "sample12"),
-         treatment.names = c("sample21", "sample22"))
+propTest(GR = GR_p_DIMP, control.names = c('sample11', 'sample12'),
+         treatment.names = c('sample21', 'sample22'))
 }

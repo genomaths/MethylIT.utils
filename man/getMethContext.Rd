@@ -22,9 +22,9 @@ This function retrieves the methylation context from a
     chromosome DNA sequence in fasta format.
 }
 \examples{
-dna <- Biostrings::DNAString(x = "CCCTAACGACCCTAACGCTACCCTAAACCTCTGAAT",
+dna <- Biostrings::DNAString(x = 'CCCTAACGACCCTAACGCTACCCTAAACCTCTGAAT',
     start = 1, nchar = NA)
-getMethContext(chr.seq = dna, chromosome = "1", verbose = TRUE)
+getMethContext(chr.seq = dna, chromosome = '1', verbose = TRUE)
 
 
 }

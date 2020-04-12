@@ -42,14 +42,21 @@ intergenic region, etc. If provided, then parameters 'win.size' and
 step.size are ignored and the statistics are estimated for 'grfeatures'.}
 
 \item{stat}{Statistic used to estimate the summarized value of the variable
-of interest in each interval/window. Posible options are: "mean",
-geometric mean ("gmean"), "median", "density", "count", "denCount" and
-"sum" (default). Here, we define "density" as the sum of values from the
-variable of interest in the given region devided by the length of the
-region. The option 'count' compute the number/count of positions in the
-specified regions with values greater than zero in the selected 'column'.
-The statistic "denCount" is defined as the "count" in the given region 
-devided by the length of the region.}
+    of interest in each interval/window. Posible options are:
+    
+\describe{
+  \item{\strong{'mean':}}{The mean of values inside each region.}
+  \item{\strong{'gmean':}}{The geometric mean of values inside each region.}
+  \item{\strong{'median':}}{The median of values inside each region.}
+  \item{\strong{'density':}}{The density of values inside each region. That
+         is, the sum of values found in each region divided by the width of 
+         the region.}
+  \item{\strong{'count':}}{Compute the number/count of positions with values
+         greater than zero inside each regions.}
+  \item{\strong{'denCount':}}{The number of sites with value > 0 inside each 
+         region divided by the width of the region.}
+  \item{\strong{'sum':}}{The sum of values inside each region.}
+}}
 
 \item{absolute}{Optional. Logic (default: FALSE). Whether to use the absolute
 values of the variable provided. For example, the difference of
@@ -57,7 +64,7 @@ methylation levels could take negative values (TV) and we would be
 interested on the sum of abs(TV), which is sum of the total variation
 distance.}
 
-\item{select.strand}{Optional. If provided,"+" or "-", then the summarized
+\item{select.strand}{Optional. If provided,'+' or '-', then the summarized
 statistic is computed only for the specified DNA chain.}
 
 \item{maxgap, minoverlap, type}{See 
@@ -68,7 +75,7 @@ statistic is computed only for the specified DNA chain.}
 the overlap calculations.}
 
 \item{scaling}{integer (default 1). Scaling factor to be used when
-stat = "density". For example, if scaling = 1000, then density * scaling
+stat = 'density'. For example, if scaling = 1000, then density * scaling
 denotes the sum of values in 1000 bp.}
 
 \item{logbase}{A positive number: the base with respect to which logarithms
@@ -104,21 +111,21 @@ This function split a Grange object into intervals genomic regions
 \examples{
 library(GenomicRanges)
 set.seed(1)
-gr <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
+gr <- GRanges(seqnames = Rle( c('chr1', 'chr2', 'chr3', 'chr4'),
             c(5, 5, 5, 5)),
             ranges = IRanges(start = 1:20, end = 1:20),
-            strand = rep(c("+", "-"), 10),
+            strand = rep(c('+', '-'), 10),
             A = seq(1, 0, length = 20))
 gr$B <- runif(20)
 grs <- getGRegionsStat2(gr, win.size = 4, step.size = 4)
 grs
 
 ## Selecting the positive strand
-grs <- getGRegionsStat2(gr, win.size = 4, step.size = 4, select.strand = "+")
+grs <- getGRegionsStat2(gr, win.size = 4, step.size = 4, select.strand = '+')
 grs
 
 ## Selecting the negative strand
-grs <- getGRegionsStat2(gr, win.size = 4, step.size = 4, select.strand = "-")
+grs <- getGRegionsStat2(gr, win.size = 4, step.size = 4, select.strand = '-')
 grs
 
 }

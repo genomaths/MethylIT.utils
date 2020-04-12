@@ -46,7 +46,7 @@ link function to be used in the model. For \code{\link[stats]{glm}} this
 can be a character string naming a family function, or the result of a
 call to a family function. For \code{\link[stats]{glm}}.fit only the
 third option is supported. (See\code{\link[stats]{family}} function).
-Default: glm.family=Gamma(link ="log").}
+Default: glm.family=Gamma(link ='log').}
 
 \item{var.weights}{Logical (default: FALSE). Whether to use group variances
 as weights.}
@@ -78,12 +78,12 @@ equal to or greater than 'divPerBp' (default divPerBp = 0.001).}
 \item{minInd}{Integer (Default: 2). At least one group must have 'minInd'
 individuals with a divergence value greater than zero.}
 
-\item{pAdjustMethod}{Method used to adjust the results; default: "NULL"
+\item{pAdjustMethod}{Method used to adjust the results; default: 'NULL'
 (see \code{\link[stats]{p.adjust}}.methods). The p-value adjustment is
 performed using function \code{\link[stats]{p.adjust}}.}
 
 \item{scaling}{integer (default 1). Scaling factor estimate the
-signal density as: scaling * "DIMP-Count-Per-Bp". For example,
+signal density as: scaling * 'DIMP-Count-Per-Bp'. For example,
 if scaling = 1000, then signal density denotes the number of DIMPs in
  1000 bp.}
 
@@ -112,9 +112,9 @@ package).}
 \item{...}{Additional parameters passed to \code{\link[stats]{glm}} function.}
 }
 \value{
-The original GRanges object with the columns "beta", "log2FC",
-    "pvalue", "adj.pval" (if pAdjustMethod requested), "CT.divPerBp" and
-    "TT.divPerBp" (divergence per base pairs), and "divPerBpVariation added.
+The original GRanges object with the columns 'beta', 'log2FC',
+    'pvalue', 'adj.pval' (if pAdjustMethod requested), 'CT.divPerBp' and
+    'TT.divPerBp' (divergence per base pairs), and 'divPerBpVariation added.
 }
 \description{
 Generalized Linear Model for group comparison of information
@@ -126,7 +126,7 @@ Generalized Linear Model for group comparison of information
     \code{\link[MethylIT]{estimateDivergence}} output.
 }
 \details{
-The default parameter setting glm.family = Gamma(link = "log") is
+The default parameter setting glm.family = Gamma(link = 'log') is
     thought to perform the group comparison of the sums of absolute
     differences of methylation levels (total variation distance (TVD) at
     gene-body DIMPs on DMGs). The sums of Hellinger divergence (HD, at
@@ -140,12 +140,12 @@ The default parameter setting glm.family = Gamma(link = "log") is
 }
 \examples{
 ## Gene annotation
-genes <- GRanges(seqnames = "1",
+genes <- GRanges(seqnames = '1',
                  ranges = IRanges(start = c(3631, 6788, 11649),
                                   end = c(5899, 9130, 13714)),
-                 strand = c("+", "-", "-"))
-mcols(genes) <- data.frame(gene_id = c("AT1G01010", "AT1G01020",
-                                       "AT1G01030"))
+                 strand = c('+', '-', '-'))
+mcols(genes) <- data.frame(gene_id = c('AT1G01010', 'AT1G01020',
+                                       'AT1G01030'))
 # === The number of cytosine sites to generate ===
 sites = 11001
 # == Set a seed for pseudo-random number generation ===
@@ -154,16 +154,16 @@ alpha.ct <- 0.09
 alpha.tt <- 0.2
 # === Simulate samples ===
 ref = simulateCounts(num.samples = 2, sites = sites, alpha = alpha.ct,
-                   beta = 0.5, size = 50, theta = 4.5, sample.ids = "R1")
+                   beta = 0.5, size = 50, theta = 4.5, sample.ids = 'R1')
 
 # Control group
 ctrl = simulateCounts(num.samples = 2, sites = sites, alpha = alpha.ct,
                        beta = 0.5, size = 50, theta = 4.5,
-                       sample.ids = c("C1", "C2"))
+                       sample.ids = c('C1', 'C2'))
 # Treatment group
 treat = simulateCounts(num.samples = 2, sites = sites, alpha = alpha.tt,
                         beta = 0.5, size = 50, theta = 4.5,
-                        sample.ids = c("T1", "T2"))
+                        sample.ids = c('T1', 'T2'))
 
 #  === Estime Divergences ===
 HD = estimateDivergence(ref = ref$R1, indiv = c(ctrl, treat),
@@ -176,19 +176,19 @@ nlms <- nonlinearFitDist(HD, column = 4, verbose = FALSE)
 PS <- getPotentialDIMP(LR = HD, nlms = nlms, div.col = 4, alpha = 0.05)
 
 ## The cutpoint estimation used to discriminate the signal from the noise
-cutpoints <- estimateCutPoint(PS, control.names = c("C1", "C2"),
-                              treatment.names = c("T1", "T2"),
+cutpoints <- estimateCutPoint(PS, control.names = c('C1', 'C2'),
+                              treatment.names = c('T1', 'T2'),
                               div.col = 4, verbose = FALSE)
 ## DIMPs are selected using the cupoints
 DIMPs <- selectDIMP(PS, div.col = 9, cutpoint = min(cutpoints$cutpoint))
 
 ## Finally DIMPs statistics genes
-tv_DIMPs = getGRegionsStat(GR = DIMPs, grfeatures = genes, stat = "sum",
+tv_DIMPs = getGRegionsStat(GR = DIMPs, grfeatures = genes, stat = 'sum',
                            absolute = TRUE, column = 7L)
 
-GR_tv_DIMP = uniqueGRanges(tv_DIMPs, type = "equal", chromosomes = "1")
-colnames(mcols(GR_tv_DIMP)) <-  c("C1", "C2", "T1", "T2")
+GR_tv_DIMP = uniqueGRanges(tv_DIMPs, type = 'equal', chromosomes = '1')
+colnames(mcols(GR_tv_DIMP)) <-  c('C1', 'C2', 'T1', 'T2')
 
-res <- divTest(GR=GR_tv_DIMP, control.names =  c("C1", "C2"),
-               treatment.names = c("T1", "T2"))
+res <- divTest(GR=GR_tv_DIMP, control.names =  c('C1', 'C2'),
+               treatment.names = c('T1', 'T2'))
 }

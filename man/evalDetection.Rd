@@ -32,7 +32,7 @@ included in the variable LR.}
 greater than 'cutpoint' will selected as DIMPs. Cutpoints are estimated
 with the function 'estimateCutPoint'. Cytosine positions with divergence
 values greater than the cutpoint are considered members of the
-"positive class".}
+'positive class'.}
 
 \item{div.col}{Column number for divergence variable used in the ROC
 analysis and estimation of the cutpoints.}
@@ -43,7 +43,7 @@ analysis and estimation of the cutpoints.}
 }
 \value{
 the list with the statisitics returned by the function
-    \code{\link[caret]{confusionMatrix}} fron package "caret".
+    \code{\link[caret]{confusionMatrix}} fron package 'caret'.
 }
 \description{
 For a given cutpoint (e.g., previously estimated with the
@@ -59,7 +59,7 @@ The regulatory methylation signal is also an output from a natural
     classification obtained with the application of some classifier/detector
     or rule, the cross-tabulation of observed and predicted classes with
     associated statistics are calculated with function
-    \code{\link[caret]{confusionMatrix}} fron package "caret".
+    \code{\link[caret]{confusionMatrix}} fron package 'caret'.
 
     A classification result with low accuracy and compromising values from
     other classification performance indicators (see below) suggest that the
@@ -112,7 +112,7 @@ Indiv <- GRangesList(
 #'#' To estimate Hellinger divergence using only the methylation levels.
 HD <- estimateDivergence(ref = Ref, indiv = Indiv, meth.level = TRUE,
                          columns = 1)
-res <- evalDetection(LR  = HD, control.names = c("sample11", "sample12"),
-                     treatment.names = c("sample21", "sample22"),
+res <- evalDetection(LR  = HD, control.names = c('sample11', 'sample12'),
+                     treatment.names = c('sample21', 'sample22'),
                      cutpoint = 0.85, div.col = 3L, seed=1234, verbose=TRUE)
 }

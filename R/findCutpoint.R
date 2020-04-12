@@ -56,10 +56,10 @@
 #'     must be given.
 #' @param stat An integer number indicating the statistic to be used in the
 #'     testing. The mapping for statistic names are:
-#'     0 = "All" 1 = "Accuracy", 2 = "Sensitivity", 3 = "Specificity",
-#'     4 = "Pos Pred Value", 5 = "Neg Pred Value", 6 = "Precision",
-#'     7 = "Recall", 8 = "F1",  9 = "Prevalence", 10 = "Detection Rate",
-#'     11 = "Detection Prevalence", 12 = "Balanced Accuracy".
+#'     0 = 'All' 1 = 'Accuracy', 2 = 'Sensitivity', 3 = 'Specificity',
+#'     4 = 'Pos Pred Value', 5 = 'Neg Pred Value', 6 = 'Precision',
+#'     7 = 'Recall', 8 = 'F1',  9 = 'Prevalence', 10 = 'Detection Rate',
+#'     11 = 'Detection Prevalence', 12 = 'Balanced Accuracy'.
 #' @param maximize Whether to maximize the performance indicator given in
 #'     parameter 'stat'. Default: TRUE.
 #' @param num.cores,tasks Paramaters for parallele computation using package
@@ -82,43 +82,43 @@
 #' # Vector of cutoff values
 #' cuts = c(2, 5, 10, 15, 18, 20, 21, 22, 25, 27, 30, 35, 40,
 #'         45, 50, 55, 60)
-#
+# 
 #' # === To find the cutpoint that maximize the accuracy ===
 #' pre.cut.acc = findCutpoint(LR = PS, min.tv = 0.25, tv.cut = 0.5,
 #'                             predcuts = cuts, tv.col = 7L, div.col = 9,
 #'                             stat = 1, num.cores = 15)
 
-findCutpoint <- function(LR, min.tv=0.25, tv.cut=0.5, predcuts, tv.col,
-                       div.col=NULL, pval.col=NULL, stat = 1, maximize = TRUE,
-                       num.cores = 1L, tasks=tasks) {
-   # statistic names
-   # 0 = "All" 1 = "Accuracy", 2 = "Sensitivity", 3 = "Specificity",
-   # 4 = "Pos Pred Value", 5 = "Neg Pred Value", 6 = "Precision", 7 = "Recall",
-   # 8 = "F1",  9 = "Prevalence", 10 = "Detection Rate",
-   # 11 = "Detection Prevalence", 12 = "Balanced Accuracy"
-
-   if (Sys.info()['sysname'] == "Linux") {
-       bpparam <- MulticoreParam(workers=num.cores, tasks=tasks)
-   } else {
-       bpparam <- SnowParam(workers = num.cores, type = "SOCK")
-   }
-
-   res <- bplapply(predcuts, function(k, LR)
-               classPerform(LR=LR, min.tv=min.tv, tv.cut=tv.cut, cutoff=k,
-                           tv.col=tv.col, div.col=div.col, pval.col=pval.col,
-                           stat=stat), LR, BPPARAM = bpparam)
-   res <- unlist(res)
-   if (!all(is.na(res))) {
-       if (maximize) cutp = predcuts[which.max(res)]
-       else  cutp = predcuts[which.min(res)]
-       perf <- classPerform(LR=LR, min.tv=min.tv, tv.cut=tv.cut, cutoff=cutp,
-                           tv.col=tv.col, div.col=div.col, pval.col=pval.col,
-                           stat=0)
-
-       res = list(optimCutpoint=cutp, Statistic=res, Performance=perf[[1]],
-                   FDR=perf[[2]])
-   } else res = list(optimCutpoint=NA, Statistic=NA, Performance=NA,
-                   FDR=NA)
-   return(res)
+findCutpoint <- function(LR, min.tv = 0.25, tv.cut = 0.5, predcuts, 
+    tv.col, div.col = NULL, pval.col = NULL, stat = 1, maximize = TRUE, 
+    num.cores = 1L, tasks = tasks) {
+    # statistic names 0 = 'All' 1 = 'Accuracy', 2 = 'Sensitivity', 3 =
+    # 'Specificity', 4 = 'Pos Pred Value', 5 = 'Neg Pred Value', 6 =
+    # 'Precision', 7 = 'Recall', 8 = 'F1', 9 = 'Prevalence', 10 =
+    # 'Detection Rate', 11 = 'Detection Prevalence', 12 = 'Balanced
+    # Accuracy'
+    
+    if (Sys.info()["sysname"] == "Linux") {
+        bpparam <- MulticoreParam(workers = num.cores, tasks = tasks)
+    } else {
+        bpparam <- SnowParam(workers = num.cores, type = "SOCK")
+    }
+    
+    res <- bplapply(predcuts, function(k, LR) classPerform(LR = LR, 
+        min.tv = min.tv, tv.cut = tv.cut, cutoff = k, tv.col = tv.col, 
+        div.col = div.col, pval.col = pval.col, stat = stat), LR, 
+        BPPARAM = bpparam)
+    res <- unlist(res)
+    if (!all(is.na(res))) {
+        if (maximize) 
+            cutp <- predcuts[which.max(res)] else cutp <- predcuts[which.min(res)]
+        perf <- classPerform(LR = LR, min.tv = min.tv, tv.cut = tv.cut, 
+            cutoff = cutp, tv.col = tv.col, div.col = div.col, pval.col = pval.col, 
+            stat = 0)
+        
+        res <- list(optimCutpoint = cutp, Statistic = res, Performance = perf[[1]], 
+            FDR = perf[[2]])
+    } else res <- list(optimCutpoint = NA, Statistic = NA, Performance = NA, 
+        FDR = NA)
+    return(res)
 }
 

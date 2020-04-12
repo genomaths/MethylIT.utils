@@ -47,14 +47,20 @@ intergenic region, etc. If provided, then parameters 'win.size' and
 step.size are ignored and the statistics are estimated for 'grfeatures'.}
 
 \item{stat}{Statistic used to estimate the summarized value of the variable
-of interest in each interval/window. Posible options are: "mean",
-geometric mean ("gmean"), "median", "density", "count", "denCount" and
-"sum" (default). Here, we define "density" as the sum of values from the
-variable of interest in the given region devided by the length of the
-region. The option 'count' compute the number/count of positions in the
-specified regions with values greater than zero in the selected 'column'.
-The statistic "denCount" is defined as the "count" in the given region 
-devided by the length of the region.}
+    of interest in each interval/window. Posible options are: 
+\describe{
+  \item{\strong{'mean':}}{The mean of values inside each region.}
+  \item{\strong{'gmean':}}{The geometric mean of values inside each region.}
+  \item{\strong{'median':}}{The median of values inside each region.}
+  \item{\strong{'density':}}{The density of values inside each region. That
+         is, the sum of values found in each region divided by the width of 
+         the region.}
+  \item{\strong{'count':}}{Compute the number/count of positions with values
+         greater than zero inside each regions.}
+  \item{\strong{'denCount':}}{The number of sites with value > 0 inside each 
+         region divided by the width of the region.}
+  \item{\strong{'sum':}}{The sum of values inside each region.}
+}}
 
 \item{absolute}{Optional. Logic (default: FALSE). Whether to use the absolute
 values of the variable provided. For example, the difference of
@@ -62,7 +68,7 @@ methylation levels could take negative values (TV) and we would be
 interested on the sum of abs(TV), which is sum of the total variation
 distance.}
 
-\item{select.strand}{Optional. If provided,"+" or "-", then the summarized
+\item{select.strand}{Optional. If provided,'+' or '-', then the summarized
 statistic is computed only for the specified DNA chain.}
 
 \item{column}{Integer number denoting the column where the variable of
@@ -72,13 +78,16 @@ interest is located in the metacolumn of the GRanges object.}
 zero and 1, then the summarized statistic is comuputed using Fisher's
 transformation.}
 
-\item{entropy}{Logic. Whether to compute the entropy when prob == TRUE.}
+\item{entropy}{Logic. Whether to compute the entropy at each site from the 
+specified regions. All the values from the selected column must belong to
+the interval [0, 1]. Next, the requested statistics for the entropy 
+values at each site inside the regions is computed.}
 
 \item{maxgap, minoverlap, type}{See ?findOverlaps in the IRanges package for a
 description of these arguments.}
 
 \item{scaling}{integer (default 1). Scaling factor to be used when
-stat = "density". For example, if scaling = 1000, then density * scaling
+stat = 'density'. For example, if scaling = 1000, then density * scaling
 denotes the sum of values in 1000 bp.}
 
 \item{logbase}{A positive number: the base with respect to which logarithms
@@ -95,8 +104,8 @@ the overlap calculations.}
 \item{naming}{Logical value. If TRUE, the rows GRanges object will be 
 given the names(GR). Default is FALSE.}
 
-\item{output}{A string. Setting output = "all" will return all the regions
-given in 'grfeatures'. Default is output = "hits".}
+\item{output}{A string. Setting output = 'all' will return all the regions
+given in 'grfeatures'. Default is output = 'hits'.}
 
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
@@ -123,7 +132,7 @@ A function to estimate summarized measures of a specified
 }
 \details{
 This function split a Grange object into intervals genomic regions
-    (GR) of fixed size (as given in function "tileMethylCounts2" R package
+    (GR) of fixed size (as given in function 'tileMethylCounts2' R package
     methylKit, with small changes). A summarized statistic (mean, median,
     geometric mean or sum) is calculated for the specified variable values
     from each region. Notice that if win.size == step.size, then
@@ -131,27 +140,27 @@ This function split a Grange object into intervals genomic regions
 }
 \examples{
 library(GenomicRanges)
-gr <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
+gr <- GRanges(seqnames = Rle( c('chr1', 'chr2', 'chr3', 'chr4'),
             c(5, 5, 5, 5)),
             ranges = IRanges(start = 1:20, end = 1:20),
-            strand = rep(c("+", "-"), 10),
+            strand = rep(c('+', '-'), 10),
             GC = seq(1, 0, length = 20))
 grs <- getGRegionsStat(gr, win.size = 4, step.size = 4)
 grs
 
 ## Selecting the positive strand
-grs <- getGRegionsStat(gr, win.size = 4, step.size = 4, select.strand = "+")
+grs <- getGRegionsStat(gr, win.size = 4, step.size = 4, select.strand = '+')
 grs
 
 ## Selecting the negative strand
-grs <- getGRegionsStat(gr, win.size = 4, step.size = 4, select.strand = "-")
+grs <- getGRegionsStat(gr, win.size = 4, step.size = 4, select.strand = '-')
 grs
 
 ## Operating over a list of GRanges objects
-gr2 <- GRanges(seqnames = Rle( c("chr1", "chr2", "chr3", "chr4"),
+gr2 <- GRanges(seqnames = Rle( c('chr1', 'chr2', 'chr3', 'chr4'),
                             c(5, 5, 5, 5)),
                 ranges = IRanges(start = 1:20, end = 1:20),
-                strand = rep(c("+", "-"), 10),
+                strand = rep(c('+', '-'), 10),
                 GC = runif(20))
 
 grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)

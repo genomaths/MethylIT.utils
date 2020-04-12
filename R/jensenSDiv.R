@@ -12,7 +12,7 @@
 #' @param Pi Weight of the probability distribution p. The weight for q is:
 #'     1 - Pi. Default Pi = 0.5.
 #' @param logbase A positive number: the base with respect to which logarithms
-#      are computed (default: logbase = 2).
+# are computed (default: logbase = 2).
 #' @examples
 #' set.seed(123)
 #' counts = sample.int(10)
@@ -26,10 +26,10 @@
 #' @author Robersy Sanchez (\url{https://github.com/genomaths}).
 #' @export
 
-jensenSDiv <- function(p, q, Pi=0.5, logbase=2) {
-  m=Pi * p + (1 - Pi) * q
-  Sm=shannonEntr(p=m, logbase=logbase)
-  Sp=shannonEntr(p=p, logbase=logbase)
-  Sq=shannonEntr(p=q, logbase=logbase)
-  return(Sm - Pi * Sp - (1 - Pi) * Sq)
+jensenSDiv <- function(p, q, Pi = 0.5, logbase = 2) {
+    m <- Pi * p + (1 - Pi) * q
+    Sm <- shannonEntr(p = m, logbase = logbase)
+    Sp <- shannonEntr(p = p, logbase = logbase)
+    Sq <- shannonEntr(p = q, logbase = logbase)
+    return(Sm - Pi * Sp - (1 - Pi) * Sq)
 }

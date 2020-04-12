@@ -13,17 +13,17 @@
 \item{nlm}{An object carrying the best nonlinear fit for a distribution model
 obtained with function \code{\link{nonlinearFitDist}}.}
 
-\item{pred}{Type of prediction resquested: *density* ("dens"),*quantiles*
-("quant"), *random number* ("rnum") or *probabilities* ("prob").}
+\item{pred}{Type of prediction resquested: *density* ('dens'),*quantiles*
+('quant'), *random number* ('rnum') or *probabilities* ('prob').}
 
 \item{q}{numeric vector of quantiles, probabilities or an interger if
-pred = "rnum".}
+pred = 'rnum'.}
 
 \item{dist.name}{name of the distribution to fit: Weibull2P (default:
-"Weibull2P"), Weibull three-parameters (Weibull3P), gamma with
+'Weibull2P'), Weibull three-parameters (Weibull3P), gamma with
 three-parameter (Gamma3P), gamma with two-parameter (Gamma2P),
-generalized gamma with three-parameter ("GGamma3P") or four-parameter
-("GGamma4P").}
+generalized gamma with three-parameter ('GGamma3P') or four-parameter
+('GGamma4P').}
 
 \item{num.cores, tasks}{Paramaters for parallele computation using package
 \code{\link[BiocParallel]{BiocParallel-package}}: the number of cores to
@@ -46,17 +46,17 @@ Predictions are based on the best model fit returned by function
 set.seed(1)
 num.points <- 1000
 HD <- makeGRangesFromDataFrame(
-  data.frame(chr = "chr1", start = 1:num.points, end = 1:num.points,
+  data.frame(chr = 'chr1', start = 1:num.points, end = 1:num.points,
             strand = '*',
             hdiv = rweibull(1:num.points, shape = 0.75, scale = 1)),
   keep.extra.columns = TRUE)
 nlms <- nonlinearFitDist(list(HD), column = 1, verbose = FALSE)
 
 x=seq(0.1, 10, 0.05)
-y <- predict(nlms[[1]], pred="dens", q = x,
-                dist.name="Weibull2P")
+y <- predict(nlms[[1]], pred='dens', q = x,
+                dist.name='Weibull2P')
 y1 <- dweibull(x, shape = 0.75, scale = 1)
-# The maximum difference between the "theoretical" and estimated densities
+# The maximum difference between the 'theoretical' and estimated densities
 max(abs(round(y, 2) - round(y1, 2)))
 
 }

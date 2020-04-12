@@ -69,9 +69,9 @@ estimated density values or not. Default is TRUE.}
 \item{noDMP.dens}{Logic whether to produce the graphics for no-DMP density.
 Default is TRUE}
 
-\item{xlabel}{X-axis label. Default \emph{xlabel = "Coordinate"}.}
+\item{xlabel}{X-axis label. Default \emph{xlabel = 'Coordinate'}.}
 
-\item{ylabel}{Y-axis label. Default \emph{ylabel = "Normalized density"}.}
+\item{ylabel}{Y-axis label. Default \emph{ylabel = 'Normalized density'}.}
 
 \item{col.dmp}{Color for the density of DMPs in the graphic.}
 
@@ -84,7 +84,7 @@ line that intercept the y-axis. Default yintercept = 0.25.}
 \emph{col.yintercept = 'blue'}}
 
 \item{type.yintercept}{Line type for the horizantal line 'yintercept'.
-Default \emph{type.yintercept = "dashed"}.}
+Default \emph{type.yintercept = 'dashed'}.}
 
 \item{dig.lab}{integer which is used when labels are not given. It determines
 the number of digits used in formatting the break numbers.}
@@ -129,7 +129,7 @@ hyp <- hypDT(mean = 5, sd = 30, n = 10^5, noise = 4, num.pos = 8000)
 l <- length(hyp)
 starts <- seq(0, 30000, 3)[1:l]
 ends <- starts
-GR <- GRanges(seqnames = "chr1", ranges = IRanges(start = starts,
+GR <- GRanges(seqnames = 'chr1', ranges = IRanges(start = starts,
                 end = ends))
 mcols(GR) <- data.frame(signal = hyp)
 
@@ -144,23 +144,23 @@ p <- dmpDensity(GR, plot = FALSE)
 # fancy_scientific <- function(l) {
 #   #'turn in to character string in scientific notation
 #   l <- format( l, scientific = TRUE, digits = 1 )
-#   l <- gsub("0e\\+00","0",l)
+#   l <- gsub('0e\\+00','0',l)
 #   #'quote the part before the exponent to keep all the digits
-#   l <- gsub("^(.*)e", "'\\1'e", l)
+#   l <- gsub('^(.*)e', ''\\1'e', l)
 #   #'turn the 'e+' into plotmath format
-#   l <- gsub("e", "\%*\%10^", l)
-#   l <- gsub("[+]", "", l )
+#   l <- gsub('e', '\%*\%10^', l)
+#   l <- gsub('[+]', '', l )
 #   #'return this as an expression
 #   parse(text=l)
 # }
 #
 # max.pos = max(p$DMP.coordinate)
 # ggplot(data=p) +
-#   geom_line(aes(x=DMP.coordinate, y=DMP.density), color="red") +
-#   geom_hline(aes(yintercept=0.25), linetype="dashed",
-#              colour="blue", show.legend=FALSE ) +
-#   geom_line(aes(x=coordinate, y=density), color="blue") +
-#   xlab("Coordinate") + ylab("Normalized density") +
+#   geom_line(aes(x=DMP.coordinate, y=DMP.density), color='red') +
+#   geom_hline(aes(yintercept=0.25), linetype='dashed',
+#              colour='blue', show.legend=FALSE ) +
+#   geom_line(aes(x=coordinate, y=density), color='blue') +
+#   xlab('Coordinate') + ylab('Normalized density') +
 #   scale_y_continuous(breaks=c(0.00, 0.25, 0.50, 0.75, 1.00)) +
 #   scale_x_continuous(breaks=c(0.00, 0.25 *max.pos, 0.50*max.pos,
 #                               0.75*max.pos, max.pos),

@@ -45,7 +45,7 @@ simulateCounts(
 
 \item{sample.ids}{Names for the samples.}
 
-\item{chromosome}{A character string naming the chromosome. Default "1".}
+\item{chromosome}{A character string naming the chromosome. Default '1'.}
 
 \item{start}{An nteger vector with the start positions for each cytosine 
 site. Default start = NULL.}
@@ -123,14 +123,14 @@ sites = 5000
 
 ## === Simulate samples ===
 ref = simulateCounts(num.samples = 1, sites = sites, alpha = 0.007,
-                    beta = 0.5, size = 50, theta = 4.5, sample.ids = "C1")
+                    beta = 0.5, size = 50, theta = 4.5, sample.ids = 'C1')
 treat = simulateCounts(num.samples = 2, sites = sites, alpha = 0.03,
                     beta = 0.5, size = 50, theta = 4.5,
-                    sample.ids = c("T1", "T2"))
+                    sample.ids = c('T1', 'T2'))
 ### === Simulate counts on regions ====
 simulateCounts(num.samples = 7, 
-               sample.ids = c(paste0("C",1:4), paste0("T", 1:3)),
-               type = "on_regions", theta = 2.5, regions = 10)
+               sample.ids = c(paste0('C',1:4), paste0('T', 1:3)),
+               type = 'on_regions', theta = 2.5, regions = 10)
                
 }
 \author{

@@ -25,7 +25,7 @@
 #' @param theta Parameter theta from \code{\link[MASS]{rnegbin}}
 #'     (overdispersion parameter).
 #' @param sample.ids Names for the samples.
-#' @param chromosome A character string naming the chromosome. Default "1".
+#' @param chromosome A character string naming the chromosome. Default '1'.
 #' @param start An nteger vector with the start positions for each cytosine 
 #'     site. Default start = NULL.
 #' @param end An integer vector with the end position for each cytosine site.
@@ -80,86 +80,79 @@
 #'
 #' ## === Simulate samples ===
 #' ref = simulateCounts(num.samples = 1, sites = sites, alpha = 0.007,
-#'                     beta = 0.5, size = 50, theta = 4.5, sample.ids = "C1")
+#'                     beta = 0.5, size = 50, theta = 4.5, sample.ids = 'C1')
 #' treat = simulateCounts(num.samples = 2, sites = sites, alpha = 0.03,
 #'                     beta = 0.5, size = 50, theta = 4.5,
-#'                     sample.ids = c("T1", "T2"))
+#'                     sample.ids = c('T1', 'T2'))
 #' ### === Simulate counts on regions ====
 #' simulateCounts(num.samples = 7, 
-#'                sample.ids = c(paste0("C",1:4), paste0("T", 1:3)),
-#'                type = "on_regions", theta = 2.5, regions = 10)
+#'                sample.ids = c(paste0('C',1:4), paste0('T', 1:3)),
+#'                type = 'on_regions', theta = 2.5, regions = 10)
 #'                
 simulateCounts <- function(num.samples, sites = NULL, alpha = NULL, 
-                           beta = NULL, size = NULL, theta,
-                           sample.ids = NULL, chromosome = "1",
-                           start = NULL, end = NULL, strand = "*", 
-                           type = c("on_sites", "on_regions"),
-                           regions =  10, min_width = 1000,
-                           max_width = 5000, minCountPerIndv = 8,
-                           maxCountPerIndv = 300, mu = NULL, 
-                           noise = 0, seed = 123){
-   
-   type <- match.arg(type)
-   missed <- sapply(list(sites, alpha, beta, size), is.null)
-   if (type == "on_sites" && any(missed)) 
-       stop(paste0("\n *** Agument ", 
-                   c("sites ", "alpha ", "beta ", "size ")[missed],
-                   "must be provided"))
-   
-   if (length(sample.ids) != num.samples) 
-       stop("*** The number of samples must be equal to length(sample.ids)")
-   
-   set.seed(seed)
-   
-   if (type == "on_sites") {
-      coverage <- rnegbin(n = sites, mu = 100, theta = theta)
-      chromosome <- chromosome[1] # only one chromosome per simulation
-      if (is.null(start)) {start <- seq_len(sites); end <- start}
-      if (is.null(end)) end <- start
-      # fix sites w/o reads
-      coverage <- ifelse(coverage < 10, 10, coverage)
-      LR = list()
-      for(k in seq_len(num.samples)) {
-           p = rbeta(n = sites, shape1 = alpha, shape2 = beta)
-           shape1 <- theta * p
-           shape2 <- theta * (1 - p)
-           p0 <- rbinom(n = sites, size=size,
-                       prob = rbeta(n=sites, shape1=shape1, shape2=shape2))/size
-           p <- (p0 + noise)
-           idx <- which(p >  1)
-           p[ idx ] <- p0[ idx ]; rm(p0, idx)
-           mC = ceiling(coverage * p)
-           uC = coverage - mC
-           LR[[k]] <- makeGRangesFromDataFrame(data.frame(chr = chromosome, 
-                                                       start = start,
-                                                       end = end,
-                                                       strand = strand, 
-                                                       mC = mC, uC = uC), 
-                                               keep.extra.columns = TRUE)
-      }
-      if (!is.null(sample.ids)) names(LR) <- sample.ids
-   } else {
-      if (is.null(start) || is.null(end)) {
-         widths <- round(seq(from = min_width, to = max_width,
-                          length.out = regions))
-         LR <- GRanges(seqnames = chromosome, 
-                       IRanges(start = seq_len(length(widths)) * widths,
-                               width = widths),
-                       strand = strand)
-      } else LR <- makeGRangesFromDataFrame(data.frame(chr = chromosome,
-                                                       start = start,
-                                                       end = end, 
-                                                       strand = strand))
-      if (is.null(mu)) mu <- seq(minCountPerIndv, maxCountPerIndv)
-      counts <- t(sapply(seq_len(length(widths)), 
-                           function(...) rnegbin(n = num.samples, 
-                                               mu = sample(mu, 1),
-                                               theta = theta)))
-      colnames(counts) <- sample.ids
-      mcols(LR) <- counts
-      LR <- sortBySeqnameAndStart(LR)
-   }
-   return(LR)
+    beta = NULL, size = NULL, theta, sample.ids = NULL, chromosome = "1", 
+    start = NULL, end = NULL, strand = "*", type = c("on_sites", "on_regions"), 
+    regions = 10, min_width = 1000, max_width = 5000, minCountPerIndv = 8, 
+    maxCountPerIndv = 300, mu = NULL, noise = 0, seed = 123) {
+    
+    type <- match.arg(type)
+    missed <- sapply(list(sites, alpha, beta, size), is.null)
+    if (type == "on_sites" && any(missed)) 
+        stop(paste0("\n *** Agument ", c("sites ", "alpha ", "beta ", 
+            "size ")[missed], "must be provided"))
+    
+    if (length(sample.ids) != num.samples) 
+        stop("*** The number of samples must be equal to length(sample.ids)")
+    
+    set.seed(seed)
+    
+    if (type == "on_sites") {
+        coverage <- rnegbin(n = sites, mu = 100, theta = theta)
+        chromosome <- chromosome[1]  # only one chromosome per simulation
+        if (is.null(start)) {
+            start <- seq_len(sites)
+            end <- start
+        }
+        if (is.null(end)) 
+            end <- start
+        # fix sites w/o reads
+        coverage <- ifelse(coverage < 10, 10, coverage)
+        LR <- list()
+        for (k in seq_len(num.samples)) {
+            p <- rbeta(n = sites, shape1 = alpha, shape2 = beta)
+            shape1 <- theta * p
+            shape2 <- theta * (1 - p)
+            p0 <- rbinom(n = sites, size = size, prob = rbeta(n = sites, 
+                shape1 = shape1, shape2 = shape2))/size
+            p <- (p0 + noise)
+            idx <- which(p > 1)
+            p[idx] <- p0[idx]
+            rm(p0, idx)
+            mC <- ceiling(coverage * p)
+            uC <- coverage - mC
+            LR[[k]] <- makeGRangesFromDataFrame(data.frame(chr = chromosome, 
+                start = start, end = end, strand = strand, mC = mC, 
+                uC = uC), keep.extra.columns = TRUE)
+        }
+        if (!is.null(sample.ids)) 
+            names(LR) <- sample.ids
+    } else {
+        if (is.null(start) || is.null(end)) {
+            widths <- round(seq(from = min_width, to = max_width, 
+                length.out = regions))
+            LR <- GRanges(seqnames = chromosome, IRanges(start = seq_len(length(widths)) * 
+                widths, width = widths), strand = strand)
+        } else LR <- makeGRangesFromDataFrame(data.frame(chr = chromosome, 
+            start = start, end = end, strand = strand))
+        if (is.null(mu)) 
+            mu <- seq(minCountPerIndv, maxCountPerIndv)
+        counts <- t(sapply(seq_len(length(widths)), function(...) rnegbin(n = num.samples, 
+            mu = sample(mu, 1), theta = theta)))
+        colnames(counts) <- sample.ids
+        mcols(LR) <- counts
+        LR <- sortBySeqnameAndStart(LR)
+    }
+    return(LR)
 }
 
 

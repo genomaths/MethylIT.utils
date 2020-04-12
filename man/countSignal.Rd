@@ -32,12 +32,12 @@ regions 'gr'.
 }
 \examples{
 library(GenomicRanges)
-some.signal <- makeGRangesFromDataFrame(data.frame(chr = "chr1", 
+some.signal <- makeGRangesFromDataFrame(data.frame(chr = 'chr1', 
                                                    start = 1:15,
                                                    end = 1:15,
                                                    strand = '*'))
 
-some.regions <- makeGRangesFromDataFrame(data.frame(chr = "chr1", 
+some.regions <- makeGRangesFromDataFrame(data.frame(chr = 'chr1', 
                                                     start = c(2, 8),
                                                     end = c(7, 14),
                                                     strand = '*'))

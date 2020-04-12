@@ -27,7 +27,7 @@ rmstGR(
 }
 \arguments{
 \item{LR}{A list of GRanges, a GRangesList, a CompressedGRangesList object,
-or an object from Methyl-IT downstream analyses: 'InfDiv' or "pDMP"
+or an object from Methyl-IT downstream analyses: 'InfDiv' or 'pDMP'
 object. Each GRanges object from the list must have two columns:
 methylated (mC) and unmethylated (uC) counts. The name of each element
 from the list must coincide with a control or a treatment name.}
@@ -125,19 +125,19 @@ Samples from each group are pooled according to the statistic
 set.seed(123)
 sites = 15
 data <- list(
-  C1 = data.frame(chr = "chr1", start = 1:sites,
+  C1 = data.frame(chr = 'chr1', start = 1:sites,
                   end = 1:sites,strand = '*',
                   mC = rnbinom(size = 8, mu = 3, n = sites),
                   uC = rnbinom(size = 50, mu = 10, n = sites)),
-  C2 = data.frame(chr = "chr1", start = 1:sites,
+  C2 = data.frame(chr = 'chr1', start = 1:sites,
                   end = 1:sites, strand = '*',
                   mC = rnbinom(size = 8, mu = 3, n = sites),
                   uC = rnbinom(size = 50, mu = 10, n = sites)),
-  T1 = data.frame(chr = "chr1", start = 1:sites,
+  T1 = data.frame(chr = 'chr1', start = 1:sites,
                   end = 1:sites,strand = '*',
                   mC = rnbinom(size = 50, mu = 10, n = sites),
                   uC = rnbinom(size = 10, mu = 10, n = sites)),
-  T2 = data.frame(chr = "chr1", start = 1:sites,
+  T2 = data.frame(chr = 'chr1', start = 1:sites,
                   end = 1:sites, strand = '*',
                   mC = rnbinom(size = 50, mu = 10, n = sites),
                   uC = rnbinom(size = 5, mu = 10, n = sites)))
@@ -146,9 +146,9 @@ data = lapply(data,
               function(x)
                 makeGRangesFromDataFrame(x, keep.extra.columns = TRUE))
 
-rmstGR(LR = data, control.names = c("C1", "C2"),
-       treatment.names = c("T1", "T2"), pooling.stat = "sum",
-       tv.cut = 0.25, num.permut = 100, pAdjustMethod="BH",
+rmstGR(LR = data, control.names = c('C1', 'C2'),
+       treatment.names = c('T1', 'T2'), pooling.stat = 'sum',
+       tv.cut = 0.25, num.permut = 100, pAdjustMethod='BH',
        pvalCutOff = 0.05, num.cores = 4L, verbose=TRUE)
 }
 \references{

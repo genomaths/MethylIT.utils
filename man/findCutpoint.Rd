@@ -59,10 +59,10 @@ must be given.}
 
 \item{stat}{An integer number indicating the statistic to be used in the
 testing. The mapping for statistic names are:
-0 = "All" 1 = "Accuracy", 2 = "Sensitivity", 3 = "Specificity",
-4 = "Pos Pred Value", 5 = "Neg Pred Value", 6 = "Precision",
-7 = "Recall", 8 = "F1",  9 = "Prevalence", 10 = "Detection Rate",
-11 = "Detection Prevalence", 12 = "Balanced Accuracy".}
+0 = 'All' 1 = 'Accuracy', 2 = 'Sensitivity', 3 = 'Specificity',
+4 = 'Pos Pred Value', 5 = 'Neg Pred Value', 6 = 'Precision',
+7 = 'Recall', 8 = 'F1',  9 = 'Prevalence', 10 = 'Detection Rate',
+11 = 'Detection Prevalence', 12 = 'Balanced Accuracy'.}
 
 \item{maximize}{Whether to maximize the performance indicator given in
 parameter 'stat'. Default: TRUE.}
