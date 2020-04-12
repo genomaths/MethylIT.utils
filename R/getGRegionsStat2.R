@@ -95,7 +95,8 @@ getGRegionsStat2 <- function(GR, win.size=350, step.size=350, grfeatures=NULL,
             verbose = TRUE, ...) {
    
    ## These NULL quiet: no visible binding for global variable 'x2'
-   if (class( GR ) != "GRanges") stop( "GR object must be a GRanges object!")
+   if (inherits(GR, "GRanges")) 
+       stop( "GR object must inherits from a GRanges class")
    if (!is.null(grfeatures) && !inherits(grfeatures,"GRanges")) {
        stop("* 'grfeatures', if provided, must be a GRanges object")
    }
