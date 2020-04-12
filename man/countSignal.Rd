@@ -2,13 +2,14 @@
 % Please edit documentation in R/countSignal.R
 \name{countSignal}
 \alias{countSignal}
-\title{Count the Sites Carrying an Arbitrary Signal Inside a Genomic Regions}
+\title{Count the Sites Carrying an Arbitrary Signal Inside Genomic Regions}
 \usage{
 countSignal(signal, gr, maxDist = NULL, ignore.strand = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{gr}{A GRange object carrying the variables of interest in the 
-GRanges metacolumn.}
+\item{signal}{A GRange object carrying the sites of interest.}
+
+\item{gr}{A GRange object carrying the regions of interest.}
 
 \item{ignore.strand}{When set to TRUE, the strand information is ignored in
 the overlap calculations.}
@@ -17,17 +18,17 @@ the overlap calculations.}
 computational tasks is given.}
 }
 \value{
-A GRanges object with the genomic regions that carry signals and 
+A GRanges object with the genomic regions that carry signals and the
 number of sites on them.
 }
 \description{
 A simple function to count the number of sites carrying an 
-arbitrary signal, which are inside a given genomic region.
+arbitrary signal, which are inside given genomic regions.
 }
 \details{
 Given a GRanges object 'signal' carrying an arbitrary signal on each 
 range, this function counts the number of sites inside the the given genomic 
-region 'gr'.
+regions 'gr'.
 }
 \examples{
 some.signal <- makeGRangesFromDataFrame(data.frame(chr = "chr1", 
