@@ -10,14 +10,14 @@ getGRegionsStat2(
   step.size = 350,
   grfeatures = NULL,
   stat = c("sum", "mean", "gmean", "median", "density", "count", "denCount"),
-  columns = NULL,
+  column = NULL,
   absolute = FALSE,
   select.strand = NULL,
   maxgap = -1L,
   minoverlap = 0L,
   select = "all",
-  ignore.strand = FALSE,
-  type = c("any", "start", "end", "within", "equal"),
+  ignore.strand = TRUE,
+  type = c("within", "start", "end", "equal", "any"),
   scaling = 1000L,
   logbase = 2,
   missings = 0,
@@ -56,7 +56,13 @@ step.size are ignored and the statistics are estimated for 'grfeatures'.}
   \item{\strong{'denCount':}}{The number of sites with value > 0 inside each 
          region divided by the width of the region.}
   \item{\strong{'sum':}}{The sum of values inside each region.}
-}}
+}
+
+If \strong{GR} have zero metacolum, then it is set \emph{stat = "count"} and
+all the sites are included in the computation.}
+
+\item{column}{Integer number denoting the column where the variable of
+interest is located in the metacolumn of the GRanges object.}
 
 \item{absolute}{Optional. Logic (default: FALSE). Whether to use the absolute
 values of the variable provided. For example, the difference of

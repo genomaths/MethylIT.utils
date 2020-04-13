@@ -34,6 +34,10 @@
 #'   \item{\strong{'sum':}}{The sum of values inside each region.}
 #' }
 #' 
+#' If \strong{GR} have zero metacolum, then it is set \emph{stat = "count"} and
+#' all the sites are included in the computation.
+#' @param column Integer number denoting the column where the variable of
+#'     interest is located in the metacolumn of the GRanges object.
 #' @param absolute Optional. Logic (default: FALSE). Whether to use the absolute
 #'     values of the variable provided. For example, the difference of
 #'     methylation levels could take negative values (TV) and we would be
@@ -97,16 +101,16 @@ getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350,
                             grfeatures = NULL, 
                             stat = c("sum", "mean", "gmean", "median",
                                     "density", "count", "denCount"), 
-                            columns = NULL, absolute = FALSE, 
+                            column = NULL, absolute = FALSE, 
                             select.strand = NULL, maxgap = -1L, 
                             minoverlap = 0L, select = "all", 
-                            ignore.strand = FALSE, 
-                            type = c("any", "start", "end", "within", "equal"),
+                            ignore.strand = TRUE, 
+                            type = c("within", "start", "end", "equal", "any"),
                             scaling = 1000L, logbase = 2, missings = 0,
                             naming = FALSE, na.rm = TRUE, verbose = TRUE, ...) {
     
     ## These NULL quiet: no visible binding for global variable 'x2'
-    if (inherits(GR, "GRanges")) 
+    if (!inherits(GR, "GRanges")) 
         stop("GR object must inherits from a GRanges class")
     if (!is.null(grfeatures) && !inherits(grfeatures, "GRanges")) {
         stop("* 'grfeatures', if provided, must be a GRanges object")
@@ -114,10 +118,11 @@ getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350,
     stat <- match.arg(stat, c("sum", "mean", "gmean", "median", "density", 
         "count", "denCount"))
     
-    if (!is.element(missings, c(0, NA))) 
-        missings <- NA
+    if (!is.element(missings, c(0, NA)))  missings <- NA
     
-    type <- match.arg(type, c("any", "start", "end", "within", "equal"))
+    type <- match.arg(type)
+    
+    if (!is.null(column)) GR <- GR[, column]
     
     ## === Some functions to use ===
     stats <- function(x, stat = c(), absolute, na.rm) {
@@ -143,9 +148,9 @@ getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350,
         }
         idx <- which(as.character(strand(GR)) == select.strand)
         GR <- GR[idx]
+        ignore.strand <- FALSE
     }
-    chrs <- as.character(unique(seqnames(GR)))
-    
+
     ## Progress bar
     if (verbose) {
         # setup progress bar
@@ -160,44 +165,39 @@ getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350,
         if (verbose) 
             setTxtProgressBar(pb, 1)  # update progress bar
         
-        all.wins <- sapply(seq_len(length(chrs)), function(k) {
-            ## get max length of chromosome
-            max.length <- max(IRanges::end(GR[seqnames(GR) == chrs[k], 
-                ]))
-            ## get sliding windows
-            numTiles <- floor((max.length - 
-                                    (win.size - step.size))/step.size) + 1
-            ranges <- IRanges(start = (1 + 0:(numTiles - 1) * step.size), 
-                width = rep(win.size, numTiles))
-            temp.wins <- GRanges(seqnames = rep(chrs[k], numTiles), 
-                ranges = ranges)
-            return(temp.wins)
-        })
-        
-        all.wins <- MethylIT::unlist(all.wins)
+        all.wins <- slidingGRanges(GR = GR, win.size = win.size,
+                                    step.size = step.size)
         
         ## sites of interest inside of the windows
         Hits <- findOverlaps(GR, all.wins, maxgap = maxgap, 
                             minoverlap = minoverlap, 
-                            select = select, ignore.strand = ignore.strand,
+                            select = select, 
+                            ignore.strand = ignore.strand,
                             type = type)
         if (length(Hits) > 0) {
             m <- ncol(mcols(GR))
-            if (m > 1) {
-                mcols(all.wins) <- matrix(missings, nrow = length(all.wins), 
-                  ncol = m)
-            } else mcols(all.wins) <- missings
             all.wins <- all.wins[subjectHits(Hits)]
             GR <- GR[queryHits(Hits)]
-            mcols(all.wins) <- mcols(GR)
+            strand(all.wins) <- strand(GR)
+            if (m > 1) {
+                mcols(all.wins) <- matrix(missings, nrow = length(all.wins),
+                                        ncol = m)
+                mcols(all.wins) <- mcols(GR)
+                cn <- colnames(mcols(GR))
+            } else {
+                mcols(all.wins) <- 1
+                stat <- "count"
+                cn <- stat
+            }
             chr <- seqnames(all.wins)
-            
+            if (!ignore.strand) strands <- strand(all.wins)
+            else strands <- rep("*", length(all.wins))
+                
             ## Variable to mark the limits of each GR
             all.wins$cluster.id <- paste(chr, start(all.wins), end(all.wins), 
-                                        sep = "_")
+                                        strands, sep = "_")
             GR <- all.wins
-            rm(all.wins)
-            gc()
+            rm(all.wins); gc()
             GR <- as.data.frame(GR)
             GR <- GR[, -c(1:5)]
             if (verbose) 
@@ -205,26 +205,27 @@ getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350,
             
             GR <- GR %>% group_by(cluster.id) %>% summarise_all(list(fn))
             
-            if (verbose) 
-                setTxtProgressBar(pb, 75)  # update progress bar
+            if (verbose) setTxtProgressBar(pb, 75)  # update progress bar
             
-            strands <- matrix(unlist(strsplit(GR$cluster.id, "_")), 
-                ncol = 3, byrow = TRUE)
+            strands <- matrix(unlist(strsplit(GR$cluster.id, "_")),
+                            ncol = 4, byrow = TRUE)
             GR <- data.frame(GR[, -1], chr = strands[, 1], 
                             start = as.numeric(strands[, 2]),
-                            end = as.numeric(strands[, 3]), strand = "*")
+                            end = as.numeric(strands[, 3]),
+                            strand = as.character(strands[, 4]))
             GR <- makeGRangesFromDataFrame(GR, keep.extra.columns = TRUE)
             if (stat == "density" || stat == "denCount") {
                 widths <- width(GR)
                 mcols(GR) <- (scaling * as.matrix(mcols(GR))/widths)
             }
+            colnames(mcols(GR)) <- cn
         } else {
             m <- ncol(mcols(GR))
             if (m > 1) {
                 mcols(all.wins) <- matrix(missings, nrow = length(all.wins), 
-                  ncol = m)
+                                            ncol = m)
+                colnames(mcols(all.wins)) <- colnames(mcols(GR))
             } else mcols(all.wins) <- missings
-            colnames(mcols(all.wins)) <- colnames(mcols(GR))
             GR <- all.wins
             warnings("There is not overlap between the 'GR' & the regions")
         }
@@ -239,29 +240,36 @@ getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350,
                             type = type)
         if (length(Hits) > 0) {
             m <- ncol(mcols(GR))
-            if (m > 1) {
-                mcols(grfeatures) <- matrix(missings, nrow = length(grfeatures), 
-                  ncol = m)
-            } else mcols(grfeatures) <- missings
             grfeatures <- grfeatures[subjectHits(Hits)]
             GR <- GR[queryHits(Hits)]
-            mcols(grfeatures) <- mcols(GR)
+            if (m > 1) {
+                mcols(grfeatures) <- matrix(missings, 
+                                            nrow = length(grfeatures), 
+                                            ncol = m)
+                mcols(grfeatures) <- mcols(GR)
+            } else {
+                mcols(grfeatures) <- 1
+                stat <- "count"
+            }
             chr <- seqnames(grfeatures)
+            if (!ignore.strand) strands <- strand(grfeatures)
+            else strands <- rep("*", length(grfeatures))
             
             if (class(names(grfeatures)) == "character" && naming) 
                 grfeatures$cluster.id <- paste(chr, start(grfeatures), 
-                                                end(grfeatures), 
+                                                end(grfeatures),
+                                                strands,
                                                 names(grfeatures), sep = "_") 
             else grfeatures$cluster.id <- paste(chr, start(grfeatures), 
-                                                end(grfeatures), sep = "_")
+                                                end(grfeatures), strands,
+                                                sep = "_")
             
             GR <- grfeatures
             rm(grfeatures)
             gc()
             GR <- as.data.frame(GR)
             GR <- GR[, -c(1:5)]
-            if (verbose) 
-                setTxtProgressBar(pb, 25)  # update progress bar
+            if (verbose) setTxtProgressBar(pb, 25)  # update progress bar
             
             GR <- GR %>% group_by(cluster.id) %>% summarise_all(list(fn))
             
@@ -269,24 +277,25 @@ getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350,
                 setTxtProgressBar(pb, 75)  # update progress bar
             if (naming) 
                 strands <- matrix(unlist(strsplit(GR$cluster.id, "_")),
-                                    ncol = 4, byrow = TRUE) 
+                                    ncol = 5, byrow = TRUE) 
             else strands <- matrix(unlist(strsplit(GR$cluster.id, "_")),
-                                    ncol = 3, byrow = TRUE)
+                                    ncol = 4, byrow = TRUE)
             GR <- data.frame(GR[, -1], chr = strands[, 1], 
                             start = as.numeric(strands[, 2]), 
-                            end = as.numeric(strands[, 3]), strand = "*")
+                            end = as.numeric(strands[, 3]),
+                            strand = as.character(strands[, 4]))
             GR <- makeGRangesFromDataFrame(GR, keep.extra.columns = TRUE)
-            if (naming) 
-                names(GR) <- strands[, 4]
+            if (naming) names(GR) <- strands[, 5]
             if (stat == "density") {
                 widths <- width(GR)
                 mcols(GR) <- (scaling * as.matrix(mcols(GR))/widths)
             }
+            colnames(mcols(GR)) <- cn
         } else {
             m <- ncol(mcols(GR))
             if (m > 1) {
                 mcols(grfeatures) <- matrix(missings, nrow = length(grfeatures), 
-                  ncol = m)
+                                            ncol = m)
             } else mcols(grfeatures) <- missings
             colnames(mcols(grfeatures)) <- colnames(mcols(GR))
             GR <- grfeatures
