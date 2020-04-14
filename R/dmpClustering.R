@@ -102,10 +102,12 @@ dmpClustering <- function(dmps, win.size = 1,
         if (verbose) setTxtProgressBar(pb, 25)  # update progress bar
         
         if (!is.null(maxClustDist)) {
-            dmrs <- reduce(dmrs, min.gapwidth = maxClustDist)
+            dmrs <- reduce(dmrs, min.gapwidth = maxClustDist,
+                            ignore.strand = ignore.strand)
             
             dmrs <- countSignal(signal = dmps, gr = dmrs, 
-                                ignore.strand = ignore.strand, verbose = FALSE)
+                                ignore.strand = ignore.strand, 
+                                verbose = FALSE)
             
             if (verbose) setTxtProgressBar(pb, 50)  # update progress bar
             
@@ -121,12 +123,13 @@ dmpClustering <- function(dmps, win.size = 1,
     
     if (method == "relaxed") {
         if (is.null(maxClustDist)) 
-            stop('\nIf method = "fixed.int", then a value for "maxClustDist"',  
+            stop('\nIf method = "relaxed", then a value for "maxClustDist"',  
                 ' must be provided')
-        dmrs <- reduce(dmps, min.gapwidth = maxClustDist)
+        dmrs <- reduce(dmps, min.gapwidth = maxClustDist, 
+                        ignore.strand = ignore.strand)
         dmrs <- countSignal(signal = dmps, gr = dmrs, 
                             ignore.strand = ignore.strand, verbose = verbose)
-        dmrs <- dmrs[ dmrs $sites >= minNumDMPs, "sites"]
+        dmrs <- dmrs[ dmrs $sites >= minNumDMPs, "sites" ]
         colnames(mcols(dmrs)) <- "dmps"
     }
     return(dmrs[, "dmps"])
