@@ -7,8 +7,8 @@
 \usage{
 getGRegionsStat(
   GR,
-  win.size = 350,
-  step.size = 350,
+  win.size = 1,
+  step.size = 1,
   grfeatures = NULL,
   stat = c("sum", "mean", "gmean", "median", "density", "count", "denCount"),
   absolute = FALSE,
@@ -164,6 +164,12 @@ gr2 <- GRanges(seqnames = Rle( c('chr1', 'chr2', 'chr3', 'chr4'),
                 GC = runif(20))
 
 grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
+
+## Compute the density of entropy inside each region
+gr$GC <- runif(20) 
+getGRegionsStat(gr, win.size = 4, step.size = 4, entropy = TRUE, 
+                stat = "density")
+                
 }
 \seealso{
 \code{\link{getGRegionsStat2}}.

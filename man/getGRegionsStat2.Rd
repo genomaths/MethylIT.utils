@@ -6,8 +6,8 @@
 \usage{
 getGRegionsStat2(
   GR,
-  win.size = 350,
-  step.size = 350,
+  win.size = 1,
+  step.size = 1,
   grfeatures = NULL,
   stat = c("sum", "mean", "gmean", "median", "density", "count", "denCount"),
   column = NULL,

@@ -97,7 +97,7 @@
 #' @seealso \code{\link{getGRegionsStat}}
 #' @author Robersy Sanchez (\url{https://github.com/genomaths}).
 #' @export
-getGRegionsStat2 <- function(GR, win.size = 350, step.size = 350, 
+getGRegionsStat2 <- function(GR, win.size = 1, step.size = 1, 
                             grfeatures = NULL, 
                             stat = c("sum", "mean", "gmean", "median",
                                     "density", "count", "denCount"), 

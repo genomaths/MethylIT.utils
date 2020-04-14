@@ -46,12 +46,6 @@ setMethod("slidingGRanges",  signature(GR = "GRanges"),
         function(GR, win.size = 1, step.size = 1) {
     if (length(GR) < win.size || length(GR) < step.size)
             stop("* 'GR'length is lesser of 'win.size' or 'step.size'")
-    
-    if (win.size < step.size) {
-        warning("\nStep size is greater than the windows ",
-                "size. Setting: step.size = win.size - 1")
-        step.size <- win.size - 1
-    }      
           
     gr <- GRanges()
     chrs <- as.character(unique(seqnames(GR)))

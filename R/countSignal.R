@@ -40,24 +40,41 @@
 #' 
 countSignal <- function(signal, gr, maxDist = NULL, ignore.strand = TRUE, 
     verbose = FALSE) {
-    if (!is.null(maxDist)) 
-        gr <- reduce(gr, min.gapwidth = maxDist)
+    ## Progress bar
+    if (verbose) {
+        # setup progress bar
+        pb <- txtProgressBar(max = 100, style = 3)
+        on.exit(close(pb))  # on exit, close progress bar
+        setTxtProgressBar(pb, 1)  # update progress bar
+    }
+    if (!is.null(maxDist)) gr <- reduce(gr, min.gapwidth = maxDist)
     gr$region <- paste(seqnames(gr), start(gr), end(gr), sep = "_")
     signal$region <- NA
     
+    if (verbose) setTxtProgressBar(pb, 25)  # update progress bar
+    
     # To assign the signal ids to the signal
-    Hits <- findOverlaps(signal, gr, ignore.strand = ignore.strand, 
-        type = "within")
+    Hits <- findOverlaps(signal, gr, ignore.strand = ignore.strand,
+                          type = "within")
     signal$region[queryHits(Hits)] <- gr$region[subjectHits(Hits)]
     signal <- unique(signal)
+    
+    if (verbose) setTxtProgressBar(pb, 50)  # update progress bar
     
     # To count the number of sites inside each region
     if (verbose) 
         message("*** Counting sites in clusters ...")
     signal <- data.table(as.data.frame(signal))
-    signal <- signal[!is.na(signal$region), list(seqnames = unique(seqnames), 
-        start = min(start), end = max(end), sites = length(start)), 
-        by = region]
-    signal <- makeGRangesFromDataFrame(data.frame(signal), keep.extra.columns = TRUE)
+    signal <- signal[!is.na(signal$region), 
+                    list(seqnames = unique(seqnames), start = min(start), 
+                        end = max(end), strand = unique(strand),
+                        sites = length(start)), 
+                by = region]
+    
+    if (verbose) setTxtProgressBar(pb, 75)  # update progress bar
+    
+    signal <- makeGRangesFromDataFrame(data.frame(signal),
+                                        keep.extra.columns = TRUE)
+    if (verbose) setTxtProgressBar(pb, 100)  # update progress bar
     return(signal)
 }

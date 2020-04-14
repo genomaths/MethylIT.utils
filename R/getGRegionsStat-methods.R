@@ -105,6 +105,12 @@
 #'                 GC = runif(20))
 #'
 #' grs <- getGRegionsStat(list(gr1 = gr, gr2 = gr2), win.size = 4, step.size=4)
+#' 
+#' ## Compute the density of entropy inside each region
+#' gr$GC <- runif(20) 
+#' getGRegionsStat(gr, win.size = 4, step.size = 4, entropy = TRUE, 
+#'                 stat = "density")
+#'                 
 #' @importFrom GenomeInfoDb seqnames seqlengths
 #' @importFrom GenomicRanges GRanges GRangesList findOverlaps
 #' @importFrom IRanges IRanges
@@ -123,8 +129,8 @@
 setGeneric("getGRegionsStat", 
             function(
                   GR, 
-                  win.size = 350,
-                  step.size = 350,
+                  win.size = 1,
+                  step.size = 1,
                   grfeatures = NULL, 
                   stat = c("sum", "mean", "gmean", "median",
                             "density", "count", "denCount"),
@@ -156,10 +162,11 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"), function(GR,
     logbase = 2, missings = 0, type = c("any", "start", "end", "within", 
         "equal"), ignore.strand = FALSE, na.rm = TRUE, naming = FALSE, 
     output = c("hits", "all")) {
+   
     ## These NULL quiet: no visible binding for global variable 'x2'
     ent <- statistic <- NULL
-    if (class(GR) != "GRanges") 
-        stop("object must be a GRanges object!")
+    if (!inherits(GR, "GRanges")) 
+       stop("GR object must inherits from a GRanges class")
     if (!is.null(grfeatures) && !inherits(grfeatures, "GRanges")) {
         stop("* 'grfeatures', if provided, must be a GRanges object")
     }
@@ -207,17 +214,28 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"), function(GR,
             stop("* 'GR'length is lesser of 'win.size' or 'step.size'")
         }
         grfeatures <- GRanges()
-        for (k in 1:length(chrs)) {
+        for (k in seq_along(chrs)) {
             ## get max length of chromosome
-            max.length <- max(IRanges::end(GR[seqnames(GR) == chrs[k], 
-                ]))
+            max.length <- max(IRanges::end(GR[seqnames(GR) == chrs[k], ]))
+            
+            ## get start chromosome coordinate
+            start0 <- min(IRanges::start(GR[seqnames(GR) == chrs[k], ]))
+            
             ## get sliding windows
             numTiles <- floor((max.length - (win.size - step.size))/step.size) + 
                 1
-            ranges <- IRanges(start = (1 + 0:(numTiles - 1) * step.size), 
+            ranges <- IRanges(start = (start0 + 0:(numTiles - 1) * step.size), 
                 width = rep(win.size, numTiles))
-            temp.wins <- GRanges(seqnames = rep(chrs[k], numTiles), 
-                ranges = ranges)
+            
+            ends <- IRanges::end(ranges)
+            if (max(ends) > max.length) {
+                idx <- (which(ends <= max.length))
+                idx <- c(idx, which.max(idx) + 1)
+                ranges <- ranges[idx]
+            }
+            
+            temp.wins <- GRanges(seqnames = rep(chrs[k], length(ranges)), 
+                                ranges = ranges)
             grfeatures <- suppressWarnings(c(grfeatures, temp.wins))
         }
         
@@ -359,8 +377,7 @@ setMethod("getGRegionsStat", signature(GR = "GRanges"), function(GR,
     return(GR)
 })
 
-# ====================== Function to operate on lists
-# ======================= #
+# ==================== Function to operate on lists ====================== #
 getGRegionsStats <- function(GR, win.size = 350, step.size = 350, 
     grfeatures = NULL, stat = c("sum", "mean", "gmean", "median", 
         "density", "count", "denCount"), absolute = FALSE, select.strand = NULL, 
