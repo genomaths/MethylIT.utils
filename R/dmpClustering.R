@@ -67,8 +67,8 @@
 #'               method = "relaxed", ignore.strand = FALSE)
 #' @author Robersy Sanchez (\url{https://github.com/genomaths}).
 #' @export
-dmpClustering <- function(dmps, win.size = 1, 
-                        step.size = 1, minNumDMPs = 1,
+dmpClustering <- function(dmps, win.size = NULL, 
+                        step.size = NULL, minNumDMPs = 1,
                         maxClustDist = NULL, 
                         method = c("relaxed","fixed.int"), 
                         ignore.strand = TRUE, verbose = FALSE) {
@@ -86,6 +86,10 @@ dmpClustering <- function(dmps, win.size = 1,
     if (ncol(mcols(dmps)) > 0) mcols(dmps) <- NULL
     
     if (method == "fixed.int") {
+        if  (is.null(win.size)) 
+            stop("\n*** Please provide a value for 'win.size' parameter.")
+        if  (is.null(step.size)) 
+            stop("\n*** Please provide a value for 'step.size' parameter.")
         ## Progress bar
         if (verbose) {
             # setup progress bar

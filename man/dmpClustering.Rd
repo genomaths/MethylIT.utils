@@ -6,8 +6,8 @@
 \usage{
 dmpClustering(
   dmps,
-  win.size = 1,
-  step.size = 1,
+  win.size = NULL,
+  step.size = NULL,
   minNumDMPs = 1,
   maxClustDist = NULL,
   method = c("relaxed", "fixed.int"),
