@@ -2,7 +2,6 @@
 % Please edit documentation in R/heatmapChr.R
 \name{heatmapChr}
 \alias{heatmapChr}
-\alias{.colorBar}
 \title{Heatmap of GRanges Object}
 \usage{
 heatmapChr(
@@ -42,19 +41,6 @@ heatmapChr(
   jpg.type = c("cairo", "cairo-png", "Xlib", "quartz"),
   ylas = 1,
   bar.las = 1,
-  ...
-)
-
-.colorBar(
-  z,
-  zlim,
-  col = heat.colors(12),
-  breaks,
-  horiz = TRUE,
-  ylim = NULL,
-  xlim = NULL,
-  lwd = 0.5,
-  cex.axis = 1,
   ...
 )
 }
@@ -154,43 +140,17 @@ the plot edge}
 labels, as given for graphical parameters "las" (see
 \code{\link[graphics]{par}}).}
 
-\item{...}{Additional parameter to pass to 'par' R function}
-
-\item{z}{matrix of values used to visualize the heatmap}
-
-\item{zlim}{Limit for the numerical(color) scale, which must be consistent
-with parameter 'break'.}
-
-\item{col}{Palette of color to use}
-
-\item{breaks}{Numerical vector with the breaks used to produce the heatmap}
-
-\item{horiz}{Whether to the color bar will be horizontal(= TRUE) or
-vertical(= FALSE)}
-
-\item{ylim}{User defined limits for y-axis. Depending on the orientation, x-
-or y-limits may be defined that are different from the z-limits and will
-reduce the range of colors displayed.}
-
-\item{xlim}{User defined limits for x-axis}
-
-\item{lwd}{Line width.}
-
-\item{cex.axis}{Cex values for color bar axis labels.}
+\item{...}{Additional graphical parameters for 'par' R function used in the
+heatmap (not in the color bar).}
 }
 \value{
 A GRanges object with the new genomic regions and their corresponding
     summarized statistic.
-
-Image with color bar
 }
 \description{
 A function to create a heatmap or a graphical representation of
     data where the individual values contained in a matrix are represented as
     colors of the GRanges object.
-
-This function is for internal use. It creates a color scaled
-    bar for heatmap.
 }
 \details{
 This function creates a heatmap is a false color image with a color
@@ -207,7 +167,8 @@ bar.palette <- colorRampPalette(c(rep("cyan",4), "green",rep("yellow", 2),
 k <- "Chr1"
 file <- paste0(getwd(), "/heatmap_", k)
 xlab <- paste0("CG. Chromosome ", sub("Chr", "", k), " (Mbp)")
-heatmapChr(GR = GR, filename = file, format = "tiff", chr = k, xtitle = xlab,
+heatmapChr(GR = GRMatrix, filename = file, format = "tiff", 
+           chr = k, xtitle = xlab,
            Barpalette = bar.palette, mar = c(4, 6, 0, 0), res = 600,
            height = 350, width =2500, font = 2, fontfamily = "serif", ylas=1,
            lwd = 0.1, mar.scale = c(4, 5, 0.5, 3), cex.xtitle = 2.5,
@@ -223,4 +184,3 @@ file.remove(paste0(file, ".tiff"))
 \author{
 Robersy Sanchez
 }
-\keyword{internal}

@@ -87,7 +87,8 @@
 #' k <- "Chr1"
 #' file <- paste0(getwd(), "/heatmap_", k)
 #' xlab <- paste0("CG. Chromosome ", sub("Chr", "", k), " (Mbp)")
-#' heatmapChr(GR = GR, filename = file, format = "tiff", chr = k, xtitle = xlab,
+#' heatmapChr(GR = GRMatrix, filename = file, format = "tiff", 
+#'            chr = k, xtitle = xlab,
 #'            Barpalette = bar.palette, mar = c(4, 6, 0, 0), res = 600,
 #'            height = 350, width =2500, font = 2, fontfamily = "serif", ylas=1,
 #'            lwd = 0.1, mar.scale = c(4, 5, 0.5, 3), cex.xtitle = 2.5,
@@ -193,7 +194,6 @@ heatmapChr <- function(GR, filename=NULL, chr, sample.id=NULL,
 
 ### ========================= Auxiliary function ============================
 
-#' @rdname heatmapChr
 #' @name .colorBar
 #' @title Color bar for heatmaps
 #' @description This function is for internal use. It creates a color scaled
